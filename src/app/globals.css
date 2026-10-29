@@ -1,0 +1,87 @@
+@font-face {
+  font-family: 'Manrope';
+  src: url('/brand/fonts/Manrope-variable.ttf') format('truetype');
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/brand/fonts/Inter-variable.ttf') format('truetype');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  /* Brand Palette */
+  --jm-ink: #142420;
+  --jm-lime: #D5F879;
+  --jm-paper: #FAFBF8;
+  --jm-text: #152420;
+  --jm-secondary: #F1F3ED;
+  --jm-mutedText: #58615F;
+  --jm-border: #DFE4DD;
+  --jm-focus: #547523;
+  --jm-dotAccent: #789937;
+
+  /* Typography */
+  --jm-font-display: 'Manrope', system-ui, -apple-system, sans-serif;
+  --jm-font-body: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Layout & Spacing */
+  --jm-container-max: 1320px;
+  --jm-gutter-desktop: 48px;
+  --jm-gutter-tablet: 32px;
+  --jm-gutter-mobile: 22px;
+  --jm-section-spacing-desktop: 100px;
+  --jm-section-spacing-mobile: 60px;
+
+  /* Radii */
+  --jm-radius-btn: 7px;
+  --jm-radius-card-sm: 12px;
+  --jm-radius-card-md: 14px;
+  --jm-radius-card-lg: 20px;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  height: 100%;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background-color: var(--jm-paper);
+  color: var(--jm-text);
+  font-family: var(--jm-font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, .jm-wordmark {
+  font-family: var(--jm-font-display);
+  color: var(--jm-ink);
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: var(--jm-font-body);
+  cursor: pointer;
+  border: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--jm-focus);
+  outline-offset: 2px;
+}

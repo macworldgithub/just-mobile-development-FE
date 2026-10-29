@@ -1,0 +1,94 @@
+{
+  "version": "1.0",
+  "baseline": "beced0d6",
+  "status": "Redesign identity baseline; commercial and trademark approval required",
+  "name": "JustMobile",
+  "displayWordmark": "justmobile.",
+  "headline": "Less telco. More you.",
+  "supportingLine": "A little less telco. A lot more you.",
+  "colours": {
+    "ink": "#142420",
+    "lime": "#D5F879",
+    "paper": "#FAFBF8",
+    "text": "#152420",
+    "secondary": "#F1F3ED",
+    "mutedText": "#58615F",
+    "border": "#DFE4DD",
+    "focus": "#547523",
+    "dotAccent": "#789937"
+  },
+  "type": {
+    "display": {
+      "family": "Manrope",
+      "weights": [
+        400,
+        500,
+        600,
+        650,
+        700,
+        800
+      ]
+    },
+    "body": {
+      "family": "Inter",
+      "weights": [
+        400,
+        450,
+        500,
+        550,
+        600,
+        650,
+        700
+      ]
+    },
+    "wordmark": {
+      "family": "Manrope",
+      "sizePx": 24,
+      "weightJust": 800,
+      "weightMobile": 500,
+      "letterSpacingPx": -1.3
+    }
+  },
+  "layout": {
+    "containerMaxPx": 1320,
+    "desktopGutterPx": 48,
+    "tabletGutterPx": 32,
+    "mobileGutterPx": 22,
+    "breakpointsPx": [
+      375,
+      700,
+      860,
+      1100,
+      1600
+    ],
+    "desktopSectionSpacingPx": 100,
+    "mobileSectionSpacingPx": 60,
+    "buttonRadiusPx": 7,
+    "cardRadiusPx": [
+      12,
+      14,
+      20
+    ]
+  },
+  "accessibility": {
+    "target": "WCAG 2.2 AA",
+    "zoomEnabled": true,
+    "reducedMotionSupported": true,
+    "visibleKeyboardFocus": true
+  },
+  "voice": {
+    "do": [
+      "Clear prices and separate handset/plan terms",
+      "Calm status and recovery messages",
+      "Short task-led language",
+      "Explain automated assistance honestly when relevant"
+    ],
+    "avoid": [
+      "AI-first or first-in-Australia claims",
+      "Unverified cheapest or coverage claims",
+      "Human impersonation",
+      "Guaranteed instantaneous activation/porting",
+      "Invented reviews"
+    ]
+  }
+}

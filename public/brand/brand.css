@@ -1,0 +1,15 @@
+:root {
+  --jm-ink: #142420;
+  --jm-lime: #D5F879;
+  --jm-paper: #FAFBF8;
+  --jm-text: #152420;
+  --jm-secondary: #F1F3ED;
+  --jm-mutedText: #58615F;
+  --jm-border: #DFE4DD;
+  --jm-focus: #547523;
+  --jm-dotAccent: #789937;
+}
+@font-face {font-family:Manrope;src:url(./fonts/Manrope-variable.ttf) format("truetype");font-weight:200 800;font-display:swap;}
+@font-face {font-family:Inter;src:url(./fonts/Inter-variable.ttf) format("truetype");font-weight:100 900;font-display:swap;}
+body {font-family:Inter,system-ui,sans-serif;color:var(--jm-text);background:var(--jm-paper);}
+h1,h2,h3,.jm-wordmark {font-family:Manrope,system-ui,sans-serif;}
