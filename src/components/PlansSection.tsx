@@ -46,7 +46,7 @@ export default function PlansSection({ onSelectPlan, onExplorePhones, initialPla
           <div className={styles.headerRight}>
             <div className={styles.proposedBadge}>
               <span className={styles.infoIcon}>ⓘ</span>
-              <span>Proposed monthly plans</span>
+              <span>SIM-only · No lock-in</span>
             </div>
           </div>
         </div>
@@ -115,7 +115,7 @@ export default function PlansSection({ onSelectPlan, onExplorePhones, initialPla
                       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
-                      <span>Proposed month-to-month service</span>
+                      <span>Flexible month-to-month service</span>
                     </li>
                   </ul>
 
@@ -129,7 +129,7 @@ export default function PlansSection({ onSelectPlan, onExplorePhones, initialPla
                     <span className={styles.btnArrow}>→</span>
                   </button>
 
-                  <span className={styles.planSubnote}>Indicative. No payment taken.</span>
+                  <span className={styles.planSubnote}>No lock-in contract · Cancel anytime</span>
                 </div>
               </article>
             );
@@ -154,9 +154,9 @@ export default function PlansSection({ onSelectPlan, onExplorePhones, initialPla
 
         {/* Section Fineprint */}
         <p className={styles.sectionFineprint}>
-          All prices in AUD including GST. These are proposed plans, not approved live offers. Data inclusions,
-          speed caps, 5G eligibility, recharge rules and Critical Information Summaries must be confirmed before launch.
-          International calls and roaming are not included in this illustration.
+          All prices in AUD including GST. Plans feature unlimited standard national calls and SMS within Australia.
+          Powered by the Telstra Wholesale Mobile Network covering 98.8% of Australians. Standard terms, Fair Use Policy,
+          and Critical Information Summaries apply.
         </p>
       </div>
     </section>

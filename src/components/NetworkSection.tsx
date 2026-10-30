@@ -52,8 +52,8 @@ export default function NetworkSection() {
               Fresh perspective.
             </h2>
             <p className={styles.description}>
-              Our proposed mobile service uses the Telstra Wholesale Mobile Network.
-              Familiar infrastructure. A refreshingly straightforward experience.
+              Our mobile service is powered by the Telstra Wholesale Mobile Network.
+              Familiar high-speed infrastructure. A refreshingly straightforward experience.
             </p>
 
             <div className={styles.statBlock}>

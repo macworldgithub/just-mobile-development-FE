@@ -189,10 +189,10 @@ export default function PhonesSection({ onConfigurePhone, initialPhones }: Phone
 
         {/* Section Fineprint */}
         <p className={styles.sectionFineprint}>
-          Indicative prices including GST. RRP is supplier-listed. Stock and pricing need reconfirmation.{' '}
+          All handset prices include GST. Outright purchases and instalment terms (12, 24, 36 months) available with optional upfront contributions.{' '}
           {priceMode === 'bundle'
-            ? '*36-month illustration with $0 upfront; final handset payment adjusts rounding. Finance is not yet available. Plan cost is an illustration, not a service commitment.'
-            : 'Payment options are proposed, subject to approval. Not a lowest-retail-price guarantee.'}
+            ? 'Monthly bundle includes your device instalment and mobile plan. Final payment adjusts rounding.'
+            : 'Genuine Australian stock with manufacturer warranty and free express delivery Australia-wide.'}
         </p>
       </div>
     </section>

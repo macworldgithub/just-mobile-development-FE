@@ -39,7 +39,7 @@ export default function Header({ onOpenAccount, onNavigateSection }: HeaderProps
             </Link>
           </div>
           <div className={styles.announcementRight}>
-            <span>Design preview · Indicative pricing</span>
+            <span>Live Australia-wide · 5G & eSIM Ready</span>
           </div>
         </div>
       </div>

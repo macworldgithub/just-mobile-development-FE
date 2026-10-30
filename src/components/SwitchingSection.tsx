@@ -75,7 +75,7 @@ export default function SwitchingSection() {
 
         {/* Bottom Note */}
         <p className={styles.switchingNote}>
-          Proposed activation journey. eSIM compatibility and number transfer eligibility apply.
+          Fast digital onboarding. Compatible eSIM device and standard Australian number transfer rules apply.
         </p>
       </div>
     </section>

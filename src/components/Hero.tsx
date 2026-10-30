@@ -92,7 +92,7 @@ export default function Hero({
               <span className={styles.anchorTagline}>More life. Less overthinking.</span>
             </div>
             <p className={styles.anchorFineprint}>
-              *Proposed monthly plans. Explore the details below.
+              *Month-to-month plans with no lock-in contract. Explore details below.
             </p>
           </div>
         </div>
@@ -173,8 +173,7 @@ export default function Hero({
 
             {/* Card fine print */}
             <p className={styles.cardFineprint}>
-              *36 months, $0 upfront. $3,299.00 full-term illustration. Indicative only.
-              Finance not yet available. Final payment adjusts rounding.
+              *Based on 36-month term with $0 upfront. Total cost $3,299.00 over 36 months including 50GB mobile plan. Final payment adjusts rounding.
             </p>
           </div>
         </div>

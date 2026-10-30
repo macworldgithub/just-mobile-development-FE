@@ -30,7 +30,7 @@ export default function LaunchSection({ onFindPlan }: LaunchSectionProps) {
               <br />
               just getting started.
             </h2>
-            <p className={styles.subtitle}>Get a feel for a simpler kind of mobile.</p>
+            <p className={styles.subtitle}>Experience a fresh, straightforward mobile service.</p>
             <a
               href="#plans"
               className={styles.planLink}
@@ -49,7 +49,7 @@ export default function LaunchSection({ onFindPlan }: LaunchSectionProps) {
           {/* Right Column: Signup form */}
           <div className={styles.launchSignup}>
             <h3 className={styles.signupTitle}>Be part of what&apos;s next.</h3>
-            <p className={styles.signupSubtitle}>Try our launch-updates signup experience.</p>
+            <p className={styles.signupSubtitle}>Stay in the loop with exclusive deals and new offers.</p>
             <form onSubmit={handleSubmit} className={styles.signupForm}>
               <label htmlFor="launch-email" className={styles.srOnly}>
                 Email address
@@ -68,7 +68,7 @@ export default function LaunchSection({ onFindPlan }: LaunchSectionProps) {
               />
               <button
                 type="submit"
-                aria-label="Preview signup"
+                aria-label="Subscribe to newsletter"
                 className={styles.signupSubmitBtn}
               >
                 <svg

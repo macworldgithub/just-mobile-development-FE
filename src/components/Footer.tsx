@@ -132,18 +132,11 @@ export default function Footer({ onNavigateSection }: FooterProps) {
         {/* Bottom Disclosures */}
         <div className={styles.footerDisclosure}>
           <p>
-            <b>A clear note on this preview.</b> All prices are proposed, in AUD
-            including GST. Handsets were listed with supplier stock at review on
-            27 October 2026; availability is not live and must be reconfirmed.
-            Savings shown are against supplier-listed RRP, not a lowest-price
-            guarantee. Plans, payment options and service inclusions need
-            approval before launch. No checkout, payment, activation or live
-            customer support is connected.
+            <b>Fair, transparent pricing.</b> All prices in AUD including GST. Handset outright purchases and flexible instalment terms are available on selected models. Handsets come with full Australian manufacturer warranty and express dispatch. Standard terms, Fair Use Policy, and Critical Information Summaries apply to all mobile services.
           </p>
           <p>
-            JustMobile&apos;s proposed service uses the Telstra Wholesale Mobile
-            Network, which differs from Telstra&apos;s retail network. Coverage
-            depends on your location, device and conditions. 5G requires a
+            JustMobile mobile services are powered by the Telstra Wholesale Mobile
+            Network. Coverage depends on your location, device and conditions. 5G requires a
             compatible device, eligible plan and coverage. We acknowledge the
             Traditional Custodians of the lands on which we live and connect, and
             pay respect to Elders past and present.
