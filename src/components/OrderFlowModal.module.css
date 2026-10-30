@@ -414,13 +414,37 @@
 }
 
 @media (max-width: 680px) {
+  .overlay {
+    padding: 10px;
+  }
   .modal {
-    padding: 24px 18px;
+    padding: 20px 16px;
+    border-radius: 16px;
+    max-height: 94vh;
+  }
+  .modalHeader {
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+  }
+  .title {
+    font-size: 22px;
   }
   .formGrid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
   .numberToggleGroup {
     grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .reviewCard {
+    padding: 16px;
+  }
+  .priceSummary {
+    padding: 16px 14px;
+  }
+  .actionBtn {
+    padding: 13px;
+    font-size: 14px;
   }
 }

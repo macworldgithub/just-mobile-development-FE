@@ -179,14 +179,58 @@
 
 /* Responsive */
 @media (max-width: 900px) {
+  .networkSection {
+    padding: 60px 0;
+  }
   .networkGrid {
     grid-template-columns: 1fr;
-    gap: 36px;
+    gap: 32px;
   }
   .photoCard {
-    height: 340px;
+    height: 320px;
   }
   .title {
-    font-size: 38px;
+    font-size: clamp(28px, 7vw, 38px);
+  }
+  .description {
+    font-size: 15.5px;
+  }
+  .statNumber {
+    font-size: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .photoCard {
+    height: 260px;
+    border-radius: 14px;
+  }
+  .photoOverlayLabel {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+  .overlayText strong {
+    font-size: 12px;
+  }
+  .overlayText span {
+    font-size: 11px;
+  }
+  .statBlock {
+    padding: 18px 0;
+    gap: 16px;
+  }
+  .statNumber {
+    font-size: 34px;
+  }
+  .statLabel {
+    font-size: 12.5px;
+  }
+  .checkCoverageBtn {
+    width: 100%;
+    justify-content: center;
+    padding: 13px 20px;
   }
 }

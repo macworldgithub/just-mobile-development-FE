@@ -43,6 +43,18 @@
   --jm-radius-card-lg: 20px;
 }
 
+@media (max-width: 1024px) {
+  :root {
+    --jm-gutter-desktop: var(--jm-gutter-tablet);
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --jm-gutter-desktop: var(--jm-gutter-mobile);
+  }
+}
+
 * {
   box-sizing: border-box;
   padding: 0;

@@ -296,3 +296,26 @@
   line-height: 1.45;
   color: var(--jm-mutedText);
 }
+
+@media (max-width: 480px) {
+  .drawer {
+    max-width: 100%;
+  }
+  .drawerHeader {
+    padding: 18px 20px;
+  }
+  .drawerTitle {
+    font-size: 20px;
+  }
+  .drawerBody {
+    padding: 20px 16px;
+    gap: 20px;
+  }
+  .balanceCard {
+    padding: 16px;
+  }
+  .quickActionBtn {
+    padding: 10px 12px;
+    font-size: 12.5px;
+  }
+}

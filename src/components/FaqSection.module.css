@@ -142,14 +142,34 @@
 }
 
 @media (max-width: 860px) {
+  .faqSection {
+    padding: 60px 0;
+  }
   .faqGrid {
     grid-template-columns: 1fr;
-    gap: 36px;
+    gap: 32px;
   }
   .title {
-    font-size: 36px;
+    font-size: clamp(28px, 7vw, 36px);
+  }
+  .subtitle {
+    font-size: 15.5px;
   }
   .desktopBreak {
     display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .questionBtn {
+    padding: 16px 0;
+    gap: 12px;
+  }
+  .questionText {
+    font-size: 14px;
+  }
+  .answerText {
+    font-size: 13px;
+    line-height: 1.6;
   }
 }

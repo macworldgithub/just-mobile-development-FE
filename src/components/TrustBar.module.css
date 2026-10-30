@@ -38,7 +38,7 @@
     padding: 0 var(--jm-gutter-mobile);
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 14px 20px;
   }
 
   .pillarItem {
@@ -46,9 +46,22 @@
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 480px) {
+  .trustSection {
+    padding: 18px 0;
+  }
+
   .trustContainer {
-    grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px 12px;
+  }
+
+  .pillarItem {
+    font-size: 12px;
+    gap: 7px;
+  }
+
+  .pillarIcon svg {
+    width: 15px;
+    height: 15px;
   }
 }

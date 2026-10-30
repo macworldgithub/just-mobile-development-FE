@@ -334,16 +334,60 @@
 
 /* Responsive */
 @media (max-width: 960px) {
-  .plansGrid {
-    grid-template-columns: 1fr;
-    gap: 18px;
+  .plansSection {
+    padding: 65px 0 45px;
   }
   .sectionHeader {
     flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 30px;
+  }
+  .title {
+    font-size: clamp(30px, 7vw, 38px);
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+  .subtitle {
+    font-size: 15.5px;
+  }
+  .plansGrid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    max-width: 520px;
+    margin: 0 auto;
   }
   .plansBottom {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+}
+
+@media (max-width: 540px) {
+  .plansGrid {
+    max-width: 100%;
+    gap: 16px;
+  }
+  .planCardTop {
+    padding: 14px 18px;
+  }
+  .planCardContent {
+    padding: 20px 18px 18px;
+  }
+  .planData {
+    font-size: 56px;
+    letter-spacing: -2.5px;
+  }
+  .planCost {
+    font-size: 28px;
+    margin-top: 16px;
+  }
+  .planDivider {
+    margin: 18px 0 16px;
+  }
+  .featureList {
+    margin-bottom: 20px;
+    gap: 10px;
   }
 }

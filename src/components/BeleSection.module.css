@@ -345,11 +345,52 @@
 
 /* Responsive */
 @media (max-width: 900px) {
+  .beleSection {
+    padding: 60px 0;
+  }
   .beleGrid {
     grid-template-columns: 1fr;
-    gap: 36px;
+    gap: 32px;
+  }
+  .title {
+    font-size: clamp(28px, 7vw, 38px);
+  }
+  .subtitle {
+    font-size: 15.5px;
   }
   .chatCard {
     height: 480px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chatCard {
+    height: 430px;
+    border-radius: 14px;
+  }
+  .chatHeader {
+    padding: 12px 14px;
+  }
+  .messagesContainer {
+    padding: 14px 14px 10px;
+    gap: 12px;
+  }
+  .chatFooter {
+    padding: 10px 12px;
+  }
+  .chatInput {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  .sendBtn {
+    width: 36px;
+    height: 36px;
+  }
+  .promptChips {
+    gap: 6px;
+  }
+  .promptChip {
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }

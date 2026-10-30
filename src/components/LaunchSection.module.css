@@ -156,11 +156,30 @@
 
 /* Responsive */
 @media (max-width: 900px) {
+  .launchCta {
+    padding: 55px 0 60px;
+  }
   .launchInner {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 36px;
   }
   .title {
-    font-size: 38px;
+    font-size: clamp(28px, 7vw, 38px);
+  }
+  .signupTitle {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .signupInput {
+    font-size: 14px;
+  }
+  .signupSubmitBtn {
+    width: 36px;
+    height: 36px;
+  }
+  .signupStatus {
+    font-size: 11.5px;
   }
 }

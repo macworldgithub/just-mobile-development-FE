@@ -366,19 +366,65 @@
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 720px) {
+  .shopSection {
+    padding: 60px 0;
+  }
   .title {
-    font-size: 36px;
+    font-size: clamp(28px, 7.5vw, 36px);
   }
   .desktopBreak {
     display: none;
   }
+  .shopControls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .brandFilters {
+    width: 100%;
+    display: flex;
+  }
+  .filterBtn {
+    flex: 1;
+    text-align: center;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .priceDisplayToggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .toggleButtonsGroup {
+    flex: 1;
+    max-width: 230px;
+    display: flex;
+  }
+  .toggleBtn {
+    flex: 1;
+    text-align: center;
+    padding: 6px 10px;
+    font-size: 12.5px;
+  }
   .phoneGrid {
     grid-template-columns: 1fr;
     gap: 16px;
+    max-width: 480px;
+    margin: 0 auto 28px;
   }
-  .shopControls {
-    flex-direction: column;
-    align-items: flex-start;
+}
+
+@media (max-width: 480px) {
+  .phoneGrid {
+    max-width: 100%;
+  }
+  .phoneImageWrapper {
+    height: 200px;
+  }
+  .phoneCardContent {
+    padding: 20px 18px;
+  }
+  .phoneName {
+    font-size: 18px;
   }
 }

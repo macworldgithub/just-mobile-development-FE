@@ -197,10 +197,11 @@
     width: 100%;
     justify-content: center;
     font-size: 12.5px;
+    text-align: center;
   }
 
   .navContainer {
-    padding: 14px var(--jm-gutter-mobile);
+    padding: 12px var(--jm-gutter-mobile);
   }
 
   .navLinks {
@@ -212,16 +213,43 @@
   }
 
   .accountBtn {
-    padding: 6px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .menuToggle {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 8px;
   }
 
   .mobileMenu {
     display: flex;
+    animation: slideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 420px) {
+  .announcementLeft {
+    font-size: 11.5px;
+    gap: 4px;
+  }
+  .logoImage {
+    height: 28px;
   }
 }

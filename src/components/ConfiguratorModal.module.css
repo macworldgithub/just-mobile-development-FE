@@ -514,3 +514,41 @@
     height: 220px;
   }
 }
+
+@media (max-width: 560px) {
+  .overlay {
+    padding: 10px;
+  }
+  .modal {
+    padding: 20px 16px;
+    border-radius: 16px;
+    max-height: 94vh;
+  }
+  .modalHeader {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+  }
+  .modalTitle {
+    font-size: 22px;
+  }
+  .deviceTitle {
+    font-size: 24px;
+  }
+  .previewImage {
+    height: 180px;
+  }
+  .termBtn, .upfrontBtn {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  .summaryBox {
+    padding: 16px 14px;
+  }
+  .aggregateRow {
+    font-size: 13px;
+  }
+  .checkoutBtn {
+    padding: 13px;
+    font-size: 14px;
+  }
+}

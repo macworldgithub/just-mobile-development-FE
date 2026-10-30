@@ -406,23 +406,24 @@
 
   .heroContainer {
     grid-template-columns: 1fr;
-    gap: 40px;
+    gap: 36px;
     padding: 0 var(--jm-gutter-mobile);
   }
 
   .headline {
-    font-size: 56px;
-    margin-bottom: 20px;
+    font-size: 52px;
+    margin-bottom: 18px;
   }
 
   .subheadline {
     font-size: 17px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
 
   .ctaGroup {
     flex-direction: row;
     width: 100%;
+    gap: 12px;
   }
 
   .primaryCta,
@@ -433,40 +434,103 @@
     font-size: 15px;
   }
 
+  .phoneVisualWrap {
+    min-height: 300px;
+  }
+
+  .heroPhoneImage {
+    max-height: 320px;
+  }
+
   .flagshipCard {
     padding: 24px 20px 20px 20px;
   }
 
   .limeBackdrop {
-    width: 320px;
-    height: 320px;
-    right: -40px;
+    width: 300px;
+    height: 300px;
+    right: -30px;
   }
 
   .floatingPriceCard {
-    padding: 16px 18px;
+    padding: 14px 16px;
   }
 
   .priceAmount {
-    font-size: 28px;
+    font-size: 26px;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 560px) {
   .headline {
-    font-size: 46px;
+    font-size: clamp(36px, 9.5vw, 44px);
+    line-height: 1.04;
+    margin-bottom: 16px;
+  }
+
+  .subheadline {
+    font-size: 15.5px;
+    line-height: 1.5;
+    margin-bottom: 22px;
   }
 
   .ctaGroup {
     flex-direction: column;
+    gap: 10px;
   }
 
   .primaryCta,
   .secondaryCta {
     width: 100%;
+    padding: 14px 20px;
   }
 
   .anchorRow {
     flex-wrap: wrap;
+    gap: 4px 8px;
+    align-items: baseline;
+  }
+
+  .anchorDivider {
+    display: none;
+  }
+
+  .anchorTagline {
+    display: block;
+    width: 100%;
+    font-size: 13px;
+    margin-top: 2px;
+  }
+
+  .anchorFineprint {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .phoneVisualWrap {
+    min-height: 250px;
+  }
+
+  .heroPhoneImage {
+    max-height: 270px;
+  }
+
+  .floatingPriceCard {
+    padding: 12px 14px;
+    gap: 8px;
+  }
+
+  .priceAmount {
+    font-size: 22px;
+  }
+
+  .configurePillBtn {
+    width: 40px;
+    height: 40px;
+    font-size: 17px;
+  }
+
+  .cardFineprint {
+    font-size: 10.5px;
   }
 }
