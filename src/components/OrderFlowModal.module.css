@@ -413,6 +413,281 @@
   font-weight: 600;
 }
 
+/* Plan Choice Exploration Modal (Screenshot 1 matching) */
+.planChoiceModal {
+  max-width: 530px;
+  border-radius: 24px;
+  padding: 32px 34px 28px;
+}
+
+.modalHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.planHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.planTitle {
+  font-family: var(--jm-font-display);
+  font-size: 32px;
+  font-weight: 700;
+  color: #142420;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.planSubtitle {
+  font-size: 15px;
+  color: #5a6657;
+  font-weight: 400;
+  margin: 0;
+}
+
+.planOverviewCard {
+  background-color: #f2f8ea;
+  border-radius: 16px;
+  padding: 22px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.planOverviewLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.phoneIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.phoneDeviceSvg {
+  display: block;
+}
+
+.planDataWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.planDataTier {
+  font-family: var(--jm-font-display);
+  font-size: 32px;
+  font-weight: 800;
+  color: #142420;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.planIncludedNote {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #697866;
+}
+
+.planOverviewRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+}
+
+.planPriceAmount {
+  font-family: var(--jm-font-display);
+  font-size: 32px;
+  font-weight: 800;
+  color: #142420;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.planPricePeriod {
+  font-size: 12px;
+  font-weight: 500;
+  color: #697866;
+}
+
+.whatSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.whatTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #142420;
+  margin: 0;
+}
+
+.numberOptionsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.numberChoiceCard {
+  background-color: #ffffff;
+  border: 1.5px solid #dce4d8;
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  min-height: 54px;
+  width: 100%;
+}
+
+.numberChoiceCard:hover {
+  border-color: #789937;
+}
+
+.numberChoiceActive {
+  background-color: #f7faf3;
+  border-color: #789937;
+}
+
+.numberChoiceLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #142420;
+}
+
+.checkIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.numberHelperText {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #5f6d5c;
+  margin: 0;
+  min-height: 40px;
+}
+
+.infoNoticeBox {
+  background-color: #ffffff;
+  border: 1.5px solid #dce4d8;
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.noticeIconWrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.noticeText {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: #556253;
+  margin: 0;
+  font-weight: 400;
+}
+
+.doneExploringBtn {
+  background-color: #142420;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 20px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 4px 12px rgba(20, 36, 32, 0.12);
+}
+
+.doneExploringBtn:hover {
+  background-color: #1e332d;
+  transform: translateY(-1px);
+}
+
+.bottomLinksWrap {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.explorePhonesLink {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #142420;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s ease;
+}
+
+.explorePhonesLink:hover {
+  color: #789937;
+  text-decoration: underline;
+}
+
+.arrowIcon {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.continueLinkWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.continueToOrderBtn {
+  background: transparent;
+  border: none;
+  font-size: 12.5px;
+  color: #7a8677;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.continueToOrderBtn:hover {
+  color: #142420;
+  text-decoration: underline;
+}
+
 @media (max-width: 680px) {
   .overlay {
     padding: 10px;
@@ -421,6 +696,29 @@
     padding: 20px 16px;
     border-radius: 16px;
     max-height: 94vh;
+  }
+  .planChoiceModal {
+    padding: 24px 18px 20px;
+    border-radius: 20px;
+  }
+  .planTitle {
+    font-size: 26px;
+  }
+  .planSubtitle {
+    font-size: 14px;
+  }
+  .planOverviewCard {
+    padding: 16px 18px;
+  }
+  .planDataTier {
+    font-size: 26px;
+  }
+  .planPriceAmount {
+    font-size: 26px;
+  }
+  .numberOptionsGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
   .modalHeader {
     margin-bottom: 20px;

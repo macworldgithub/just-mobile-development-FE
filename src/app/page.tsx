@@ -144,6 +144,7 @@ export default function Home() {
         isOpen={orderModalOpen}
         onClose={() => setOrderModalOpen(false)}
         config={orderConfig}
+        onExplorePhones={() => handleScrollTo('phones')}
       />
 
       {/* Slide-out Account & Service Drawer */}

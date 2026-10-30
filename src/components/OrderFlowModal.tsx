@@ -18,11 +18,12 @@ interface OrderFlowModalProps {
   isOpen: boolean;
   onClose: () => void;
   config: OrderConfiguration | null;
+  onExplorePhones?: () => void;
 }
 
-export default function OrderFlowModal({ isOpen, onClose, config }: OrderFlowModalProps) {
+export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhones }: OrderFlowModalProps) {
   const [step, setStep] = useState<number>(1);
-  const [numberType, setNumberType] = useState<'new' | 'port'>('new');
+  const [numberType, setNumberType] = useState<'new' | 'port'>('port');
   const [portNumber, setPortNumber] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
@@ -49,6 +50,8 @@ export default function OrderFlowModal({ isOpen, onClose, config }: OrderFlowMod
   }, [isOpen]);
 
   if (!isOpen || !config) return null;
+
+  const isPlanOnly = Boolean(config.plan && !config.handset);
 
   const handleSendOtp = () => {
     if (portNumber.length >= 8) {
@@ -78,86 +81,227 @@ export default function OrderFlowModal({ isOpen, onClose, config }: OrderFlowMod
 
   return (
     <div className={styles.overlay} onClick={onClose} role="dialog" aria-modal="true">
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className={styles.modalHeader}>
-          <div>
-            <span className={styles.orderBadge}>ORDER REFERENCE: {orderId}</span>
-            <h2 className={styles.title}>
-              {step === 1 && 'Confirm your selection'}
-              {step === 2 && 'Identity & Mobile Number'}
-              {step === 3 && 'Order Lifecycle & eSIM Activation'}
-            </h2>
+      <div
+        className={`${styles.modal} ${isPlanOnly && step === 1 ? styles.planChoiceModal : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header: Dedicated Clean Header for Plan Selection matching Screenshot 1 */}
+        {isPlanOnly && step === 1 ? (
+          <div className={styles.modalHeaderRow}>
+            <div className={styles.planHeader}>
+              <h2 className={styles.planTitle}>
+                Your {config.plan?.name ? config.plan.name.toLowerCase() : 'plan'} plan.
+              </h2>
+              <p className={styles.planSubtitle}>
+                A clear look at your proposed choice
+              </p>
+            </div>
+            <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
+              ✕
+            </button>
           </div>
-          <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
-            ✕
-          </button>
-        </div>
+        ) : (
+          <div className={styles.modalHeader}>
+            <div>
+              <span className={styles.orderBadge}>ORDER REFERENCE: {orderId}</span>
+              <h2 className={styles.title}>
+                {step === 1 && 'Confirm your selection'}
+                {step === 2 && 'Identity & Mobile Number'}
+                {step === 3 && 'Order Lifecycle & eSIM Activation'}
+              </h2>
+            </div>
+            <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
+              ✕
+            </button>
+          </div>
+        )}
 
         {/* Step 1: Review Selection */}
         {step === 1 && (
           <div className={styles.stepContent}>
-            <div className={styles.reviewCard}>
-              {config.handset && (
-                <div className={styles.reviewItem}>
-                  <div className={styles.itemHeader}>
-                    <strong>{config.handset.name}</strong>
-                    <span>${config.handset.outrightPrice} outright</span>
+            {isPlanOnly && config.plan ? (
+              <>
+                {/* Green Plan Summary Card */}
+                <div className={styles.planOverviewCard}>
+                  <div className={styles.planOverviewLeft}>
+                    <div className={styles.phoneIconWrap}>
+                      <svg width="22" height="34" viewBox="0 0 24 38" fill="none" className={styles.phoneDeviceSvg}>
+                        <rect x="1.5" y="1.5" width="21" height="35" rx="5.5" stroke="#142420" strokeWidth="2.2" />
+                        <line x1="8" y1="5.5" x2="16" y2="5.5" stroke="#142420" strokeWidth="2" strokeLinecap="round" />
+                        <circle cx="12" cy="30" r="1.5" fill="#142420" />
+                      </svg>
+                    </div>
+                    <div className={styles.planDataWrap}>
+                      <div className={styles.planDataTier}>{config.plan.tier}</div>
+                      <div className={styles.planIncludedNote}>Standard AU calls & texts included</div>
+                    </div>
                   </div>
-                  <span className={styles.itemSub}>
-                    {config.handset.storage} · {config.handset.color}
-                  </span>
+                  <div className={styles.planOverviewRight}>
+                    <div className={styles.planPriceAmount}>${config.plan.pricePerMonth}</div>
+                    <div className={styles.planPricePeriod}>/month</div>
+                  </div>
                 </div>
-              )}
 
-              {config.plan && (
-                <div className={styles.reviewItem}>
-                  <div className={styles.itemHeader}>
-                    <strong>JustMobile {config.plan.tier} ({config.plan.name})</strong>
-                    <span>${config.plan.pricePerMonth}/mth</span>
+                {/* What would you like to do? Section */}
+                <div className={styles.whatSection}>
+                  <h3 className={styles.whatTitle}>What would you like to do?</h3>
+
+                  <div className={styles.numberOptionsGrid}>
+                    <button
+                      type="button"
+                      className={`${styles.numberChoiceCard} ${numberType === 'port' ? styles.numberChoiceActive : ''}`}
+                      onClick={() => setNumberType('port')}
+                    >
+                      <span className={styles.numberChoiceLabel}>Keep my number</span>
+                      {numberType === 'port' && (
+                        <span className={styles.checkIcon}>
+                          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                            <path d="M4 10.5L8 14.5L16 6" stroke="#142420" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </span>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      className={`${styles.numberChoiceCard} ${numberType === 'new' ? styles.numberChoiceActive : ''}`}
+                      onClick={() => setNumberType('new')}
+                    >
+                      <span className={styles.numberChoiceLabel}>Get a new number</span>
+                      {numberType === 'new' && (
+                        <span className={styles.checkIcon}>
+                          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                            <path d="M4 10.5L8 14.5L16 6" stroke="#142420" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </span>
+                      )}
+                    </button>
                   </div>
-                  <span className={styles.itemSub}>
-                    5G Data Banking · Unlimited AU Calls & SMS · No lock-in
-                  </span>
+
+                  <p className={styles.numberHelperText}>
+                    {numberType === 'port'
+                      ? 'When switching is available, keep your current service active until the number transfer completes. Account and identity checks will be required.'
+                      : 'When activation is available, a new Australian mobile number can be allocated to your service.'}
+                  </p>
                 </div>
-              )}
 
-              {config.repayments && (
-                <div className={styles.calculationSummary}>
-                  <div className={styles.calcRow}>
-                    <span>Payment mode:</span>
-                    <strong className={styles.capitalize}>{config.paymentMode?.replace(/_/g, ' ')}</strong>
+                {/* Info Notice Box */}
+                <div className={styles.infoNoticeBox}>
+                  <div className={styles.noticeIconWrap}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3d4a3b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="16" x2="12" y2="12" />
+                      <line x1="12" y1="8" x2="12.01" y2="8" />
+                    </svg>
                   </div>
-                  {config.repayments.termMonths > 0 && (
-                    <div className={styles.calcRow}>
-                      <span>Repayment term:</span>
-                      <strong>{config.repayments.termMonths} months</strong>
+                  <p className={styles.noticeText}>
+                    You're exploring a proposed plan. No service has been activated, no number transferred and no payment taken.
+                  </p>
+                </div>
+
+                {/* Done exploring button */}
+                <button
+                  type="button"
+                  className={styles.doneExploringBtn}
+                  onClick={onClose}
+                >
+                  <span>Done exploring</span>
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                    <path d="M4 10.5L8 14.5L16 6" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+
+                {/* Bottom link to explore phones */}
+                <div className={styles.bottomLinksWrap}>
+                  <button
+                    type="button"
+                    className={styles.explorePhonesLink}
+                    onClick={() => {
+                      onClose();
+                      if (onExplorePhones) onExplorePhones();
+                    }}
+                  >
+                    <span>Explore a phone + plan instead</span>
+                    <span className={styles.arrowIcon}>↗</span>
+                  </button>
+                </div>
+
+                <div className={styles.continueLinkWrap}>
+                  <button
+                    type="button"
+                    className={styles.continueToOrderBtn}
+                    onClick={() => setStep(2)}
+                  >
+                    Continue to details →
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* Handset Order Review Mode */
+              <>
+                <div className={styles.reviewCard}>
+                  {config.handset && (
+                    <div className={styles.reviewItem}>
+                      <div className={styles.itemHeader}>
+                        <strong>{config.handset.name}</strong>
+                        <span>${config.handset.outrightPrice} outright</span>
+                      </div>
+                      <span className={styles.itemSub}>
+                        {config.handset.storage} · {config.handset.color}
+                      </span>
                     </div>
                   )}
-                  {config.repayments.upfrontAmount > 0 && (
-                    <div className={styles.calcRow}>
-                      <span>Upfront contribution:</span>
-                      <strong>${config.repayments.upfrontAmount.toFixed(2)}</strong>
+
+                  {config.plan && (
+                    <div className={styles.reviewItem}>
+                      <div className={styles.itemHeader}>
+                        <strong>JustMobile {config.plan.tier} ({config.plan.name})</strong>
+                        <span>${config.plan.pricePerMonth}/mth</span>
+                      </div>
+                      <span className={styles.itemSub}>
+                        5G Data Banking · Unlimited AU Calls & SMS · No lock-in
+                      </span>
                     </div>
                   )}
-                  <div className={styles.calcTotalRow}>
-                    <span>Monthly total:</span>
-                    <strong className={styles.monthlyValue}>
-                      ${config.repayments.totalMonthly.toFixed(2)}/month
-                    </strong>
-                  </div>
-                </div>
-              )}
-            </div>
 
-            <button
-              type="button"
-              className={styles.primaryNextBtn}
-              onClick={() => setStep(2)}
-            >
-              <span>Continue to details</span>
-              <span>→</span>
-            </button>
+                  {config.repayments && (
+                    <div className={styles.calculationSummary}>
+                      <div className={styles.calcRow}>
+                        <span>Payment mode:</span>
+                        <strong className={styles.capitalize}>{config.paymentMode?.replace(/_/g, ' ')}</strong>
+                      </div>
+                      {config.repayments.termMonths > 0 && (
+                        <div className={styles.calcRow}>
+                          <span>Repayment term:</span>
+                          <strong>{config.repayments.termMonths} months</strong>
+                        </div>
+                      )}
+                      {config.repayments.upfrontAmount > 0 && (
+                        <div className={styles.calcRow}>
+                          <span>Upfront contribution:</span>
+                          <strong>${config.repayments.upfrontAmount.toFixed(2)}</strong>
+                        </div>
+                      )}
+                      <div className={styles.calcTotalRow}>
+                        <span>Monthly total:</span>
+                        <strong className={styles.monthlyValue}>
+                          ${config.repayments.totalMonthly.toFixed(2)}/month
+                        </strong>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  className={styles.primaryNextBtn}
+                  onClick={() => setStep(2)}
+                >
+                  <span>Continue to details</span>
+                  <span>→</span>
+                </button>
+              </>
+            )}
           </div>
         )}
 
