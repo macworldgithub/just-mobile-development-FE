@@ -83,7 +83,7 @@ export default function Footer({ onNavigateSection }: FooterProps) {
                 className={styles.dialogTriggerBtn}
                 onClick={() =>
                   alert(
-                    'Critical Information Summaries (CIS) will be officially approved and published before live commercial launch.'
+                    'Critical Information Summaries (CIS) are available for all JustMobile SIM-only and phone bundle plans.'
                   )
                 }
               >

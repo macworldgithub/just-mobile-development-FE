@@ -67,7 +67,7 @@ export default function NetworkSection() {
 
             <div className={styles.ctaWrap}>
               <a
-                href="https://www.telstrawholesale.com.au/our-network/coverage.html"
+                href="https://www.telstrawholesale.com.au/products/mobiles/coverage.html"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.checkCoverageBtn}
