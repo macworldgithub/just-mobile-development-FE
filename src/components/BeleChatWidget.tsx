@@ -126,7 +126,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
                 <strong className={styles.botName}>Bele AI</strong>
                 <span className={styles.botStatus}>
                   <span className={styles.statusDot}></span>
-                  Online · gpt-4o-mini
+                  Online
                 </span>
               </div>
             </div>

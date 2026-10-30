@@ -153,7 +153,7 @@ export default function Home() {
         onOpenActivationQr={handleShowActivationQr}
       />
 
-      {/* Floating Bele AI Chatbot Widget (Powered by GPT-4o-mini) */}
+      {/* Floating Bele AI Chatbot Widget */}
       <BeleChatWidget
         isOpen={chatWidgetOpen}
         onToggle={() => setChatWidgetOpen(!chatWidgetOpen)}

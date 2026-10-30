@@ -144,7 +144,7 @@ export default function BeleSection() {
                 <strong className={styles.assistantName}>Bele AI</strong>
                 <span className={styles.assistantStatus}>
                   <span className={styles.statusDot}></span>
-                  Online · gpt-4o-mini
+                  Online
                 </span>
               </div>
               <button
