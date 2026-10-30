@@ -1,0 +1,155 @@
+.faqSection {
+  width: 100%;
+  padding: 85px 0;
+  background-color: var(--jm-paper);
+}
+
+.container {
+  max-width: var(--jm-container-max);
+  margin: 0 auto;
+  padding: 0 var(--jm-gutter-desktop);
+}
+
+.faqGrid {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 64px;
+  align-items: flex-start;
+}
+
+.leftCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--jm-mutedText);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.title {
+  font-family: var(--jm-font-display);
+  font-size: 46px;
+  font-weight: 800;
+  color: var(--jm-ink);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  margin-bottom: 16px;
+}
+
+.subtitle {
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: var(--jm-mutedText);
+  margin-bottom: 24px;
+}
+
+.desktopBreak {
+  display: inline;
+}
+
+.beleDemoLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--jm-ink);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.beleDemoLink:hover {
+  text-decoration: underline;
+}
+
+.diagonalArrow {
+  font-size: 14px;
+}
+
+/* Accordion */
+.accordionWrap {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid #dce2d5;
+}
+
+.faqItem {
+  border-bottom: 1px solid #dce2d5;
+}
+
+.questionBtn {
+  width: 100%;
+  background: transparent;
+  padding: 20px 0;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  gap: 16px;
+  transition: color 0.15s ease;
+}
+
+.questionBtn:hover .questionText {
+  color: #000000;
+}
+
+.questionText {
+  font-family: var(--jm-font-body);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--jm-ink);
+  line-height: 1.4;
+}
+
+.chevron {
+  color: #727b70;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.answerBox {
+  padding-bottom: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.answerText {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: #555e5b;
+}
+
+@media (max-width: 860px) {
+  .faqGrid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .title {
+    font-size: 36px;
+  }
+  .desktopBreak {
+    display: none;
+  }
+}

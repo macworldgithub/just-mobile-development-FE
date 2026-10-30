@@ -1,0 +1,190 @@
+.footer {
+  background-color: var(--jm-ink);
+  color: #ffffff;
+  padding: 70px 0 30px;
+  width: 100%;
+}
+
+.container {
+  max-width: var(--jm-container-max);
+  margin: 0 auto;
+  padding: 0 var(--jm-gutter-desktop);
+}
+
+/* Top Area: Logo + Motto on Left, Links on Right */
+.footerMain {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 70px;
+  margin-bottom: 30px;
+}
+
+.brandCol {
+  display: flex;
+  flex-direction: column;
+}
+
+.footerLogo {
+  width: 156px;
+  height: auto;
+}
+
+.brandMotto {
+  color: #a2b29f;
+  margin-top: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* 3 Link Columns */
+.footerLinks {
+  display: flex;
+  gap: 70px;
+}
+
+.linkCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.linkHeader {
+  font-family: var(--jm-font-body);
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.linkCol a,
+.dialogTriggerBtn {
+  color: #a3b2a0;
+  font-size: 13px;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s ease;
+  font-family: inherit;
+}
+
+.linkCol a:hover,
+.dialogTriggerBtn:hover {
+  color: var(--jm-lime);
+}
+
+.arrowIcon {
+  font-size: 13px;
+}
+
+/* Giant Wordmark Section matching Image 1 */
+.footerWordmark {
+  font-family: var(--jm-font-display);
+  letter-spacing: -3.5px;
+  border-bottom: 1px solid #2e3e34;
+  align-items: baseline;
+  gap: 14px;
+  padding: 45px 0 35px;
+  font-size: 76px;
+  font-weight: 800;
+  display: flex;
+  white-space: nowrap;
+}
+
+.wordmarkLime {
+  color: var(--jm-lime);
+}
+
+.wordmarkMuted {
+  color: #728b76;
+}
+
+/* 4-petal flower watermark on right */
+.flowerMark {
+  display: grid;
+  grid-template-columns: repeat(2, 22px);
+  gap: 6px;
+  margin-left: auto;
+  align-self: center;
+}
+
+.petal {
+  width: 22px;
+  height: 22px;
+  border-radius: 9px;
+  background-color: #556c5c;
+  opacity: 0.7;
+}
+
+/* Disclosures */
+.footerDisclosure {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  padding: 30px 0 25px;
+}
+
+.footerDisclosure p {
+  font-size: 11px;
+  line-height: 1.7;
+  color: #7d8e7b;
+}
+
+.footerDisclosure b {
+  color: #ffffff;
+}
+
+/* Bottom Line */
+.footerBottom {
+  border-top: 1px solid #233428;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  font-size: 12px;
+  color: #6f806d;
+}
+
+.madeForAu {
+  color: #6f806d;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.15s ease;
+}
+
+.madeForAu:hover {
+  color: var(--jm-lime);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .footerMain {
+    flex-direction: column;
+    gap: 40px;
+  }
+  .footerLinks {
+    flex-wrap: wrap;
+    gap: 36px;
+  }
+  .footerWordmark {
+    font-size: 46px;
+    letter-spacing: -2px;
+    flex-wrap: wrap;
+  }
+  .flowerMark {
+    display: none;
+  }
+  .footerDisclosure {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}

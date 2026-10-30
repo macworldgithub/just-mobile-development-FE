@@ -1,0 +1,298 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(20, 36, 32, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 120;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.drawer {
+  background-color: #ffffff;
+  width: 100%;
+  max-width: 460px;
+  height: 100%;
+  box-shadow: -8px 0 32px rgba(20, 36, 32, 0.15);
+  display: flex;
+  flex-direction: column;
+  animation: slideIn 0.25s ease-out;
+  overflow-y: auto;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.drawerHeader {
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--jm-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background-color: #FAFBF8;
+}
+
+.headerTitleWrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.authBadge {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--jm-dotAccent);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.drawerTitle {
+  font-family: var(--jm-font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--jm-ink);
+}
+
+.accountEmail {
+  font-size: 13px;
+  color: var(--jm-mutedText);
+  margin-top: 2px;
+}
+
+.closeBtn {
+  background: transparent;
+  color: var(--jm-mutedText);
+  font-size: 18px;
+  padding: 6px;
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.closeBtn:hover {
+  background-color: var(--jm-secondary);
+  color: var(--jm-ink);
+}
+
+.drawerBody {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card {
+  background-color: #FAFBF8;
+  border-radius: var(--jm-radius-card-sm);
+  border: 1px solid var(--jm-border);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardHeading {
+  font-family: var(--jm-font-display);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--jm-ink);
+}
+
+.serviceHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.serviceStatusRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #547523;
+}
+
+.statusText {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #547523;
+  text-transform: uppercase;
+}
+
+.networkTag {
+  font-size: 11px;
+  color: var(--jm-mutedText);
+  background-color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #ECEEE8;
+}
+
+.mobileNumberRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.mobileNumber {
+  font-family: var(--jm-font-display);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--jm-ink);
+  letter-spacing: 0.04em;
+}
+
+.simBadge {
+  font-size: 11px;
+  font-weight: 700;
+  background-color: var(--jm-lime);
+  color: var(--jm-ink);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.planDetailsRow {
+  display: flex;
+  gap: 6px;
+  font-size: 13.5px;
+  color: var(--jm-text);
+}
+
+.planLabel {
+  color: var(--jm-mutedText);
+}
+
+.meterContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.meterHeader {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--jm-mutedText);
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  background-color: #E2E6DF;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background-color: var(--jm-dotAccent);
+  border-radius: 9999px;
+}
+
+.bankedNotice {
+  font-size: 11.5px;
+  color: #6a7673;
+}
+
+.qrActionBtn {
+  background-color: var(--jm-ink);
+  color: #ffffff;
+  padding: 11px 16px;
+  border-radius: var(--jm-radius-btn);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+/* Handset finance */
+.handsetHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.termTag {
+  font-size: 11px;
+  color: var(--jm-mutedText);
+  background-color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.deviceName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--jm-ink);
+}
+
+.financeRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--jm-text);
+}
+
+/* Billing */
+.billDueRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.billAmount {
+  font-family: var(--jm-font-display);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--jm-ink);
+}
+
+.billDate {
+  font-size: 13px;
+  color: var(--jm-mutedText);
+  margin-left: 8px;
+}
+
+.autoPayBadge {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #3f6010;
+  background-color: #F1F8E3;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.cardUsed {
+  font-size: 12px;
+  color: var(--jm-mutedText);
+}
+
+/* Security */
+.securityBox {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: 8px;
+  background-color: #FAFBF8;
+  border: 1px solid var(--jm-border);
+}
+
+.securityIcon {
+  font-size: 16px;
+}
+
+.securityText {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--jm-mutedText);
+}

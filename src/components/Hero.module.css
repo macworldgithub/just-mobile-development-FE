@@ -1,0 +1,472 @@
+.heroSection {
+  width: 100%;
+  padding-top: 64px;
+  padding-bottom: 56px;
+  background-color: var(--jm-paper);
+  overflow: hidden;
+}
+
+.heroContainer {
+  max-width: var(--jm-container-max);
+  margin: 0 auto;
+  padding: 0 var(--jm-gutter-desktop);
+  display: grid;
+  grid-template-columns: 1.08fr 0.92fr;
+  gap: 48px;
+  align-items: center;
+}
+
+/* Copy Column */
+.copyColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Kicker */
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.kickerDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--jm-dotAccent);
+  display: inline-block;
+}
+
+.kickerText {
+  font-family: var(--jm-font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--jm-text);
+  text-transform: uppercase;
+}
+
+/* Headline */
+.headline {
+  font-family: var(--jm-font-display);
+  font-size: 88px;
+  font-weight: 800;
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+  color: var(--jm-ink);
+  margin-bottom: 28px;
+}
+
+.highlightWord {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.curvedUnderline {
+  position: absolute;
+  left: -4px;
+  bottom: -4px;
+  width: calc(100% + 8px);
+  height: 16px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Subheading */
+.subheadline {
+  font-family: var(--jm-font-body);
+  font-size: 20px;
+  line-height: 1.48;
+  color: var(--jm-mutedText);
+  margin-bottom: 36px;
+  max-width: 480px;
+}
+
+/* CTA Group */
+.ctaGroup {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 36px;
+}
+
+.primaryCta {
+  background-color: var(--jm-ink);
+  color: #ffffff;
+  font-family: var(--jm-font-body);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 16px 28px;
+  border-radius: var(--jm-radius-btn);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.primaryCta:hover {
+  background-color: #0b1513;
+  transform: translateY(-1px);
+}
+
+.secondaryCta {
+  background-color: transparent;
+  color: var(--jm-ink);
+  border: 1.5px solid var(--jm-ink);
+  font-family: var(--jm-font-body);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 15px 28px;
+  border-radius: var(--jm-radius-btn);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.secondaryCta:hover {
+  background-color: rgba(20, 36, 32, 0.05);
+  transform: translateY(-1px);
+}
+
+.diagonalArrow {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Pricing Anchor */
+.pricingAnchor {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.anchorRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--jm-font-body);
+  font-size: 14.5px;
+  color: var(--jm-text);
+}
+
+.anchorPriceLabel {
+  color: var(--jm-mutedText);
+}
+
+.anchorPriceValue {
+  font-family: var(--jm-font-display);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--jm-ink);
+  line-height: 1;
+}
+
+.anchorUnit {
+  font-size: 13.5px;
+  color: var(--jm-mutedText);
+}
+
+.anchorDivider {
+  margin: 0 10px;
+  color: #cfd6ce;
+  font-size: 16px;
+}
+
+.anchorTagline {
+  color: var(--jm-mutedText);
+  font-size: 14px;
+}
+
+.anchorFineprint {
+  font-size: 11.5px;
+  color: #7a8481;
+  margin-top: 4px;
+}
+
+/* Right Card Column */
+.cardColumn {
+  display: flex;
+  justify-content: center;
+}
+
+.flagshipCard {
+  width: 100%;
+  max-width: 530px;
+  background-color: #EBF0E5;
+  border-radius: 28px;
+  padding: 32px 32px 28px 32px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(223, 228, 221, 0.7);
+  box-shadow: 0 12px 36px rgba(20, 36, 32, 0.04);
+}
+
+/* Organic Lime Backdrop */
+.limeBackdrop {
+  position: absolute;
+  right: -70px;
+  top: 15%;
+  width: 440px;
+  height: 440px;
+  border-radius: 50%;
+  background-color: var(--jm-lime);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Card Header */
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  margin-bottom: 24px;
+}
+
+.badgePill {
+  background-color: #ffffff;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-family: var(--jm-font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--jm-ink);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.networkBadge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--jm-font-body);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--jm-ink);
+}
+
+.signalIcon {
+  stroke: var(--jm-ink);
+}
+
+/* Device Meta */
+.deviceMeta {
+  position: relative;
+  z-index: 2;
+  margin-bottom: 8px;
+}
+
+.deviceBrand {
+  font-size: 13.5px;
+  color: var(--jm-mutedText);
+  font-weight: 500;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.deviceName {
+  font-family: var(--jm-font-display);
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--jm-ink);
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+
+.deviceVariant {
+  font-size: 13px;
+  color: var(--jm-mutedText);
+  font-weight: 500;
+}
+
+/* Cutout Phone Visual */
+.visualContainer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: -30px;
+  margin-bottom: 8px;
+  transition: transform 0.25s ease;
+}
+
+.visualContainer:hover {
+  transform: translateY(-4px) scale(1.02);
+}
+
+.cutoutImage {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 30px rgba(20, 36, 32, 0.12));
+}
+
+/* Floating Price Card */
+.floatingPriceCard {
+  position: relative;
+  z-index: 3;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 18px 24px;
+  border: 1px solid var(--jm-border);
+  box-shadow: 0 10px 28px rgba(20, 36, 32, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.priceInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.pricePlanLabel {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--jm-mutedText);
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.priceAmountRow {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.priceAmount {
+  font-family: var(--jm-font-display);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--jm-ink);
+  line-height: 1;
+}
+
+.pricePeriod {
+  font-size: 14px;
+  color: var(--jm-mutedText);
+  font-weight: 500;
+}
+
+.priceOutrightNote {
+  font-size: 12.5px;
+  color: var(--jm-mutedText);
+  margin-top: 3px;
+}
+
+.configurePillBtn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--jm-lime);
+  color: var(--jm-ink);
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.configurePillBtn:hover {
+  transform: scale(1.08);
+  background-color: #c5ea65;
+}
+
+/* Card Fineprint */
+.cardFineprint {
+  position: relative;
+  z-index: 2;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #727c79;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .headline {
+    font-size: 72px;
+  }
+}
+
+@media (max-width: 860px) {
+  .heroSection {
+    padding-top: 36px;
+    padding-bottom: 40px;
+  }
+
+  .heroContainer {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 0 var(--jm-gutter-mobile);
+  }
+
+  .headline {
+    font-size: 56px;
+    margin-bottom: 20px;
+  }
+
+  .subheadline {
+    font-size: 17px;
+    margin-bottom: 28px;
+  }
+
+  .ctaGroup {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .primaryCta,
+  .secondaryCta {
+    flex: 1;
+    justify-content: center;
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+
+  .flagshipCard {
+    padding: 24px 20px 20px 20px;
+  }
+
+  .limeBackdrop {
+    width: 320px;
+    height: 320px;
+    right: -40px;
+  }
+
+  .floatingPriceCard {
+    padding: 16px 18px;
+  }
+
+  .priceAmount {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .headline {
+    font-size: 46px;
+  }
+
+  .ctaGroup {
+    flex-direction: column;
+  }
+
+  .primaryCta,
+  .secondaryCta {
+    width: 100%;
+  }
+
+  .anchorRow {
+    flex-wrap: wrap;
+  }
+}

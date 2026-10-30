@@ -1,0 +1,384 @@
+.shopSection {
+  width: 100%;
+  padding: 80px 0;
+  background-color: var(--jm-paper);
+}
+
+.container {
+  max-width: var(--jm-container-max);
+  margin: 0 auto;
+  padding: 0 var(--jm-gutter-desktop);
+}
+
+/* Section Heading */
+.sectionHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 40px;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--jm-mutedText);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-family: var(--jm-font-display);
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--jm-ink);
+  margin-bottom: 14px;
+}
+
+.subtitle {
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--jm-mutedText);
+}
+
+.desktopBreak {
+  display: inline;
+}
+
+.exploreLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--jm-ink);
+  transition: color 0.15s ease;
+  white-space: nowrap;
+}
+
+.exploreLink:hover {
+  text-decoration: underline;
+}
+
+.diagonalArrow {
+  font-size: 17px;
+}
+
+/* Shop Controls */
+.shopControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 36px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.brandFilters {
+  display: flex;
+  gap: 8px;
+  background-color: #f1f3ed;
+  padding: 4px;
+  border-radius: 9999px;
+}
+
+.filterBtn {
+  background: transparent;
+  color: var(--jm-text);
+  border: none;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.filterBtn:hover {
+  color: var(--jm-ink);
+}
+
+.filterSelected {
+  background-color: var(--jm-ink);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.priceDisplayToggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.priceToggleLabel {
+  font-size: 13px;
+  color: var(--jm-mutedText);
+  font-weight: 500;
+}
+
+.toggleButtonsGroup {
+  display: flex;
+  gap: 4px;
+  background-color: #f1f3ed;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.toggleBtn {
+  background: transparent;
+  color: var(--jm-text);
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.toggleSelected {
+  background-color: #ffffff;
+  color: var(--jm-ink);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Phone Cards Grid */
+.phoneGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.phoneCard {
+  background-color: #ffffff;
+  border-radius: 16px;
+  border: 1px solid #dce2d5;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.phoneCard:hover {
+  box-shadow: 0 12px 30px rgba(18, 36, 32, 0.06);
+  transform: translateY(-2px);
+}
+
+/* Card Visual with Tilt Animation */
+.cardVisual {
+  background-color: #f0f2eb;
+  height: 278px;
+  padding: 42px 14px 35px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.phoneBadge {
+  z-index: 2;
+  background-color: #ffffff;
+  border-radius: 3px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--jm-ink);
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.imageButton {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Tilting Animation on Hover */
+.phoneImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+  transition: transform 0.35s cubic-bezier(0, 0, 0.2, 1);
+  transform-origin: center center;
+}
+
+/* When hovering over the visual area, button, or entire card */
+.cardVisual:hover .phoneImage,
+.imageButton:hover .phoneImage,
+.phoneCard:hover .cardVisual .phoneImage {
+  transform: translateY(-5px) rotate(-3.5deg) scale(1.03);
+}
+
+.colourIndicator {
+  position: absolute;
+  bottom: 15px;
+  left: 17px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: #6a7269;
+  font-weight: 500;
+}
+
+.colourDot {
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  box-shadow: 0 0 0 2px #f0f2eb, 0 0 0 3px #bfc5ba;
+}
+
+/* Card Body */
+.cardBody {
+  padding: 22px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  background-color: #ffffff;
+}
+
+.phoneBrand {
+  color: #787f76;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.phoneName {
+  font-family: var(--jm-font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--jm-ink);
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+}
+
+.phoneStorage {
+  color: #737c70;
+  font-size: 12.5px;
+  min-height: 20px;
+  margin-top: 4px;
+  display: block;
+}
+
+.phonePrice {
+  font-family: var(--jm-font-display);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.8px;
+  color: var(--jm-ink);
+  margin-top: 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.priceUnit {
+  font-family: var(--jm-font-body);
+  font-size: 12px;
+  font-weight: 400;
+  color: #737c70;
+}
+
+.phonePriceDetail {
+  color: #737c70;
+  font-size: 12px;
+  min-height: 34px;
+  margin: 6px 0 18px;
+  line-height: 1.6;
+}
+
+.phonePriceDetail s {
+  color: #929c8e;
+}
+
+.savingsTag {
+  color: #466d26;
+  background-color: #edf4df;
+  border-radius: 3px;
+  margin-left: 6px;
+  padding: 2.5px 6px;
+  font-weight: 700;
+  font-size: 11.5px;
+  display: inline-block;
+}
+
+/* Explore Button */
+.exploreBtn {
+  width: 100%;
+  border: 1.5px solid #d0d7c8;
+  background: transparent;
+  color: var(--jm-ink);
+  padding: 10px 14px;
+  border-radius: var(--jm-radius-btn);
+  font-size: 13.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  transition: all 0.15s ease;
+}
+
+.exploreBtn:hover {
+  background-color: var(--jm-ink);
+  color: #ffffff;
+  border-color: var(--jm-ink);
+}
+
+.buttonArrow {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* Fineprint */
+.sectionFineprint {
+  font-size: 12px;
+  color: #7a8481;
+  line-height: 1.5;
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Responsive */
+@media (max-width: 1160px) {
+  .phoneGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (max-width: 700px) {
+  .title {
+    font-size: 36px;
+  }
+  .desktopBreak {
+    display: none;
+  }
+  .phoneGrid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .shopControls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

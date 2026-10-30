@@ -1,0 +1,227 @@
+.headerWrapper {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  background-color: var(--jm-paper);
+  width: 100%;
+}
+
+/* Announcement Top Bar */
+.announcementBar {
+  background-color: var(--jm-lime);
+  color: var(--jm-ink);
+  font-family: var(--jm-font-body);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px var(--jm-gutter-desktop);
+  border-bottom: 1px solid rgba(20, 36, 32, 0.08);
+}
+
+.announcementInner {
+  max-width: var(--jm-container-max);
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.announcementLeft {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.announcementLink {
+  color: var(--jm-ink);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.announcementLink:hover {
+  text-decoration: underline;
+}
+
+.announcementRight {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* Navbar */
+.navbar {
+  background-color: var(--jm-paper);
+  border-bottom: 1px solid var(--jm-border);
+  position: relative;
+}
+
+.navContainer {
+  max-width: var(--jm-container-max);
+  margin: 0 auto;
+  padding: 16px var(--jm-gutter-desktop);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logoLink {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  outline: none;
+}
+
+.logoImage {
+  height: 32px;
+  width: auto;
+  display: block;
+}
+
+/* Navigation Links */
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.navItem {
+  font-family: var(--jm-font-body);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--jm-text);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s ease;
+  position: relative;
+  padding: 4px 0;
+}
+
+.navItem:hover {
+  color: #000000;
+}
+
+.newBadge {
+  background-color: var(--jm-lime);
+  color: var(--jm-ink);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 1.5px 6px;
+  border-radius: 4px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+/* Right Actions */
+.rightActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.accountBtn {
+  background: transparent;
+  color: var(--jm-text);
+  font-family: var(--jm-font-body);
+  font-size: 14.5px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--jm-radius-btn);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.accountBtn:hover {
+  background-color: var(--jm-secondary);
+  color: var(--jm-ink);
+}
+
+.userIcon {
+  stroke: var(--jm-text);
+}
+
+.menuToggle {
+  display: none;
+  background: transparent;
+  padding: 6px;
+  border-radius: 6px;
+  color: var(--jm-ink);
+}
+
+/* Mobile dropdown */
+.mobileMenu {
+  display: none;
+  background-color: var(--jm-paper);
+  border-bottom: 1px solid var(--jm-border);
+  padding: 16px var(--jm-gutter-mobile);
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mobileNavItem {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--jm-text);
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f0f0ee;
+}
+
+.mobileAccountWrapper {
+  padding-top: 8px;
+}
+
+.mobileAccountBtn {
+  width: 100%;
+  background-color: var(--jm-ink);
+  color: #ffffff;
+  padding: 12px;
+  font-weight: 600;
+  border-radius: var(--jm-radius-btn);
+  font-size: 15px;
+  text-align: center;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 860px) {
+  .announcementBar {
+    padding: 7px var(--jm-gutter-mobile);
+  }
+  .announcementRight {
+    display: none;
+  }
+  .announcementLeft {
+    width: 100%;
+    justify-content: center;
+    font-size: 12.5px;
+  }
+
+  .navContainer {
+    padding: 14px var(--jm-gutter-mobile);
+  }
+
+  .navLinks {
+    display: none;
+  }
+
+  .accountText {
+    display: none;
+  }
+
+  .accountBtn {
+    padding: 6px;
+  }
+
+  .menuToggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobileMenu {
+    display: flex;
+  }
+}

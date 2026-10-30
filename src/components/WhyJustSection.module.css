@@ -1,0 +1,124 @@
+.whySection {
+  width: 100%;
+  padding: 80px 0;
+  background-color: var(--jm-paper);
+}
+
+.container {
+  max-width: var(--jm-container-max);
+  margin: 0 auto;
+  padding: 0 var(--jm-gutter-desktop);
+}
+
+.sectionHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 48px;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--jm-mutedText);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.title {
+  font-family: var(--jm-font-display);
+  font-size: 44px;
+  font-weight: 800;
+  color: var(--jm-ink);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--jm-mutedText);
+  text-align: right;
+}
+
+.whyGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--jm-border);
+}
+
+.articleCard {
+  padding: 44px 36px 36px 0;
+  border-right: 1px solid var(--jm-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.articleCard:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.articleCard:nth-child(2) {
+  padding-left: 36px;
+}
+
+.articleCard:last-child {
+  padding-left: 36px;
+}
+
+.iconWrap {
+  color: var(--jm-ink);
+  margin-bottom: 24px;
+}
+
+.articleNum {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--jm-dotAccent);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.articleTitle {
+  font-family: var(--jm-font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--jm-ink);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+
+.articleDesc {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--jm-mutedText);
+  max-width: 320px;
+}
+
+@media (max-width: 960px) {
+  .whyGrid {
+    grid-template-columns: 1fr;
+    border-top: 1px solid var(--jm-border);
+  }
+
+  .articleCard {
+    border-right: none;
+    border-bottom: 1px solid var(--jm-border);
+    padding: 32px 0;
+  }
+
+  .articleCard:nth-child(2),
+  .articleCard:last-child {
+    padding-left: 0;
+  }
+
+  .subtitle {
+    text-align: left;
+  }
+}
