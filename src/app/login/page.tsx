@@ -278,17 +278,6 @@ function LoginFormContent() {
         </button>
       </form>
 
-      {/* Admin Demo Credentials Hint */}
-      {portal === 'admin' && (
-        <div className={styles.adminHint}>
-          <strong>Default Admin Credentials:</strong>
-          <br />
-          Email: <code>admin@justmobile.com.au</code>
-          <br />
-          Password: <code>AdminJustMobile2026!</code>
-        </div>
-      )}
-
       {/* Footer Links */}
       <div className={styles.footerLinks}>
         {portal === 'customer' ? (
