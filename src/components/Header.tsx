@@ -1,9 +1,11 @@
 'use strict';
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import styles from './Header.module.css';
 
 interface HeaderProps {
@@ -12,7 +14,29 @@ interface HeaderProps {
 }
 
 export default function Header({ onOpenAccount, onNavigateSection }: HeaderProps) {
+  const router = useRouter();
+  const { user, logout } = useAuth();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [signInDropdownOpen, setSignInDropdownOpen] = useState(false);
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const signInRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setAccountMenuOpen(false);
+      }
+      if (signInRef.current && !signInRef.current.contains(e.target as Node)) {
+        setSignInDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -25,6 +49,12 @@ export default function Header({ onOpenAccount, onNavigateSection }: HeaderProps
         el.scrollIntoView({ behavior: 'smooth' });
       }
     }
+  };
+
+  const handleSignOut = () => {
+    logout();
+    setAccountMenuOpen(false);
+    router.push('/');
   };
 
   return (
@@ -99,30 +129,145 @@ export default function Header({ onOpenAccount, onNavigateSection }: HeaderProps
             </a>
           </div>
 
-          {/* Right Action: My Account */}
+          {/* Right Action: Direct Sign In (Customer/Admin) and Sign Up buttons */}
           <div className={styles.rightActions}>
-            <button
-              type="button"
-              className={styles.accountBtn}
-              onClick={onOpenAccount}
-              aria-label="Open my account"
-            >
-              <svg
-                className={styles.userIcon}
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              <span className={styles.accountText}>My account ↗</span>
-            </button>
+            {user ? (
+              <div className={styles.accountDropdownWrapper} ref={dropdownRef}>
+                <button
+                  type="button"
+                  className={`${styles.accountBtn} ${accountMenuOpen ? styles.accountBtnActive : ''}`}
+                  onClick={() => setAccountMenuOpen(!accountMenuOpen)}
+                  aria-expanded={accountMenuOpen}
+                  aria-haspopup="true"
+                  aria-label="Account options"
+                >
+                  <svg
+                    className={styles.userIcon}
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                  <span className={styles.accountText}>
+                    {user.name.split(' ')[0]} ↗
+                  </span>
+                </button>
+
+                {accountMenuOpen && (
+                  <div className={styles.accountMenu} role="menu">
+                    <div className={styles.userCardHeader}>
+                      <p className={styles.userNameLabel}>{user.name}</p>
+                      <p className={styles.userRoleLabel}>
+                        {user.email}
+                      </p>
+                    </div>
+
+                    <div className={styles.menuSection}>
+                      <Link
+                        href="/account"
+                        className={styles.menuItem}
+                        onClick={() => setAccountMenuOpen(false)}
+                      >
+                        <span>Customer Dashboard</span>
+                        <span>→</span>
+                      </Link>
+
+                      {user.role === 'admin' && (
+                        <Link
+                          href="/admin"
+                          className={styles.menuItem}
+                          onClick={() => setAccountMenuOpen(false)}
+                        >
+                          <span>Admin Console</span>
+                          <span>→</span>
+                        </Link>
+                      )}
+                    </div>
+
+                    <div className={styles.menuDivider} />
+
+                    <div className={styles.menuSection}>
+                      <button
+                        type="button"
+                        className={styles.menuItem}
+                        onClick={handleSignOut}
+                      >
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className={styles.authButtonGroup}>
+                {/* Sign In Dropdown Button */}
+                <div className={styles.signInWrapper} ref={signInRef}>
+                  <button
+                    type="button"
+                    className={`${styles.signInBtn} ${signInDropdownOpen ? styles.signInBtnActive : ''}`}
+                    onClick={() => setSignInDropdownOpen(!signInDropdownOpen)}
+                    aria-expanded={signInDropdownOpen}
+                    aria-haspopup="true"
+                    aria-label="Sign in options"
+                  >
+                    <span>Sign In</span>
+                    <svg
+                      className={styles.chevronIcon}
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </button>
+
+                  {signInDropdownOpen && (
+                    <div className={styles.signInDropdown} role="menu">
+                      <Link
+                        href="/login?portal=customer"
+                        className={styles.portalOption}
+                        onClick={() => setSignInDropdownOpen(false)}
+                      >
+                        <div className={styles.portalOptionText}>
+                          <span className={styles.portalTitle}>Customer</span>
+                          <span className={styles.portalDesc}>Personal plans & services</span>
+                        </div>
+                        <span className={styles.arrowIcon}>→</span>
+                      </Link>
+
+                      <Link
+                        href="/login?portal=admin"
+                        className={styles.portalOption}
+                        onClick={() => setSignInDropdownOpen(false)}
+                      >
+                        <div className={styles.portalOptionText}>
+                          <span className={styles.portalTitle}>Admin</span>
+                          <span className={styles.portalDesc}>Operations & console</span>
+                        </div>
+                        <span className={styles.arrowIcon}>→</span>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+
+                {/* Direct Sign Up Button */}
+                <Link href="/signup" className={styles.signUpNavBtn}>
+                  Sign Up
+                </Link>
+              </div>
+            )}
 
             {/* Mobile Hamburger Button */}
             <button
@@ -187,16 +332,70 @@ export default function Header({ onOpenAccount, onNavigateSection }: HeaderProps
               Help & Support
             </a>
             <div className={styles.mobileAccountWrapper}>
-              <button
-                type="button"
-                className={styles.mobileAccountBtn}
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  if (onOpenAccount) onOpenAccount();
-                }}
-              >
-                <span>My account ↗</span>
-              </button>
+              {user ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <Link
+                    href="/account"
+                    className={styles.mobileAccountBtn}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span>My Account ({user.name.split(' ')[0]})</span>
+                  </Link>
+                  {user.role === 'admin' && (
+                    <Link
+                      href="/admin"
+                      className={styles.mobileAccountBtn}
+                      style={{ background: '#253e34', color: '#D5F879' }}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span>Admin Console</span>
+                    </Link>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className={styles.mobileAccountBtn}
+                    style={{ background: '#f0f0ee', color: '#142420' }}
+                  >
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 800, color: '#7d8f79', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '0 4px' }}>
+                    Sign In
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <Link
+                      href="/login?portal=customer"
+                      className={styles.mobileAccountBtn}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span>Customer</span>
+                    </Link>
+                    <Link
+                      href="/login?portal=admin"
+                      className={styles.mobileAccountBtn}
+                      style={{ background: '#253e34', color: '#D5F879' }}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span>Admin</span>
+                    </Link>
+                  </div>
+
+                  <div style={{ fontSize: '11px', fontWeight: 800, color: '#7d8f79', textTransform: 'uppercase', letterSpacing: '0.8px', padding: '6px 4px 0' }}>
+                    Sign Up
+                  </div>
+                  <Link
+                    href="/signup"
+                    className={styles.mobileAccountBtn}
+                    style={{ background: '#142420', color: '#ffffff' }}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <span>Sign Up (Create Account)</span>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}

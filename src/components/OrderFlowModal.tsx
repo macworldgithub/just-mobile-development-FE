@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './OrderFlowModal.module.css';
 import { Handset, MobilePlan, calculateRepayments } from '@/data/catalogue';
 
@@ -22,8 +23,9 @@ interface OrderFlowModalProps {
 }
 
 export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhones }: OrderFlowModalProps) {
+  const router = useRouter();
   const [step, setStep] = useState<number>(1);
-  const [numberType, setNumberType] = useState<'new' | 'port'>('port');
+  const [keepExistingNumber, setKeepExistingNumber] = useState<boolean>(true);
   const [portNumber, setPortNumber] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
@@ -38,6 +40,27 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
   // Order state simulation
   const [orderId, setOrderId] = useState('');
   const [currentOrderState, setCurrentOrderState] = useState<string>('draft');
+
+  const handleProceedToSignup = () => {
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.setItem('justmobile_selected_order', JSON.stringify({
+          planName: config?.plan?.name || '',
+          planTier: config?.plan?.tier || '',
+          pricePerMonth: config?.plan?.pricePerMonth || 0,
+          keepExistingNumber: keepExistingNumber,
+          handsetName: config?.handset?.name || null,
+        }));
+      } catch {
+        // Storage fallback
+      }
+    }
+    onClose();
+    const queryParams = new URLSearchParams();
+    if (config?.plan?.name) queryParams.set('plan', config.plan.name);
+    queryParams.set('keepNumber', String(keepExistingNumber));
+    router.push(`/signup?${queryParams.toString()}`);
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -93,7 +116,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                 Your {config.plan?.name ? config.plan.name.toLowerCase() : 'plan'} plan.
               </h2>
               <p className={styles.planSubtitle}>
-                A clear look at your proposed choice
+                A clear look at your choice
               </p>
             </div>
             <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
@@ -149,11 +172,11 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                   <div className={styles.numberOptionsGrid}>
                     <button
                       type="button"
-                      className={`${styles.numberChoiceCard} ${numberType === 'port' ? styles.numberChoiceActive : ''}`}
-                      onClick={() => setNumberType('port')}
+                      className={`${styles.numberChoiceCard} ${keepExistingNumber ? styles.numberChoiceActive : ''}`}
+                      onClick={() => setKeepExistingNumber(true)}
                     >
                       <span className={styles.numberChoiceLabel}>Keep my number</span>
-                      {numberType === 'port' && (
+                      {keepExistingNumber && (
                         <span className={styles.checkIcon}>
                           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                             <path d="M4 10.5L8 14.5L16 6" stroke="#142420" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -164,11 +187,11 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
 
                     <button
                       type="button"
-                      className={`${styles.numberChoiceCard} ${numberType === 'new' ? styles.numberChoiceActive : ''}`}
-                      onClick={() => setNumberType('new')}
+                      className={`${styles.numberChoiceCard} ${!keepExistingNumber ? styles.numberChoiceActive : ''}`}
+                      onClick={() => setKeepExistingNumber(false)}
                     >
                       <span className={styles.numberChoiceLabel}>Get a new number</span>
-                      {numberType === 'new' && (
+                      {!keepExistingNumber && (
                         <span className={styles.checkIcon}>
                           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
                             <path d="M4 10.5L8 14.5L16 6" stroke="#142420" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -179,35 +202,22 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                   </div>
 
                   <p className={styles.numberHelperText}>
-                    {numberType === 'port'
+                    {keepExistingNumber
                       ? 'When switching is available, keep your current service active until the number transfer completes. Account and identity checks will be required.'
                       : 'When activation is available, a new Australian mobile number can be allocated to your service.'}
                   </p>
                 </div>
 
-                {/* Info Notice Box */}
-                <div className={styles.infoNoticeBox}>
-                  <div className={styles.noticeIconWrap}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3d4a3b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="12" y1="16" x2="12" y2="12" />
-                      <line x1="12" y1="8" x2="12.01" y2="8" />
-                    </svg>
-                  </div>
-                  <p className={styles.noticeText}>
-                    You're exploring a proposed plan. No service has been activated, no number transferred and no payment taken.
-                  </p>
-                </div>
-
-                {/* Done exploring button */}
+                {/* Proceed to Sign Up button */}
                 <button
                   type="button"
                   className={styles.doneExploringBtn}
-                  onClick={onClose}
+                  onClick={handleProceedToSignup}
                 >
-                  <span>Done exploring</span>
-                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                    <path d="M4 10.5L8 14.5L16 6" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <span>Proceed to Sign Up</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
                   </svg>
                 </button>
 
@@ -223,16 +233,6 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                   >
                     <span>Explore a phone + plan instead</span>
                     <span className={styles.arrowIcon}>↗</span>
-                  </button>
-                </div>
-
-                <div className={styles.continueLinkWrap}>
-                  <button
-                    type="button"
-                    className={styles.continueToOrderBtn}
-                    onClick={() => setStep(2)}
-                  >
-                    Continue to details →
                   </button>
                 </div>
               </>
@@ -295,9 +295,9 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                 <button
                   type="button"
                   className={styles.primaryNextBtn}
-                  onClick={() => setStep(2)}
+                  onClick={handleProceedToSignup}
                 >
-                  <span>Continue to details</span>
+                  <span>Proceed to Sign Up</span>
                   <span>→</span>
                 </button>
               </>
@@ -314,21 +314,21 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
               <div className={styles.numberToggleGroup}>
                 <button
                   type="button"
-                  className={`${styles.numberToggle} ${numberType === 'new' ? styles.toggleSelected : ''}`}
-                  onClick={() => setNumberType('new')}
+                  className={`${styles.numberToggle} ${!keepExistingNumber ? styles.toggleSelected : ''}`}
+                  onClick={() => setKeepExistingNumber(false)}
                 >
                   Get a new 04XX number
                 </button>
                 <button
                   type="button"
-                  className={`${styles.numberToggle} ${numberType === 'port' ? styles.toggleSelected : ''}`}
-                  onClick={() => setNumberType('port')}
+                  className={`${styles.numberToggle} ${keepExistingNumber ? styles.toggleSelected : ''}`}
+                  onClick={() => setKeepExistingNumber(true)}
                 >
                   Keep my existing number
                 </button>
               </div>
 
-              {numberType === 'new' ? (
+              {!keepExistingNumber ? (
                 <div className={styles.newNumberNotice}>
                   <span>Reserved Australian Mobile: </span>
                   <strong className={styles.highlightMsisdn}>0488 912 340</strong>
@@ -336,7 +336,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
               ) : (
                 <div className={styles.portBox}>
                   <span className={styles.acmaNote}>
-                    🔒 ACMA Mandatory Verification: An SMS code will be sent to confirm your right of use.
+                    ACMA Mandatory Verification: An SMS code will be sent to confirm your right of use.
                   </span>
                   <div className={styles.portInputRow}>
                     <input

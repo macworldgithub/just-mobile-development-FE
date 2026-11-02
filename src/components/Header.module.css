@@ -115,7 +115,136 @@
 .rightActions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+}
+
+.authButtonGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.signInWrapper {
+  position: relative;
+}
+
+.signInBtn {
+  background: transparent;
+  color: var(--jm-ink);
+  font-family: var(--jm-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--jm-border);
+  border-radius: var(--jm-radius-btn);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.signInBtn:hover,
+.signInBtnActive {
+  background-color: var(--jm-secondary);
+  border-color: #cbd5c8;
+}
+
+.chevronIcon {
+  stroke: var(--jm-mutedText);
+  transition: transform 0.15s ease;
+}
+
+.signInBtnActive .chevronIcon {
+  transform: rotate(180deg);
+}
+
+.signUpNavBtn {
+  background-color: var(--jm-ink);
+  color: #ffffff;
+  font-family: var(--jm-font-body);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 18px;
+  border-radius: var(--jm-radius-btn);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 2px 6px rgba(20, 36, 32, 0.08);
+}
+
+.signUpNavBtn:hover {
+  background-color: #243a2e;
+  transform: translateY(-1px);
+}
+
+.signInDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #ffffff;
+  border: 1.5px solid #dce4d8;
+  border-radius: 14px;
+  box-shadow: 0 12px 36px rgba(20, 36, 32, 0.12);
+  width: 250px;
+  padding: 6px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  animation: fadeInMenu 0.15s ease-out;
+}
+
+.portalOption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--jm-ink);
+  transition: background-color 0.12s ease;
+}
+
+.portalOption:hover {
+  background-color: #f3f7ee;
+}
+
+.portalOptionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+
+.portalTitle {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--jm-ink);
+}
+
+.portalDesc {
+  font-size: 11.5px;
+  color: #697866;
+}
+
+.arrowIcon {
+  font-size: 14px;
+  color: #789937;
+  font-weight: 700;
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+  margin-left: 8px;
+}
+
+.portalOption:hover .arrowIcon {
+  transform: translateX(3px);
+}
+
+.accountDropdownWrapper {
+  position: relative;
 }
 
 .accountBtn {
@@ -128,13 +257,97 @@
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
+  border: 1px solid transparent;
   border-radius: var(--jm-radius-btn);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.accountBtn:hover {
+.accountBtn:hover,
+.accountBtnActive {
   background-color: var(--jm-secondary);
   color: var(--jm-ink);
+  border-color: #dce4d8;
+}
+
+.accountMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #ffffff;
+  border: 1.5px solid #dce4d8;
+  border-radius: 14px;
+  box-shadow: 0 12px 36px rgba(20, 36, 32, 0.12);
+  width: 250px;
+  padding: 8px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  animation: fadeInMenu 0.15s ease-out;
+}
+
+@keyframes fadeInMenu {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.menuSection {
+  padding: 4px;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  color: var(--jm-ink);
+  border-radius: 8px;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.menuItem:hover {
+  background-color: #f3f7ee;
+  color: #142420;
+}
+
+.menuDivider {
+  height: 1px;
+  background: #eef2eb;
+  margin: 6px 0;
+}
+
+.userCardHeader {
+  padding: 10px 12px;
+  background: #f7faf3;
+  border-radius: 10px;
+  margin-bottom: 6px;
+}
+
+.userNameLabel {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--jm-ink);
+  margin: 0;
+}
+
+.userRoleLabel {
+  font-size: 11.5px;
+  color: #556253;
+  margin-top: 2px;
 }
 
 .userIcon {

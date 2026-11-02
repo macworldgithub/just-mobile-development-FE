@@ -1,0 +1,226 @@
+.pageContainer {
+  min-height: 100vh;
+  background-color: #f7faf3;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--jm-font-body);
+  color: var(--jm-ink);
+}
+
+.topBar {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8df;
+  padding: 16px 32px;
+}
+
+.topBarInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.userMenu {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--jm-ink);
+}
+
+.logoutBtn {
+  background: #f1f4ee;
+  border: 1px solid #dce4d8;
+  color: #556253;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.logoutBtn:hover {
+  background: #e2e8dc;
+  color: var(--jm-ink);
+}
+
+.mainContent {
+  max-width: 1200px;
+  width: 100%;
+  margin: 36px auto;
+  padding: 0 24px;
+  flex: 1;
+}
+
+.headerBanner {
+  background: var(--jm-ink);
+  color: #ffffff;
+  border-radius: 18px;
+  padding: 32px 36px;
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.greetingTitle {
+  font-family: var(--jm-font-display);
+  font-size: 28px;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.5px;
+}
+
+.greetingSub {
+  color: #a8b8a5;
+  font-size: 14px;
+  margin: 0;
+}
+
+.accountBadge {
+  background: #243a2e;
+  color: #D5F879;
+  border: 1px solid #3c5847;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #dce4d8;
+  border-radius: 16px;
+  padding: 26px 28px;
+  box-shadow: 0 4px 18px rgba(20, 36, 32, 0.04);
+  margin-bottom: 24px;
+}
+
+.cardTitle {
+  font-family: var(--jm-font-display);
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 16px 0;
+  color: var(--jm-ink);
+}
+
+.serviceRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eef2ec;
+  margin-bottom: 18px;
+}
+
+.mobileNum {
+  font-size: 22px;
+  font-weight: 800;
+  font-family: var(--jm-font-display);
+  letter-spacing: 0.5px;
+}
+
+.statusActive {
+  background: #eef7e4;
+  color: #49721d;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.meterContainer {
+  margin: 20px 0;
+}
+
+.meterInfo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13.5px;
+  margin-bottom: 8px;
+  color: #4c5a49;
+}
+
+.progressBar {
+  background: #edf2eb;
+  border-radius: 8px;
+  height: 12px;
+  overflow: hidden;
+}
+
+.progressFill {
+  background: #789937;
+  height: 100%;
+  border-radius: 8px;
+}
+
+.bankedNotice {
+  background: #f7faf3;
+  border: 1px solid #d8e5d3;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #4c5a49;
+  margin-top: 14px;
+}
+
+.btnPrimary {
+  background-color: var(--jm-ink);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: background-color 0.15s ease;
+}
+
+.btnPrimary:hover {
+  background-color: #243a2e;
+}
+
+.detailsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detailItem {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13.5px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f4ee;
+}
+
+.detailLabel {
+  color: #697866;
+}
+
+.detailValue {
+  font-weight: 600;
+  color: var(--jm-ink);
+}
