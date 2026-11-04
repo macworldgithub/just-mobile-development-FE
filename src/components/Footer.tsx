@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import styles from './Footer.module.css';
 import CisModal from './CisModal';
 
@@ -97,28 +98,15 @@ export default function Footer({ onNavigateSection, onOpenCis }: FooterProps) {
               >
                 Critical information (CIS)
               </button>
-              <button
-                type="button"
-                className={styles.dialogTriggerBtn}
-                onClick={() =>
-                  alert(
-                    'Terms & privacy policy conform to Australian Privacy Principles (APP 11) and ACMA consumer protection guidelines.'
-                  )
-                }
-              >
-                Terms &amp; privacy
-              </button>
-              <button
-                type="button"
-                className={styles.dialogTriggerBtn}
-                onClick={() =>
-                  alert(
-                    'Financial Hardship policy conforms to Telecommunications Consumer Protections Code (C628).'
-                  )
-                }
-              >
+              <Link href="/terms">
+                Terms of service
+              </Link>
+              <Link href="/privacy">
+                Privacy policy
+              </Link>
+              <Link href="/hardship">
                 Financial assistance
-              </button>
+              </Link>
             </div>
           </div>
         </div>
