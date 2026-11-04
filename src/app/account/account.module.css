@@ -224,3 +224,73 @@
   font-weight: 600;
   color: var(--jm-ink);
 }
+
+/* eSIM Modal Styles */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(20, 36, 32, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modalContent {
+  background: #ffffff;
+  border-radius: 20px;
+  max-width: 480px;
+  width: 100%;
+  padding: 28px 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+  position: relative;
+  text-align: center;
+}
+
+.modalCloseBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: #f1f4ee;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  color: #142420;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qrContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.qrImageWrap {
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #d8e5d3;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  margin-bottom: 14px;
+}
+
+.lpaCodeBox {
+  background: #f7faf3;
+  border: 1px solid #d8e5d3;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-family: monospace;
+  color: #142420;
+  word-break: break-all;
+  margin-bottom: 12px;
+  text-align: left;
+}
