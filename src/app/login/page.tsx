@@ -13,16 +13,14 @@ function LoginFormContent() {
   const searchParams = useSearchParams();
   const initialPortal = searchParams.get('portal') === 'admin' ? 'admin' : 'customer';
 
-  const { login, sendVerification, user } = useAuth();
+  const { login, user } = useAuth();
 
   const [portal, setPortal] = useState<'customer' | 'admin'>(initialPortal);
-  const [authMode, setAuthMode] = useState<'password' | 'code'>('password');
 
   // Form states
+  const [custNo, setCustNo] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [code, setCode] = useState('');
-  const [codeSent, setCodeSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -51,32 +49,8 @@ function LoginFormContent() {
     setPortal(newPortal);
     setErrorMsg('');
     setSuccessMsg('');
-    setCodeSent(false);
     if (newPortal === 'admin') {
-      setAuthMode('password');
       if (!email) setEmail('admin@justmobile.com.au');
-    }
-  };
-
-  const handleSendCode = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) {
-      setErrorMsg('Please enter your email address first.');
-      return;
-    }
-
-    setLoading(true);
-    setErrorMsg('');
-    setSuccessMsg('');
-
-    const res = await sendVerification(email, 'login');
-    setLoading(false);
-
-    if (res.success) {
-      setCodeSent(true);
-      setSuccessMsg(res.message);
-    } else {
-      setErrorMsg(res.message);
     }
   };
 
@@ -84,21 +58,33 @@ function LoginFormContent() {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
+
+    if (portal === 'customer') {
+      if (!custNo.trim()) {
+        setErrorMsg('Please enter your Customer Number.');
+        return;
+      }
+      if (!password) {
+        setErrorMsg('Please enter your password.');
+        return;
+      }
+    } else {
+      if (!email.trim()) {
+        setErrorMsg('Please enter your administrator email.');
+        return;
+      }
+      if (!password) {
+        setErrorMsg('Please enter your password.');
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
-      const payload: any = {
-        email,
-        portal,
-      };
-
-      if (portal === 'admin') {
-        payload.password = password;
-      } else if (authMode === 'password') {
-        payload.password = password;
-      } else {
-        payload.code = code;
-      }
+      const payload = portal === 'customer'
+        ? { custNo: custNo.trim(), password, portal: 'customer' as const }
+        : { email: email.trim(), password, portal: 'admin' as const };
 
       const res = await login(payload);
       setLoading(false);
@@ -153,7 +139,7 @@ function LoginFormContent() {
         <p className={styles.subtitle}>
           {portal === 'admin'
             ? 'Sign in to access management, subscriber telemetry, and network operations.'
-            : 'Access your mobile services, eSIM profile, and data banking.'}
+            : 'Sign in with your Customer Number and password.'}
         </p>
       </div>
 
@@ -161,120 +147,71 @@ function LoginFormContent() {
       {errorMsg && <div className={styles.errorBanner}>{errorMsg}</div>}
       {successMsg && <div className={styles.successBanner}>{successMsg}</div>}
 
-      {/* Customer Auth Mode Tabs (Password vs Code) */}
-      {portal === 'customer' && (
-        <div className={styles.modeTabs}>
-          <button
-            type="button"
-            className={`${styles.modeTab} ${authMode === 'password' ? styles.modeTabActive : ''}`}
-            onClick={() => {
-              setAuthMode('password');
-              setErrorMsg('');
-            }}
-          >
-            Password Sign In
-          </button>
-          <button
-            type="button"
-            className={`${styles.modeTab} ${authMode === 'code' ? styles.modeTabActive : ''}`}
-            onClick={() => {
-              setAuthMode('code');
-              setErrorMsg('');
-            }}
-          >
-            One-Time Email Code
-          </button>
-        </div>
-      )}
-
-      {/* Main Login Form */}
+      {/* Login Form */}
       <form onSubmit={handleSubmit} className={styles.form}>
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="emailInput">
-            {portal === 'admin' ? 'Admin Email Address' : 'Email Address'}
-          </label>
-          <input
-            id="emailInput"
-            type="email"
-            required
-            placeholder={portal === 'admin' ? 'admin@justmobile.com.au' : 'you@example.com.au'}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className={styles.input}
-          />
-        </div>
-
-        {/* Password field when password mode or admin */}
-        {(portal === 'admin' || authMode === 'password') && (
+        {/* Customer Portal: Customer ID input */}
+        {portal === 'customer' ? (
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="passwordInput">
-              Password
+            <label className={styles.label} htmlFor="custNoInput">
+              Customer Number (Cust No)
             </label>
             <input
-              id="passwordInput"
-              type="password"
+              id="custNoInput"
+              type="text"
               required
-              placeholder="••••••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              autoFocus
+              placeholder="e.g. CUST697855"
+              value={custNo}
+              onChange={(e) => setCustNo(e.target.value)}
+              className={styles.input}
+            />
+          </div>
+        ) : (
+          /* Admin Portal: Email Input */
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="emailInput">
+              Admin Email Address
+            </label>
+            <input
+              id="emailInput"
+              type="email"
+              required
+              placeholder="admin@justmobile.com.au"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className={styles.input}
             />
           </div>
         )}
 
-        {/* Email verification code flow when in 'code' mode */}
-        {portal === 'customer' && authMode === 'code' && (
-          <>
-            {!codeSent ? (
-              <button
-                type="button"
-                className={styles.secondaryBtn}
-                disabled={loading || !email}
-                onClick={handleSendCode}
-              >
-                {loading ? 'Sending code...' : 'Send Verification Code via Email'}
-              </button>
-            ) : (
-              <div className={styles.field}>
-                <label className={styles.label} htmlFor="codeInput">
-                  6-Digit Verification Code
-                </label>
-                <input
-                  id="codeInput"
-                  type="text"
-                  maxLength={6}
-                  required
-                  placeholder="123456"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className={`${styles.input} ${styles.codeInput}`}
-                />
-                <button
-                  type="button"
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: '#789937',
-                    fontSize: '12.5px',
-                    cursor: 'pointer',
-                    textAlign: 'right',
-                    padding: '4px 0',
-                  }}
-                  onClick={handleSendCode}
-                >
-                  Resend code
-                </button>
-              </div>
-            )}
-          </>
-        )}
+        {/* Password field */}
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="passwordInput">
+            Password
+          </label>
+          <input
+            id="passwordInput"
+            type="password"
+            required
+            placeholder="••••••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={styles.input}
+          />
+        </div>
 
         <button
           type="submit"
-          disabled={loading || (portal === 'customer' && authMode === 'code' && !codeSent)}
+          disabled={loading}
           className={styles.submitBtn}
         >
-          <span>{loading ? 'Authenticating...' : portal === 'admin' ? 'Access Admin Console →' : 'Sign In to Account →'}</span>
+          <span>
+            {loading
+              ? 'Authenticating...'
+              : portal === 'admin'
+              ? 'Access Admin Console →'
+              : 'Sign In to Account →'}
+          </span>
         </button>
       </form>
 
@@ -282,9 +219,9 @@ function LoginFormContent() {
       <div className={styles.footerLinks}>
         {portal === 'customer' ? (
           <div>
-            Don't have an account yet?{' '}
+            Don&apos;t have an account yet?{' '}
             <Link href="/signup" className={styles.textLink}>
-              Sign up with email verification
+              Sign up
             </Link>
           </div>
         ) : (

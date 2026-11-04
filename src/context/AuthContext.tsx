@@ -6,17 +6,45 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 export interface User {
   id: string;
   name: string;
+  firstName?: string;
+  surname?: string;
   email: string;
   phone?: string;
+  custNo?: string;
   role: 'customer' | 'admin';
+}
+
+export interface SignupPayload {
+  firstName: string;
+  surname: string;
+  email: string;
+  password?: string;
+  phone?: string;
+  dob?: string;
+  address?: string;
+  suburb?: string;
+  state?: string;
+  postcode?: string;
+  custType?: 'R' | 'B';
+  company?: string;
+  abn?: string;
+  code: string;
+  name?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (data: { email: string; password?: string; code?: string; portal?: 'customer' | 'admin' }) => Promise<{ success: boolean; message: string; user?: User }>;
-  signup: (data: { name: string; email: string; password?: string; phone?: string; code: string }) => Promise<{ success: boolean; message: string; user?: User }>;
+  login: (data: {
+    email?: string;
+    custNo?: string;
+    identifier?: string;
+    password?: string;
+    code?: string;
+    portal?: 'customer' | 'admin';
+  }) => Promise<{ success: boolean; message: string; user?: User }>;
+  signup: (data: SignupPayload) => Promise<{ success: boolean; message: string; user?: User }>;
   sendVerification: (email: string, type?: 'signup' | 'login') => Promise<{ success: boolean; message: string }>;
   logout: () => void;
 }
@@ -63,18 +91,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (data: {
-    name: string;
-    email: string;
-    password?: string;
-    phone?: string;
-    code: string;
-  }) => {
+  const signup = async (data: SignupPayload) => {
     try {
+      const payload = {
+        ...data,
+        name: data.name || `${data.firstName} ${data.surname}`.trim(),
+      };
       const res = await fetch(`${API_URL}/api/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
       const result = await res.json();
       if (!res.ok) {
@@ -93,7 +119,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (data: {
-    email: string;
+    email?: string;
+    custNo?: string;
+    identifier?: string;
     password?: string;
     code?: string;
     portal?: 'customer' | 'admin';

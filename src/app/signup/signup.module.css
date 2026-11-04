@@ -45,9 +45,106 @@
   border: 1px solid #dce4d8;
   border-radius: 20px;
   width: 100%;
-  max-width: 480px;
+  max-width: 560px;
   padding: 36px 32px;
   box-shadow: 0 8px 30px rgba(20, 36, 32, 0.06);
+}
+
+.typeToggle {
+  display: flex;
+  background-color: #f1f5ee;
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.typeBtn {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: #586955;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.typeBtnActive {
+  background: #ffffff;
+  color: var(--jm-ink);
+  box-shadow: 0 2px 8px rgba(20, 36, 32, 0.08);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.rowThree {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 600px) {
+  .row, .rowThree {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #dce4d8;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: var(--jm-font-body);
+  color: var(--jm-ink);
+  background: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.select:focus {
+  outline: none;
+  border-color: #789937;
+  box-shadow: 0 0 0 3px rgba(120, 153, 55, 0.15);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: -4px;
+  margin-bottom: 2px;
+  font-size: 13px;
+  color: #4b5848;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkboxRow input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #142420;
+  cursor: pointer;
+}
+
+.sectionDivider {
+  height: 1px;
+  background-color: #edf2ea;
+  margin: 6px 0;
+}
+
+.fieldNote {
+  font-size: 11.5px;
+  color: #738370;
+  margin-top: 2px;
 }
 
 .badge {
@@ -309,4 +406,121 @@
   font-size: 12px;
   font-weight: 500;
   color: #697866;
+}
+
+
+/* Extended Telco Customer Form Styles */
+.sectionDivider {
+  margin: 12px 0 4px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid #e8efe5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionHeading {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #72826f;
+  margin: 0;
+}
+
+.typeToggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #f0f4ec;
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.typeBtn {
+  background: transparent;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #556253;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.typeBtnActive {
+  background: #ffffff;
+  color: var(--jm-ink);
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(20, 36, 32, 0.08);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.rowThree {
+  display: grid;
+  grid-template-columns: 1.8fr 1.2fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 580px) {
+  .row, .rowThree {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #dce4d8;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: var(--jm-font-body);
+  color: var(--jm-ink);
+  background: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.select:focus {
+  outline: none;
+  border-color: #789937;
+  box-shadow: 0 0 0 3px rgba(120, 153, 55, 0.15);
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: #3b4938;
+  cursor: pointer;
+  user-select: none;
+  margin-top: 4px;
+}
+
+.checkboxRow input[type="checkbox"] {
+  margin-top: 2px;
+  accent-color: var(--jm-ink);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.fieldNote {
+  font-size: 11.5px;
+  color: #7a8877;
+  line-height: 1.4;
+  margin-top: 2px;
 }
