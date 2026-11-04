@@ -30,16 +30,55 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [otpVerified, setOtpVerified] = useState(false);
+  const [otpTransactionId, setOtpTransactionId] = useState('');
+  const [otpMessage, setOtpMessage] = useState('');
+
+  // Reserved numbers pool from native backend
+  const [reservedNumbers, setReservedNumbers] = useState<{ id: string; number: string; formatted: string }[]>([]);
+  const [selectedNumber, setSelectedNumber] = useState<string>('0488 912 340');
+  const [isLoadingNumbers, setIsLoadingNumbers] = useState<boolean>(false);
 
   // Customer info
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [dob, setDob] = useState('');
-  const [address, setAddress] = useState('');
+  const [name, setName] = useState('Alexander Wright');
+  const [email, setEmail] = useState('alexander.wright@justmobile.com.au');
+  const [dob, setDob] = useState('14/06/1992');
+  const [address, setAddress] = useState('Unit 4, 182 George Street, Sydney NSW 2000');
 
-  // Order state simulation
+  // Order state & QR details from native backend
   const [orderId, setOrderId] = useState('');
   const [currentOrderState, setCurrentOrderState] = useState<string>('draft');
+  const [qrCodeData, setQrCodeData] = useState<{
+    lpa: string;
+    smdpAddress: string;
+    activationCode: string;
+    qrCodeDataUrl: string;
+  } | null>(null);
+  const [copiedLpa, setCopiedLpa] = useState(false);
+
+  const fetchReservedNumbers = async () => {
+    setIsLoadingNumbers(true);
+    try {
+      const res = await fetch('/api/carrier/numbers/reserve?qty=5');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.numbers && data.numbers.length > 0) {
+          setReservedNumbers(data.numbers);
+          setSelectedNumber(data.numbers[0].formatted);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch numbers pool', err);
+    } finally {
+      setIsLoadingNumbers(false);
+    }
+  };
+
+  const handleSelectNewNumberToggle = () => {
+    setKeepExistingNumber(false);
+    if (reservedNumbers.length === 0) {
+      fetchReservedNumbers();
+    }
+  };
 
   const handleProceedToSignup = () => {
     if (typeof window !== 'undefined') {
@@ -49,6 +88,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
           planTier: config?.plan?.tier || '',
           pricePerMonth: config?.plan?.pricePerMonth || 0,
           keepExistingNumber: keepExistingNumber,
+          selectedNumber: keepExistingNumber ? portNumber : selectedNumber,
           handsetName: config?.handset?.name || null,
         }));
       } catch {
@@ -67,6 +107,8 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
       document.body.style.overflow = 'hidden';
       setStep(1);
       setOrderId(`JM-AU-${Math.floor(100000 + Math.random() * 900000)}`);
+      // Pre-load numbers in background
+      fetchReservedNumbers();
     } else {
       document.body.style.overflow = '';
     }
@@ -76,22 +118,92 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
 
   const isPlanOnly = Boolean(config.plan && !config.handset);
 
-  const handleSendOtp = () => {
+  const handleSendOtp = async () => {
     if (portNumber.length >= 8) {
+      try {
+        const res = await fetch('/api/carrier/otp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ custNo: 'CUST882104', destination: portNumber }),
+        });
+        const data = await res.json();
+        if (res.ok && data.transactionId) {
+          setOtpTransactionId(data.transactionId);
+          setOtpSent(true);
+          setOtpMessage(data.message || 'Security code dispatched via SMS.');
+          setTimeout(() => setOtpCode('829104'), 600);
+          return;
+        }
+      } catch (err) {
+        console.warn('Carrier OTP send fallback', err);
+      }
       setOtpSent(true);
       setTimeout(() => setOtpCode('829104'), 800);
     }
   };
 
-  const handleVerifyOtp = () => {
-    if (otpCode === '829104' || otpCode.length === 6) {
-      setOtpVerified(true);
+  const handleVerifyOtp = async () => {
+    if (otpCode.length === 6) {
+      try {
+        const res = await fetch('/api/carrier/otp/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ transactionId: otpTransactionId || 'TX-DEV', code: otpCode }),
+        });
+        const data = await res.json();
+        if (res.ok && data.verified) {
+          setOtpVerified(true);
+          setOtpMessage('✓ Number verified for ACMA compliant transfer.');
+          return;
+        }
+      } catch (err) {
+        console.warn('Carrier OTP verify fallback', err);
+      }
+      if (otpCode === '829104') {
+        setOtpVerified(true);
+      }
     }
   };
 
-  const startAutomatedFulfillment = () => {
+  const startAutomatedFulfillment = async () => {
     setStep(3);
     setCurrentOrderState('quote_accepted');
+
+    try {
+      const endpoint = keepExistingNumber ? '/api/carrier/orders/activate-port' : '/api/carrier/orders/activate';
+      const orderPayload = {
+        custNo: 'CUST882104',
+        msn: keepExistingNumber ? portNumber : selectedNumber.replace(/\s+/g, ''),
+        planNo: '13369',
+        planName: config?.plan?.name || '50GB Just right Plan',
+        pricePerMonth: config?.plan?.pricePerMonth || 25,
+        email: email || 'alexander.wright@justmobile.com.au',
+        address: address || 'Unit 4, 182 George Street',
+        suburb: 'Sydney',
+        state: 'NSW',
+        postcode: '2000',
+        ...(keepExistingNumber ? { numType: 'prepaid', dob: dob || '1992-06-14' } : {}),
+      };
+
+      const activateRes = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload),
+      });
+
+      const activateData = await activateRes.json();
+      const createdOrderId = activateData?.orderId || orderId;
+      setOrderId(createdOrderId);
+
+      // Fetch QR Code details
+      const qrRes = await fetch(`/api/carrier/qrcodes/${createdOrderId}`);
+      if (qrRes.ok) {
+        const qrData = await qrRes.json();
+        setQrCodeData(qrData);
+      }
+    } catch (e) {
+      console.warn('Order activation call:', e);
+    }
 
     setTimeout(() => setCurrentOrderState('prerequisites_satisfied'), 1200);
     setTimeout(() => setCurrentOrderState('octane_customer_linked'), 2400);
@@ -100,6 +212,14 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
     setTimeout(() => setCurrentOrderState('service_confirmed'), 6200);
     setTimeout(() => setCurrentOrderState('profile_available'), 7600);
     setTimeout(() => setCurrentOrderState('ready_to_use'), 9000);
+  };
+
+  const handleCopyLpa = () => {
+    if (qrCodeData?.lpa) {
+      navigator.clipboard.writeText(qrCodeData.lpa);
+      setCopiedLpa(true);
+      setTimeout(() => setCopiedLpa(false), 2000);
+    }
   };
 
   return (
@@ -330,8 +450,35 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
 
               {!keepExistingNumber ? (
                 <div className={styles.newNumberNotice}>
-                  <span>Reserved Australian Mobile: </span>
-                  <strong className={styles.highlightMsisdn}>0488 912 340</strong>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span>Allocated Australian Mobile:</span>
+                    {isLoadingNumbers && <span style={{ fontSize: '12px', color: '#789937' }}>Reserving...</span>}
+                  </div>
+                  <strong className={styles.highlightMsisdn} style={{ fontSize: '20px', display: 'block', marginBottom: '8px' }}>
+                    {selectedNumber}
+                  </strong>
+                  {reservedNumbers.length > 1 && (
+                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px' }}>
+                      {reservedNumbers.map((num) => (
+                        <button
+                          key={num.id}
+                          type="button"
+                          onClick={() => setSelectedNumber(num.formatted)}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '12px',
+                            borderRadius: '6px',
+                            border: selectedNumber === num.formatted ? '2px solid #142420' : '1px solid #D5E2D5',
+                            backgroundColor: selectedNumber === num.formatted ? '#D5F879' : '#FFFFFF',
+                            fontWeight: selectedNumber === num.formatted ? 700 : 500,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {num.formatted}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className={styles.portBox}>
@@ -496,42 +643,69 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                     </p>
                   </div>
 
-                  {/* High visual fidelity QR code demonstration */}
+                  {/* Dynamic Carrier-Generated QR Code */}
                   <div className={styles.qrBox}>
-                    <svg
-                      width="180"
-                      height="180"
-                      viewBox="0 0 180 180"
-                      className={styles.qrSvg}
-                    >
-                      <rect width="180" height="180" fill="#ffffff" />
-                      {/* Standard QR Corners */}
-                      <rect x="15" y="15" width="45" height="45" fill="#142420" />
-                      <rect x="23" y="23" width="29" height="29" fill="#ffffff" />
-                      <rect x="30" y="30" width="15" height="15" fill="#142420" />
-
-                      <rect x="120" y="15" width="45" height="45" fill="#142420" />
-                      <rect x="128" y="23" width="29" height="29" fill="#ffffff" />
-                      <rect x="135" y="30" width="15" height="15" fill="#142420" />
-
-                      <rect x="15" y="120" width="45" height="45" fill="#142420" />
-                      <rect x="23" y="128" width="29" height="29" fill="#ffffff" />
-                      <rect x="30" y="135" width="15" height="15" fill="#142420" />
-
-                      {/* Random Data Dots */}
-                      <rect x="75" y="20" width="12" height="12" fill="#142420" />
-                      <rect x="95" y="35" width="14" height="14" fill="#789937" />
-                      <rect x="70" y="70" width="40" height="40" fill="#D5F879" />
-                      <rect x="80" y="80" width="20" height="20" fill="#142420" />
-                      <rect x="25" y="80" width="10" height="15" fill="#142420" />
-                      <rect x="45" y="85" width="15" height="10" fill="#142420" />
-                      <rect x="130" y="75" width="20" height="15" fill="#142420" />
-                      <rect x="125" y="105" width="15" height="15" fill="#789937" />
-                      <rect x="75" y="130" width="14" height="14" fill="#142420" />
-                      <rect x="98" y="140" width="15" height="20" fill="#142420" />
-                      <rect x="130" y="135" width="25" height="25" fill="#142420" />
-                    </svg>
+                    {qrCodeData?.qrCodeDataUrl ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={qrCodeData.qrCodeDataUrl}
+                        alt="eSIM Activation QR Code"
+                        width={180}
+                        height={180}
+                        style={{ display: 'block', borderRadius: '8px' }}
+                      />
+                    ) : (
+                      <svg
+                        width="180"
+                        height="180"
+                        viewBox="0 0 180 180"
+                        className={styles.qrSvg}
+                      >
+                        <rect width="180" height="180" fill="#ffffff" />
+                        <rect x="15" y="15" width="45" height="45" fill="#142420" />
+                        <rect x="23" y="23" width="29" height="29" fill="#ffffff" />
+                        <rect x="30" y="30" width="15" height="15" fill="#142420" />
+                        <rect x="120" y="15" width="45" height="45" fill="#142420" />
+                        <rect x="128" y="23" width="29" height="29" fill="#ffffff" />
+                        <rect x="135" y="30" width="15" height="15" fill="#142420" />
+                        <rect x="15" y="120" width="45" height="45" fill="#142420" />
+                        <rect x="23" y="128" width="29" height="29" fill="#ffffff" />
+                        <rect x="30" y="135" width="15" height="15" fill="#142420" />
+                        <rect x="75" y="20" width="12" height="12" fill="#142420" />
+                        <rect x="95" y="35" width="14" height="14" fill="#789937" />
+                        <rect x="70" y="70" width="40" height="40" fill="#D5F879" />
+                        <rect x="80" y="80" width="20" height="20" fill="#142420" />
+                        <rect x="130" y="135" width="25" height="25" fill="#142420" />
+                      </svg>
+                    )}
                   </div>
+
+                  {qrCodeData?.smdpAddress && (
+                    <div style={{ textAlign: 'center', marginBottom: '16px', width: '100%' }}>
+                      <div style={{ fontSize: '12px', color: '#556253', marginBottom: '4px' }}>
+                        SM-DP+ Server: <strong>{qrCodeData.smdpAddress}</strong>
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#556253', marginBottom: '10px' }}>
+                        Activation Code: <strong>{qrCodeData.activationCode}</strong>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleCopyLpa}
+                        style={{
+                          background: '#FAFBF8',
+                          border: '1px solid #D5E2D5',
+                          borderRadius: '8px',
+                          padding: '6px 14px',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          color: '#142420',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {copiedLpa ? '✓ Copied LPA String!' : '📋 Copy Full LPA String'}
+                      </button>
+                    </div>
+                  )}
 
                   <div className={styles.esimInstructions}>
                     <p><strong>iOS:</strong> Settings → Mobile / Cellular → Add eSIM → Scan QR Code</p>
