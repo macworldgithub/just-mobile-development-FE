@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './PlansSection.module.css';
 import { MOBILE_PLANS, MobilePlan } from '@/data/catalogue';
+import CisModal from './CisModal';
 
 interface PlansSectionProps {
   onSelectPlan: (plan: MobilePlan) => void;
@@ -13,6 +14,8 @@ interface PlansSectionProps {
 
 export default function PlansSection({ onSelectPlan, onExplorePhones, initialPlans }: PlansSectionProps) {
   const [plans, setPlans] = useState<MobilePlan[]>(initialPlans || MOBILE_PLANS);
+  const [cisOpen, setCisOpen] = useState<boolean>(false);
+  const [selectedCisPlan, setSelectedCisPlan] = useState<'20gb' | '50gb' | '100gb'>('50gb');
 
   // Fetch plans from MongoDB API
   useEffect(() => {
@@ -152,13 +155,40 @@ export default function PlansSection({ onSelectPlan, onExplorePhones, initialPla
           </a>
         </div>
 
-        {/* Section Fineprint */}
+        {/* Section Fineprint with Interactive CIS Modal Link */}
         <p className={styles.sectionFineprint}>
           All prices in AUD including GST. Plans feature unlimited standard national calls and SMS within Australia.
           Powered by the Telstra Wholesale Mobile Network covering 98.8% of Australians. Standard terms, Fair Use Policy,
-          and Critical Information Summaries apply.
+          and{' '}
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedCisPlan('50gb');
+              setCisOpen(true);
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              color: '#142420',
+              textDecoration: 'underline',
+              cursor: 'pointer',
+              fontWeight: 700,
+              fontFamily: 'inherit',
+              fontSize: 'inherit',
+            }}
+          >
+            Critical Information Summaries (CIS)
+          </button>{' '}
+          apply.
         </p>
       </div>
+
+      <CisModal
+        isOpen={cisOpen}
+        onClose={() => setCisOpen(false)}
+        defaultPlan={selectedCisPlan}
+      />
     </section>
   );
 }

@@ -1,15 +1,19 @@
 'use strict';
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import styles from './Footer.module.css';
+import CisModal from './CisModal';
 
 interface FooterProps {
   onNavigateSection?: (id: string) => void;
+  onOpenCis?: () => void;
 }
 
-export default function Footer({ onNavigateSection }: FooterProps) {
+export default function Footer({ onNavigateSection, onOpenCis }: FooterProps) {
+  const [cisOpen, setCisOpen] = useState<boolean>(false);
+
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
     if (onNavigateSection) {
@@ -19,6 +23,14 @@ export default function Footer({ onNavigateSection }: FooterProps) {
       if (el) {
         el.scrollIntoView({ behavior: 'smooth' });
       }
+    }
+  };
+
+  const handleCisClick = () => {
+    if (onOpenCis) {
+      onOpenCis();
+    } else {
+      setCisOpen(true);
     }
   };
 
@@ -81,13 +93,9 @@ export default function Footer({ onNavigateSection }: FooterProps) {
               <button
                 type="button"
                 className={styles.dialogTriggerBtn}
-                onClick={() =>
-                  alert(
-                    'Critical Information Summaries (CIS) are available for all JustMobile SIM-only and phone bundle plans.'
-                  )
-                }
+                onClick={handleCisClick}
               >
-                Critical information
+                Critical information (CIS)
               </button>
               <button
                 type="button"
@@ -157,6 +165,9 @@ export default function Footer({ onNavigateSection }: FooterProps) {
           </a>
         </div>
       </div>
+
+      {/* ACMA Critical Information Summary Modal */}
+      <CisModal isOpen={cisOpen} onClose={() => setCisOpen(false)} />
     </footer>
   );
 }
