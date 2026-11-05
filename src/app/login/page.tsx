@@ -25,6 +25,18 @@ function LoginFormContent() {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  // Self-Service Password Reset States (Hostinger SMTP)
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotStep, setForgotStep] = useState<'request' | 'verify'>('request');
+  const [forgotIdentifier, setForgotIdentifier] = useState('');
+  const [forgotCode, setForgotCode] = useState('');
+  const [forgotNewPassword, setForgotNewPassword] = useState('');
+  const [forgotConfirmPassword, setForgotConfirmPassword] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState('');
+  const [forgotSuccess, setForgotSuccess] = useState('');
+  const [maskedEmail, setMaskedEmail] = useState('');
+
   // If already logged in, redirect
   useEffect(() => {
     if (user) {
@@ -107,6 +119,91 @@ function LoginFormContent() {
     }
   };
 
+  const handleRequestResetCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError('');
+    setForgotSuccess('');
+
+    if (!forgotIdentifier.trim()) {
+      setForgotError('Please enter your Customer Number (e.g. CUST882104) or registered email.');
+      return;
+    }
+
+    setForgotLoading(true);
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: forgotIdentifier.trim() }),
+      });
+      const data = await res.json();
+      setForgotLoading(false);
+
+      if (res.ok && data.success) {
+        setMaskedEmail(data.maskedEmail || 'your email');
+        setForgotStep('verify');
+        setForgotSuccess(data.message);
+      } else {
+        setForgotError(data.message || 'Account not found. Please verify your details.');
+      }
+    } catch (err: any) {
+      setForgotLoading(false);
+      setForgotError(err.message || 'Failed to connect to authentication service.');
+    }
+  };
+
+  const handleCompleteReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError('');
+    setForgotSuccess('');
+
+    if (!forgotCode.trim() || forgotCode.trim().length !== 6) {
+      setForgotError('Please enter the 6-digit verification code sent to your email.');
+      return;
+    }
+
+    if (!forgotNewPassword || forgotNewPassword.length < 6) {
+      setForgotError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (forgotNewPassword !== forgotConfirmPassword) {
+      setForgotError('Passwords do not match. Please re-enter.');
+      return;
+    }
+
+    setForgotLoading(true);
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: forgotIdentifier.trim(),
+          code: forgotCode.trim(),
+          newPassword: forgotNewPassword,
+        }),
+      });
+      const data = await res.json();
+      setForgotLoading(false);
+
+      if (res.ok && data.success) {
+        setShowForgotModal(false);
+        setSuccessMsg('✓ Password successfully reset! Please sign in with your new password.');
+        if (forgotIdentifier.toUpperCase().startsWith('CUST')) {
+          setCustNo(forgotIdentifier.trim().toUpperCase());
+        } else {
+          setEmail(forgotIdentifier.trim());
+        }
+        setPassword(forgotNewPassword);
+      } else {
+        setForgotError(data.message || 'Failed to reset password. Code may be invalid or expired.');
+      }
+    } catch (err: any) {
+      setForgotLoading(false);
+      setForgotError(err.message || 'Failed to connect to authentication service.');
+    }
+  };
+
   return (
     <div className={styles.card + (portal === 'admin' ? ` ${styles.cardAdmin}` : '')}>
       {/* Portal Switcher */}
@@ -186,9 +283,34 @@ function LoginFormContent() {
 
         {/* Password field */}
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="passwordInput">
-            Password
-          </label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <label className={styles.label} htmlFor="passwordInput">
+              Password
+            </label>
+            {portal === 'customer' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForgotModal(true);
+                  setForgotStep('request');
+                  setForgotIdentifier(custNo || email || '');
+                  setForgotError('');
+                  setForgotSuccess('');
+                }}
+                className={styles.textLink}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  padding: 0,
+                  fontWeight: 600,
+                }}
+              >
+                Forgot password?
+              </button>
+            )}
+          </div>
           <input
             id="passwordInput"
             type="password"
@@ -238,6 +360,137 @@ function LoginFormContent() {
           </div>
         )}
       </div>
+
+      {/* Self-Service Password Reset Modal (Hostinger SMTP) */}
+      {showForgotModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowForgotModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className={styles.modalCloseBtn}
+              onClick={() => setShowForgotModal(false)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+
+            <span className={styles.badgeReset}>
+              ACCOUNT SECURITY
+            </span>
+
+            {forgotStep === 'request' ? (
+              <div>
+                <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#142420', margin: '0 0 8px 0' }}>
+                  Reset Your Password
+                </h2>
+                <p style={{ fontSize: '13.5px', color: '#556253', margin: '0 0 18px 0', lineHeight: 1.5 }}>
+                  Enter your <strong>Customer Number</strong> (e.g. <code>CUST882104</code>) or registered email address. We will dispatch a 6-digit verification code to your email.
+                </p>
+
+                {forgotError && <div className={styles.errorBanner} style={{ marginBottom: '14px' }}>{forgotError}</div>}
+
+                <form onSubmit={handleRequestResetCode} className={styles.form}>
+                  <div className={styles.field}>
+                    <label className={styles.label}>Customer Number or Email</label>
+                    <input
+                      type="text"
+                      required
+                      autoFocus
+                      placeholder="e.g. CUST882104 or you@email.com"
+                      value={forgotIdentifier}
+                      onChange={(e) => setForgotIdentifier(e.target.value)}
+                      className={styles.input}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className={styles.submitBtn}
+                    style={{ marginTop: '4px' }}
+                  >
+                    <span>{forgotLoading ? 'Sending Security Code...' : 'Send Reset Code →'}</span>
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div>
+                <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#142420', margin: '0 0 8px 0' }}>
+                  Set New Password
+                </h2>
+                <p style={{ fontSize: '13.5px', color: '#556253', margin: '0 0 18px 0', lineHeight: 1.5 }}>
+                  A 6-digit verification code was dispatched to <strong>{maskedEmail}</strong>.
+                </p>
+
+                {forgotError && <div className={styles.errorBanner} style={{ marginBottom: '14px' }}>{forgotError}</div>}
+                {forgotSuccess && <div className={styles.successBanner} style={{ marginBottom: '14px' }}>{forgotSuccess}</div>}
+
+                <form onSubmit={handleCompleteReset} className={styles.form}>
+                  <div className={styles.field}>
+                    <label className={styles.label}>6-Digit Verification Code</label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      required
+                      autoFocus
+                      placeholder="••••••"
+                      value={forgotCode}
+                      onChange={(e) => setForgotCode(e.target.value.replace(/\D/g, ''))}
+                      className={`${styles.input} ${styles.codeInput}`}
+                    />
+                  </div>
+
+                  <div className={styles.field}>
+                    <label className={styles.label}>New Password</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="Minimum 6 characters"
+                      value={forgotNewPassword}
+                      onChange={(e) => setForgotNewPassword(e.target.value)}
+                      className={styles.input}
+                    />
+                  </div>
+
+                  <div className={styles.field}>
+                    <label className={styles.label}>Confirm New Password</label>
+                    <input
+                      type="password"
+                      required
+                      placeholder="Re-enter new password"
+                      value={forgotConfirmPassword}
+                      onChange={(e) => setForgotConfirmPassword(e.target.value)}
+                      className={styles.input}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className={styles.submitBtn}
+                    style={{ marginTop: '4px' }}
+                  >
+                    <span>{forgotLoading ? 'Updating Password...' : 'Save New Password & Sign In →'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotStep('request');
+                      setForgotError('');
+                      setForgotSuccess('');
+                    }}
+                    className={styles.secondaryBtn}
+                    style={{ width: '100%', marginTop: '6px' }}
+                  >
+                    ← Back / Resend Code
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
