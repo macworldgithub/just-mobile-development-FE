@@ -54,6 +54,36 @@ interface EsimDetails {
   instructions: string[];
 }
 
+interface InvoiceRecord {
+  invoiceId: string;
+  custNo: string;
+  issueDate: string;
+  dueDate: string;
+  periodStart: string;
+  periodEnd: string;
+  planName: string;
+  dataAllowance: string;
+  subtotal: number;
+  gstAmount: number;
+  amount: number;
+  status: string;
+  paymentMethod: string;
+  transactionRef: string;
+}
+
+interface OrderRecord {
+  orderId: string;
+  custNo: string;
+  msn: string;
+  status: string;
+  planName: string;
+  orderType: string;
+  isEsim: boolean;
+  createdAt: string;
+  completedAt?: string;
+  donorNetworkNote?: string;
+}
+
 export default function AccountPage() {
   const router = useRouter();
   const { user, logout, isLoading } = useAuth();
@@ -67,13 +97,19 @@ export default function AccountPage() {
   const [isLoadingEsim, setIsLoadingEsim] = useState<boolean>(false);
   const [copiedLpa, setCopiedLpa] = useState<boolean>(false);
 
+  // Invoices & Porting state (INT-08 & INT-10)
+  const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
+  const [orders, setOrders] = useState<OrderRecord[]>([]);
+  const [syncingOrderId, setSyncingOrderId] = useState<string | null>(null);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+
   useEffect(() => {
     if (!isLoading && !user) {
       router.push('/login');
     }
   }, [user, isLoading, router]);
 
-  // Fetch live carrier usage, balance, and services
+  // Fetch live carrier usage, balance, services, invoices, and orders
   useEffect(() => {
     if (!user) return;
     const custNo = user.custNo || 'CUST882104';
@@ -107,7 +143,48 @@ export default function AccountPage() {
         }
       })
       .catch((err) => console.warn('Services fetch error:', err));
+
+    // 4. Fetch ATO-compliant tax invoices (INT-08)
+    fetch(`/api/carrier/customers/${custNo}/invoices`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setInvoices(data);
+      })
+      .catch((err) => console.warn('Invoices fetch error:', err));
+
+    // 5. Fetch customer orders & mobile porting status (INT-10)
+    fetch(`/api/carrier/customers/${custNo}/orders`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (Array.isArray(data)) setOrders(data);
+      })
+      .catch((err) => console.warn('Orders fetch error:', err));
   }, [user]);
+
+  // Manual sync for mobile port status
+  const handleSyncPort = async (orderId: string) => {
+    setSyncingOrderId(orderId);
+    setSyncMessage(null);
+    try {
+      const res = await fetch(`/api/carrier/orders/${orderId}/sync-port`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSyncMessage(data.message || 'Port synchronized successfully!');
+        const custNo = user?.custNo || 'CUST882104';
+        const ordersRes = await fetch(`/api/carrier/customers/${custNo}/orders`);
+        if (ordersRes.ok) {
+          const freshOrders = await ordersRes.json();
+          setOrders(freshOrders);
+        }
+      }
+    } catch (err) {
+      console.warn('Sync port error:', err);
+    } finally {
+      setSyncingOrderId(null);
+    }
+  };
 
   // Load eSIM QR code details on demand
   const handleOpenEsimModal = async () => {
@@ -162,6 +239,9 @@ export default function AccountPage() {
   const bankedGb = usage?.dataMeter?.bankedDataGb ?? 148.2;
   const percentRemaining = Math.round((remainingGb / totalGb) * 100);
 
+  // In-flight or completed mobile number porting order (INT-10)
+  const portOrder = orders.find((o) => o.orderType === 'PORT_IN');
+
   return (
     <div className={styles.pageContainer}>
       {/* Top Bar */}
@@ -204,8 +284,67 @@ export default function AccountPage() {
         </div>
 
         <div className={styles.grid}>
-          {/* Left Column: Service Details */}
+          {/* Left Column: Service Details & Port Status */}
           <div>
+            {/* Live Mobile Porting Tracker (INT-10) */}
+            {portOrder && portOrder.status === 'PORT_IN_PROGRESS' && (
+              <div className={styles.portCard}>
+                <div className={styles.portHeader}>
+                  <h3 className={styles.portTitle}>
+                    <span>🔄 Mobile Number Port In-Flight</span>
+                  </h3>
+                  <span className={styles.badgePortInProgress}>
+                    <span className={styles.pulseDot} />
+                    PORT IN PROGRESS
+                  </span>
+                </div>
+                <div className={styles.portBody}>
+                  Transferring <strong>{portOrder.msn}</strong> to JustMobile ({portOrder.planName || '50GB Just right Plan'}).
+                  <br />
+                  Carrier porting orders are processed through Australian donor carriers (15m to 24h window). Our durable background worker is continuously monitoring carrier release status.
+                  {syncMessage && (
+                    <div style={{ marginTop: '8px', color: '#15803d', fontWeight: 600 }}>
+                      ✓ {syncMessage}
+                    </div>
+                  )}
+                </div>
+                <div className={styles.portActions}>
+                  <button
+                    type="button"
+                    className={styles.syncPortBtn}
+                    onClick={() => handleSyncPort(portOrder.orderId)}
+                    disabled={syncingOrderId === portOrder.orderId}
+                  >
+                    {syncingOrderId === portOrder.orderId ? 'Checking Carrier Release...' : '⚡ Check / Sync Port Status'}
+                  </button>
+                  <span style={{ fontSize: '12px', color: '#718096' }}>
+                    Order ID: {portOrder.orderId}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {portOrder && portOrder.status === 'ACTIVE' && (
+              <div className={styles.portCardActive}>
+                <div className={styles.portHeader}>
+                  <h3 className={styles.portTitle}>
+                    <span>✓ Mobile Number Port Completed</span>
+                  </h3>
+                  <span className={styles.badgePortActive}>
+                    ✓ ACTIVE ON TELSTRA 5G
+                  </span>
+                </div>
+                <div className={styles.portBody}>
+                  Mobile number <strong>{portOrder.msn}</strong> has been released by your previous carrier and is fully active on JustMobile 5G Wholesale.
+                  {portOrder.completedAt && (
+                    <div style={{ fontSize: '12px', color: '#556253', marginTop: '4px' }}>
+                      Activated at: {new Date(portOrder.completedAt).toLocaleString()}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className={styles.card}>
               <div className={styles.serviceRow}>
                 <div>
@@ -315,8 +454,49 @@ export default function AccountPage() {
               <p style={{ fontSize: '13.5px', color: '#556253', margin: '0 0 12px 0' }}>
                 Next invoice due: <strong>{balance?.nextInvoiceDate || '28 Nov 2026'} (${balance?.nextInvoiceAmount?.toFixed(2) || '25.00'})</strong>
               </p>
-              <div style={{ fontSize: '13px', color: '#789937', fontWeight: 600 }}>
+              <div style={{ fontSize: '13px', color: '#789937', fontWeight: 600, marginBottom: '18px' }}>
                 {balance?.paymentMethod || 'Mastercard ending in •••• 4192'} ({balance?.autoPayStatus || 'Auto-pay active'})
+              </div>
+
+              {/* ATO Tax Invoices Section (INT-08) */}
+              <h3 style={{ fontSize: '15px', fontWeight: 700, margin: '18px 0 6px 0', color: '#142420', borderTop: '1px solid #eef2ec', paddingTop: '16px' }}>
+                Tax Invoices & Billing History
+              </h3>
+              <p style={{ fontSize: '12px', color: '#697866', margin: '0 0 12px 0' }}>
+                Formal Australian Tax Invoices with 10% GST breakdown & ABN 48 672 819 204.
+              </p>
+
+              <div className={styles.invoiceList}>
+                {invoices.length > 0 ? (
+                  invoices.map((inv) => (
+                    <div key={inv.invoiceId} className={styles.invoiceItem}>
+                      <div className={styles.invoiceMeta}>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <span className={styles.invoiceId}>{inv.invoiceId}</span>
+                          <span className={styles.invoiceStatus}>{inv.status}</span>
+                        </div>
+                        <span className={styles.invoicePeriod}>
+                          Cycle: {inv.periodStart} – {inv.periodEnd}
+                        </span>
+                      </div>
+                      <div className={styles.invoiceRight}>
+                        <span className={styles.invoiceAmount}>${inv.amount.toFixed(2)}</span>
+                        <a
+                          href={`/api/carrier/customers/${user.custNo || 'CUST882104'}/invoices/${inv.invoiceId}/pdf`}
+                          download={`JustMobile-Tax-Invoice-${inv.invoiceId}.pdf`}
+                          className={styles.downloadPdfBtn}
+                          title="Download ATO-compliant PDF Tax Invoice"
+                        >
+                          <span>📄 Download PDF</span>
+                        </a>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p style={{ fontSize: '12.5px', color: '#718096', fontStyle: 'italic', margin: '8px 0' }}>
+                    No historical invoices loaded.
+                  </p>
+                )}
               </div>
             </div>
           </div>
