@@ -302,7 +302,7 @@ function LoginFormContent() {
                 setErrorMsg('');
               }}
             >
-              <span>🔑 4-Digit PIN (Legacy)</span>
+              <span>🔑 4-Digit PIN</span>
             </button>
             <button
               type="button"
@@ -362,8 +362,8 @@ function LoginFormContent() {
                 className={`${styles.input} ${styles.pinInput}`}
               />
             </div>
-            <span className={styles.legacyNote}>
-              💡 Use the 4-digit PIN from your Bele app, or switch to Password above.
+            <span className={styles.pinHint}>
+              💡 Enter your 4-digit PIN, or switch to Password above.
             </span>
           </div>
         ) : (
