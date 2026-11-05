@@ -16,11 +16,13 @@ function LoginFormContent() {
   const { login, user } = useAuth();
 
   const [portal, setPortal] = useState<'customer' | 'admin'>(initialPortal);
+  const [authMethod, setAuthMethod] = useState<'pin' | 'password'>('pin');
 
   // Form states
   const [custNo, setCustNo] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [pin, setPin] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -76,7 +78,11 @@ function LoginFormContent() {
         setErrorMsg('Please enter your Customer Number.');
         return;
       }
-      if (!password) {
+      if (authMethod === 'pin' && !pin.trim()) {
+        setErrorMsg('Please enter your 4-6 digit PIN.');
+        return;
+      }
+      if (authMethod === 'password' && !password) {
         setErrorMsg('Please enter your password.');
         return;
       }
@@ -95,7 +101,9 @@ function LoginFormContent() {
 
     try {
       const payload = portal === 'customer'
-        ? { custNo: custNo.trim(), password, portal: 'customer' as const }
+        ? (authMethod === 'pin'
+            ? { custNo: custNo.trim(), pin: pin.trim(), password: pin.trim(), portal: 'customer' as const }
+            : { custNo: custNo.trim(), password, pin: password, portal: 'customer' as const })
         : { email: email.trim(), password, portal: 'admin' as const };
 
       const res = await login(payload);
@@ -162,8 +170,8 @@ function LoginFormContent() {
       return;
     }
 
-    if (!forgotNewPassword || forgotNewPassword.length < 6) {
-      setForgotError('Password must be at least 6 characters long.');
+    if (!forgotNewPassword || forgotNewPassword.length < 4) {
+      setForgotError('Password or PIN must be at least 4 characters/digits.');
       return;
     }
 
@@ -236,7 +244,7 @@ function LoginFormContent() {
         <p className={styles.subtitle}>
           {portal === 'admin'
             ? 'Sign in to access management, subscriber telemetry, and network operations.'
-            : 'Sign in with your Customer Number and password.'}
+            : 'Sign in with your Customer Number and PIN or password.'}
         </p>
       </div>
 
@@ -257,7 +265,7 @@ function LoginFormContent() {
               type="text"
               required
               autoFocus
-              placeholder="e.g. CUST697855"
+              placeholder="e.g. 512345 or CUST882104"
               value={custNo}
               onChange={(e) => setCustNo(e.target.value)}
               className={styles.input}
@@ -281,13 +289,43 @@ function LoginFormContent() {
           </div>
         )}
 
-        {/* Password field */}
-        <div className={styles.field}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <label className={styles.label} htmlFor="passwordInput">
-              Password
-            </label>
-            {portal === 'customer' && (
+        {/* Customer Portal Auth Method Toggle (PIN vs Password) */}
+        {portal === 'customer' && (
+          <div className={styles.authMethodSwitch} role="tablist">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={authMethod === 'pin'}
+              className={`${styles.authMethodBtn} ${authMethod === 'pin' ? styles.authMethodBtnActive : ''}`}
+              onClick={() => {
+                setAuthMethod('pin');
+                setErrorMsg('');
+              }}
+            >
+              <span>🔑 4-Digit PIN (Legacy)</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={authMethod === 'password'}
+              className={`${styles.authMethodBtn} ${authMethod === 'password' ? styles.authMethodBtnActive : ''}`}
+              onClick={() => {
+                setAuthMethod('password');
+                setErrorMsg('');
+              }}
+            >
+              <span>🔒 Password</span>
+            </button>
+          </div>
+        )}
+
+        {/* Secret Input (PIN or Password) */}
+        {portal === 'customer' && authMethod === 'pin' ? (
+          <div className={styles.field}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label className={styles.label} htmlFor="pinInput">
+                Account PIN (4–6 Digits)
+              </label>
               <button
                 type="button"
                 onClick={() => {
@@ -307,20 +345,68 @@ function LoginFormContent() {
                   fontWeight: 600,
                 }}
               >
-                Forgot password?
+                Forgot PIN?
               </button>
-            )}
+            </div>
+            <div className={styles.pinInputWrapper}>
+              <span className={styles.pinIcon}>🔑</span>
+              <input
+                id="pinInput"
+                type="password"
+                inputMode="numeric"
+                maxLength={6}
+                required
+                placeholder="Enter your PIN (e.g. 1234)"
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                className={`${styles.input} ${styles.pinInput}`}
+              />
+            </div>
+            <span className={styles.legacyNote}>
+              💡 Use the 4-digit PIN from your Bele app, or switch to Password above.
+            </span>
           </div>
-          <input
-            id="passwordInput"
-            type="password"
-            required
-            placeholder="••••••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={styles.input}
-          />
-        </div>
+        ) : (
+          <div className={styles.field}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label className={styles.label} htmlFor="passwordInput">
+                Password
+              </label>
+              {portal === 'customer' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgotModal(true);
+                    setForgotStep('request');
+                    setForgotIdentifier(custNo || email || '');
+                    setForgotError('');
+                    setForgotSuccess('');
+                  }}
+                  className={styles.textLink}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    padding: 0,
+                    fontWeight: 600,
+                  }}
+                >
+                  Forgot password?
+                </button>
+              )}
+            </div>
+            <input
+              id="passwordInput"
+              type="password"
+              required
+              placeholder="••••••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className={styles.input}
+            />
+          </div>
+        )}
 
         <button
           type="submit"
@@ -332,6 +418,8 @@ function LoginFormContent() {
               ? 'Authenticating...'
               : portal === 'admin'
               ? 'Access Admin Console →'
+              : authMethod === 'pin'
+              ? 'Sign In with PIN →'
               : 'Sign In to Account →'}
           </span>
         </button>
@@ -381,10 +469,10 @@ function LoginFormContent() {
             {forgotStep === 'request' ? (
               <div>
                 <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#142420', margin: '0 0 8px 0' }}>
-                  Reset Your Password
+                  Reset Password or PIN
                 </h2>
                 <p style={{ fontSize: '13.5px', color: '#556253', margin: '0 0 18px 0', lineHeight: 1.5 }}>
-                  Enter your <strong>Customer Number</strong> (e.g. <code>CUST882104</code>) or registered email address. We will dispatch a 6-digit verification code to your email.
+                  Enter your <strong>Customer Number</strong> (e.g. <code>512345</code> or <code>CUST882104</code>) or registered email address. We will dispatch a 6-digit verification code to your email.
                 </p>
 
                 {forgotError && <div className={styles.errorBanner} style={{ marginBottom: '14px' }}>{forgotError}</div>}
@@ -416,7 +504,7 @@ function LoginFormContent() {
             ) : (
               <div>
                 <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#142420', margin: '0 0 8px 0' }}>
-                  Set New Password
+                  Set New Password or PIN
                 </h2>
                 <p style={{ fontSize: '13.5px', color: '#556253', margin: '0 0 18px 0', lineHeight: 1.5 }}>
                   A 6-digit verification code was dispatched to <strong>{maskedEmail}</strong>.
@@ -441,11 +529,11 @@ function LoginFormContent() {
                   </div>
 
                   <div className={styles.field}>
-                    <label className={styles.label}>New Password</label>
+                    <label className={styles.label}>New Password or 4-6 Digit PIN</label>
                     <input
                       type="password"
                       required
-                      placeholder="Minimum 6 characters"
+                      placeholder="Minimum 4 characters / digits"
                       value={forgotNewPassword}
                       onChange={(e) => setForgotNewPassword(e.target.value)}
                       className={styles.input}
@@ -453,11 +541,11 @@ function LoginFormContent() {
                   </div>
 
                   <div className={styles.field}>
-                    <label className={styles.label}>Confirm New Password</label>
+                    <label className={styles.label}>Confirm New Password or PIN</label>
                     <input
                       type="password"
                       required
-                      placeholder="Re-enter new password"
+                      placeholder="Re-enter new password or PIN"
                       value={forgotConfirmPassword}
                       onChange={(e) => setForgotConfirmPassword(e.target.value)}
                       className={styles.input}

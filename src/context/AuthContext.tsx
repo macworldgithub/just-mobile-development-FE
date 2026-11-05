@@ -41,6 +41,7 @@ interface AuthContextType {
     custNo?: string;
     identifier?: string;
     password?: string;
+    pin?: string;
     code?: string;
     portal?: 'customer' | 'admin';
   }) => Promise<{ success: boolean; message: string; user?: User }>;

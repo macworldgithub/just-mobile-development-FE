@@ -124,6 +124,68 @@
 }
 
 /* Auth Mode Toggle inside Customer */
+.authMethodSwitch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #edf2ea;
+  padding: 3px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  gap: 4px;
+}
+
+.authMethodBtn {
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #556253;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.authMethodBtnActive {
+  background: #ffffff;
+  color: var(--jm-ink);
+  box-shadow: 0 1px 4px rgba(20, 36, 32, 0.08);
+}
+
+.pinInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pinIcon {
+  position: absolute;
+  left: 14px;
+  color: #697866;
+  font-size: 15px;
+  pointer-events: none;
+}
+
+.pinInput {
+  padding-left: 40px !important;
+  letter-spacing: 3px;
+  font-family: monospace, var(--jm-font-body);
+  font-size: 16px !important;
+}
+
+.legacyNote {
+  font-size: 12px;
+  color: #556253;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
 .modeTabs {
   display: flex;
   gap: 16px;
