@@ -180,3 +180,68 @@
   cursor: pointer;
 }
 
+/* ==========================================================================
+   MOBILE RESPONSIVENESS (PHONES & SMALL TABLETS)
+   ========================================================================== */
+@media (max-width: 600px) {
+  .overlay {
+    padding: 10px;
+  }
+
+  .modal {
+    max-height: 94vh;
+    border-radius: 16px;
+  }
+
+  .header {
+    padding: 18px 18px 14px;
+  }
+
+  .title {
+    font-size: 19px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+  }
+
+  .tabRow {
+    padding: 10px 14px;
+    gap: 6px;
+  }
+
+  .tabBtn {
+    padding: 7px 12px;
+    font-size: 12.5px;
+    white-space: nowrap;
+  }
+
+  .contentBody {
+    padding: 18px 16px;
+    font-size: 13px;
+  }
+
+  .cisGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .footerBar {
+    padding: 14px 18px;
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .complianceText {
+    font-size: 11px;
+    text-align: center;
+  }
+
+  .doneBtn {
+    width: 100%;
+    padding: 12px;
+    text-align: center;
+  }
+}
+

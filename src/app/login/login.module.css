@@ -405,3 +405,78 @@
   margin-bottom: 12px;
   letter-spacing: 0.5px;
 }
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS (PHONES & SMALL SCREENS)
+   ========================================================================== */
+@media (max-width: 520px) {
+  .topBar {
+    padding: 16px 20px;
+  }
+
+  .authContent {
+    padding: 16px 14px 40px;
+  }
+
+  .card {
+    padding: 24px 18px;
+    border-radius: 16px;
+  }
+
+  .title {
+    font-size: 22px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .portalSwitch {
+    margin-bottom: 18px;
+  }
+
+  .portalBtn {
+    padding: 8px 10px;
+    font-size: 12.5px;
+  }
+
+  .authMethodSwitch {
+    margin-bottom: 14px;
+  }
+
+  .authMethodBtn {
+    padding: 7px 8px;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .pinInput {
+    font-size: 15px !important;
+    letter-spacing: 2px;
+  }
+
+  .modalOverlay {
+    padding: 12px;
+  }
+
+  .modalContent {
+    padding: 24px 18px;
+    border-radius: 16px;
+    max-width: 95vw;
+  }
+}
+
+@media (max-width: 380px) {
+  .card {
+    padding: 20px 14px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .authMethodBtn {
+    font-size: 11px;
+    padding: 6px 4px;
+  }
+}

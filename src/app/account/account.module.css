@@ -502,3 +502,159 @@
   background: #f1f6ed;
   border-color: #142420;
 }
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS (PHONES & TABLETS)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .topBar {
+    padding: 12px 16px;
+  }
+
+  .topBarInner {
+    gap: 12px;
+  }
+
+  .userName {
+    font-size: 13px;
+  }
+
+  .logoutBtn {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .mainContent {
+    padding: 0 14px;
+    margin: 20px auto;
+  }
+
+  .headerBanner {
+    padding: 22px 20px;
+    border-radius: 14px;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .greetingTitle {
+    font-size: 22px;
+  }
+
+  .greetingSub {
+    font-size: 13px;
+  }
+
+  .card {
+    padding: 20px 18px;
+    border-radius: 14px;
+    margin-bottom: 18px;
+  }
+
+  .cardTitle {
+    font-size: 17px;
+    margin-bottom: 14px;
+  }
+
+  .serviceRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .mobileNum {
+    font-size: 19px;
+  }
+
+  .meterInfo {
+    flex-direction: column;
+    gap: 4px;
+    font-size: 12.5px;
+  }
+
+  .bankedNotice {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  .portCard,
+  .portCardActive {
+    padding: 18px 16px;
+    border-radius: 14px;
+  }
+
+  .portHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .portTitle {
+    font-size: 15.5px;
+  }
+
+  .portBody {
+    font-size: 13px;
+  }
+
+  .portActions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .syncPortBtn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .invoiceItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+
+  .downloadPdfBtn {
+    width: 100%;
+    justify-content: center;
+    padding: 9px 12px;
+  }
+
+  .modalContent {
+    padding: 24px 18px;
+    max-width: 95vw;
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .headerBanner {
+    padding: 18px 16px;
+  }
+
+  .accountBadge {
+    font-size: 11.5px;
+    padding: 5px 12px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .card {
+    padding: 16px 14px;
+  }
+
+  .btnPrimary {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .detailItem {
+    font-size: 12.5px;
+  }
+
+  .lpaCodeBox {
+    font-size: 11px;
+    padding: 8px 10px;
+  }
+}

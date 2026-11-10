@@ -474,9 +474,34 @@
 }
 
 @media (max-width: 580px) {
+  .topBar {
+    padding: 16px 20px;
+  }
+  .authContent {
+    padding: 16px 14px 40px;
+  }
+  .card {
+    padding: 24px 18px;
+    border-radius: 16px;
+  }
+  .title {
+    font-size: 24px;
+  }
+  .subtitle {
+    font-size: 13px;
+  }
   .row, .rowThree {
     grid-template-columns: 1fr;
     gap: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  .card {
+    padding: 20px 14px;
+  }
+  .title {
+    font-size: 21px;
   }
 }
 
