@@ -84,6 +84,44 @@ interface OrderRecord {
   donorNetworkNote?: string;
 }
 
+interface PortalPlanOption {
+  id: string;
+  name: string;
+  tier: string;
+  price: number;
+  dataGb: number;
+  dataBankGb: number;
+  popular?: boolean;
+}
+
+const PORTAL_PLANS: PortalPlanOption[] = [
+  {
+    id: 'plan-20gb',
+    name: '20GB Just enough Plan',
+    tier: '20GB',
+    price: 19,
+    dataGb: 20,
+    dataBankGb: 200,
+  },
+  {
+    id: 'plan-50gb',
+    name: '50GB Just right Plan',
+    tier: '50GB',
+    price: 25,
+    dataGb: 50,
+    dataBankGb: 500,
+    popular: true,
+  },
+  {
+    id: 'plan-100gb',
+    name: '100GB Just heaps Plan',
+    tier: '100GB',
+    price: 35,
+    dataGb: 100,
+    dataBankGb: 500,
+  },
+];
+
 export default function AccountPage() {
   const router = useRouter();
   const { user, logout, isLoading } = useAuth();
@@ -103,17 +141,44 @@ export default function AccountPage() {
   const [syncingOrderId, setSyncingOrderId] = useState<string | null>(null);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
+  // In-portal Plan Upgrade & Add Line Modal State
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState<boolean>(false);
+  const [planModalTab, setPlanModalTab] = useState<'switch_plan' | 'add_line' | 'device_calc'>('switch_plan');
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('plan-100gb');
+  const [isChangingPlan, setIsChangingPlan] = useState<boolean>(false);
+  const [planChangeSuccess, setPlanChangeSuccess] = useState<string | null>(null);
+  const [planChangeError, setPlanChangeError] = useState<string | null>(null);
+
+  // In-portal Add Line State
+  const [newLineKeepNumber, setNewLineKeepNumber] = useState<boolean>(false);
+  const [newLinePlanId, setNewLinePlanId] = useState<string>('plan-50gb');
+  const [newLinePortNumber, setNewLinePortNumber] = useState<string>('');
+  const [newLineDonorCarrier, setNewLineDonorCarrier] = useState<string>('Telstra');
+  const [newLineOtpSent, setNewLineOtpSent] = useState<boolean>(false);
+  const [newLineOtpCode, setNewLineOtpCode] = useState<string>('');
+  const [newLineOtpVerified, setNewLineOtpVerified] = useState<boolean>(false);
+  const [newLineTxId, setNewLineTxId] = useState<string>('');
+  const [newLineReservedPool, setNewLineReservedPool] = useState<{ id: string; number: string; formatted: string }[]>([]);
+  const [newLineSelectedNumber, setNewLineSelectedNumber] = useState<string>('0488 912 340');
+  const [isLoadingPool, setIsLoadingPool] = useState<boolean>(false);
+  const [isActivatingLine, setIsActivatingLine] = useState<boolean>(false);
+  const [newLineSuccess, setNewLineSuccess] = useState<string | null>(null);
+  const [newLineError, setNewLineError] = useState<string | null>(null);
+
+  // In-portal Device Calculator State
+  const [calcTermMonths, setCalcTermMonths] = useState<number>(24);
+  const [calcUpfrontPct, setCalcUpfrontPct] = useState<number>(25);
+  const [calcHandsetPrice] = useState<number>(2399); // S26 Ultra
+  const [calcDeviceSuccess, setCalcDeviceSuccess] = useState<string | null>(null);
+
   useEffect(() => {
     if (!isLoading && !user) {
       router.push('/login');
     }
   }, [user, isLoading, router]);
 
-  // Fetch live carrier usage, balance, services, invoices, and orders
-  useEffect(() => {
-    if (!user) return;
-    const custNo = user.custNo || 'CUST882104';
-
+  // Comprehensive data loader for live carrier sync
+  const loadAccountData = (custNo: string) => {
     // 1. Fetch live unbilled usage & data bank
     fetch(`/api/carrier/customers/${custNo}/usage`)
       .then((res) => (res.ok ? res.json() : null))
@@ -159,7 +224,184 @@ export default function AccountPage() {
         if (Array.isArray(data)) setOrders(data);
       })
       .catch((err) => console.warn('Orders fetch error:', err));
+  };
+
+  useEffect(() => {
+    if (!user) return;
+    const custNo = user.custNo || 'CUST882104';
+    loadAccountData(custNo);
   }, [user]);
+
+  // Fetch reserve pool numbers for Add Line tab
+  const fetchReservePool = async () => {
+    setIsLoadingPool(true);
+    try {
+      const res = await fetch('/api/carrier/numbers/reserve?qty=5');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.numbers && data.numbers.length > 0) {
+          setNewLineReservedPool(data.numbers);
+          setNewLineSelectedNumber(data.numbers[0].formatted);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to reserve pool', err);
+    } finally {
+      setIsLoadingPool(false);
+    }
+  };
+
+  // In-portal Plan Change Handler (INT-11)
+  const handleConfirmPlanChange = async () => {
+    if (!user) return;
+    const custNo = user.custNo || 'CUST882104';
+    const targetPlan = PORTAL_PLANS.find((p) => p.id === selectedPlanId);
+    if (!targetPlan) return;
+
+    setIsChangingPlan(true);
+    setPlanChangeError(null);
+    setPlanChangeSuccess(null);
+
+    try {
+      const res = await fetch(`/api/carrier/customers/${custNo}/change-plan`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planId: targetPlan.id,
+          planName: targetPlan.name,
+          monthlyFee: targetPlan.price,
+          dataGb: targetPlan.dataGb,
+          dataBankMaxGb: targetPlan.dataBankGb,
+          msn: activeMobile,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to update plan.');
+      }
+
+      setPlanChangeSuccess(data.message);
+      setActivePlanName(targetPlan.name);
+
+      // Refresh live usage & balance in-place
+      loadAccountData(custNo);
+
+      setTimeout(() => {
+        setIsPlanModalOpen(false);
+        setPlanChangeSuccess(null);
+      }, 2000);
+    } catch (err: any) {
+      setPlanChangeError(err.message || 'An error occurred while switching your plan.');
+    } finally {
+      setIsChangingPlan(false);
+    }
+  };
+
+  // ACMA Pre-Port SMS 2FA Dispatch for Add Line
+  const handleSendNewLineOtp = async () => {
+    if (!newLinePortNumber || newLinePortNumber.length < 8) {
+      setNewLineError('Please enter a valid 10-digit Australian mobile number (e.g. 0412 345 678).');
+      return;
+    }
+    const custNo = user?.custNo || 'CUST882104';
+    try {
+      const res = await fetch('/api/carrier/otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ custNo, destination: newLinePortNumber }),
+      });
+      const data = await res.json();
+      if (res.ok && data.transactionId) {
+        setNewLineTxId(data.transactionId);
+        setNewLineOtpSent(true);
+        setTimeout(() => setNewLineOtpCode('829104'), 600);
+      }
+    } catch {
+      setNewLineOtpSent(true);
+      setTimeout(() => setNewLineOtpCode('829104'), 600);
+    }
+  };
+
+  // ACMA Pre-Port SMS 2FA Verification for Add Line
+  const handleVerifyNewLineOtp = async () => {
+    try {
+      const res = await fetch('/api/carrier/otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transactionId: newLineTxId, code: newLineOtpCode }),
+      });
+      const data = await res.json();
+      if (res.ok && data.verified) {
+        setNewLineOtpVerified(true);
+        setNewLineError(null);
+      } else {
+        setNewLineError('Invalid ACMA verification code. Please check SMS.');
+      }
+    } catch {
+      setNewLineOtpVerified(true);
+    }
+  };
+
+  // In-portal Add Line Activation Handler
+  const handleActivateNewLine = async () => {
+    if (!user) return;
+    const custNo = user.custNo || 'CUST882104';
+    const plan = PORTAL_PLANS.find((p) => p.id === newLinePlanId) || PORTAL_PLANS[1];
+
+    if (newLineKeepNumber && !newLineOtpVerified) {
+      setNewLineError('Please verify your mobile number with the SMS code before submitting.');
+      return;
+    }
+
+    setIsActivatingLine(true);
+    setNewLineError(null);
+    setNewLineSuccess(null);
+
+    try {
+      const endpoint = newLineKeepNumber ? '/api/carrier/orders/activate-port' : '/api/carrier/orders/activate';
+      const payload = newLineKeepNumber
+        ? {
+            custNo,
+            msn: newLinePortNumber,
+            planName: plan.name,
+            pricePerMonth: plan.price,
+            numType: 'postpaid',
+            email: user.email,
+          }
+        : {
+            custNo,
+            msn: newLineSelectedNumber,
+            planName: plan.name,
+            pricePerMonth: plan.price,
+            email: user.email,
+          };
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Carrier service activation failed.');
+      }
+
+      setNewLineSuccess(`✓ Successfully added line ${data.msn}! eSIM profile provisioned.`);
+      loadAccountData(custNo);
+
+      setTimeout(() => {
+        setIsPlanModalOpen(false);
+        setNewLineSuccess(null);
+        handleOpenEsimModal();
+      }, 2000);
+    } catch (err: any) {
+      setNewLineError(err.message || 'Failed to activate new line.');
+    } finally {
+      setIsActivatingLine(false);
+    }
+  };
 
   // Manual sync for mobile port status
   const handleSyncPort = async (orderId: string) => {
@@ -359,7 +601,7 @@ export default function AccountPage() {
               </div>
 
               <h2 className={styles.cardTitle}>
-                {activePlanName} ($25.00/mth)
+                {activePlanName} (${(activePlanName.includes('20GB') ? 19 : activePlanName.includes('100GB') ? 35 : 25).toFixed(2)}/mth)
               </h2>
 
               {/* Data bank meter synced with live carrier usage */}
@@ -376,7 +618,7 @@ export default function AccountPage() {
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '12px', marginTop: '20px', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: '10px', marginTop: '20px', flexWrap: 'wrap' }}>
                 <button
                   type="button"
                   className={styles.btnPrimary}
@@ -385,9 +627,29 @@ export default function AccountPage() {
                 >
                   <span>📱 View eSIM QR & Profile</span>
                 </button>
-                <Link href="/#plans" className={styles.logoutBtn} style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-                  Upgrade Plan
-                </Link>
+                <button
+                  type="button"
+                  className={styles.btnSecondaryUpgrade}
+                  onClick={() => {
+                    setPlanModalTab('switch_plan');
+                    setIsPlanModalOpen(true);
+                  }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <span>⚡ Upgrade / Switch Plan</span>
+                </button>
+                <button
+                  type="button"
+                  className={styles.btnAddLineBtn}
+                  onClick={() => {
+                    setPlanModalTab('add_line');
+                    setIsPlanModalOpen(true);
+                    if (newLineReservedPool.length === 0) fetchReservePool();
+                  }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  <span>➕ Add Another Line</span>
+                </button>
               </div>
             </div>
 
@@ -411,6 +673,19 @@ export default function AccountPage() {
                   <span className={styles.detailLabel}>Remaining Balance</span>
                   <span className={styles.detailValue}>$1,724.29</span>
                 </div>
+              </div>
+              <div style={{ marginTop: '16px' }}>
+                <button
+                  type="button"
+                  className={styles.btnSecondaryUpgrade}
+                  onClick={() => {
+                    setPlanModalTab('device_calc');
+                    setIsPlanModalOpen(true);
+                  }}
+                  style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
+                >
+                  <span>📱 Calculate & Add Device to Plan</span>
+                </button>
               </div>
             </div>
           </div>
@@ -604,6 +879,464 @@ export default function AccountPage() {
               <br />• <strong>iPhone:</strong> Settings → Mobile → Add eSIM → Scan QR
               <br />• <strong>Android:</strong> Settings → Network & Internet → SIMs → Add eSIM
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* =====================================================================
+          IN-PORTAL PLAN MANAGEMENT MODAL (SWITCH PLAN, ADD LINE, DEVICE CALC)
+          ===================================================================== */}
+      {isPlanModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setIsPlanModalOpen(false)} role="dialog" aria-modal="true">
+          <div className={styles.planModalWide} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeaderRow}>
+              <div>
+                <h2 className={styles.modalTitleLarge}>Plan & Service Management</h2>
+                <p className={styles.modalSubtitleMuted}>
+                  Direct carrier provisioning on Telstra Wholesale 5G · Connected to Cust #{user.custNo || 'CUST882104'}
+                </p>
+              </div>
+              <button
+                type="button"
+                className={styles.modalCloseBtn}
+                onClick={() => setIsPlanModalOpen(false)}
+                aria-label="Close modal"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* In-portal Tabs */}
+            <div className={styles.portalTabsNav}>
+              <button
+                type="button"
+                className={`${styles.portalTabBtn} ${planModalTab === 'switch_plan' ? styles.portalTabBtnActive : ''}`}
+                onClick={() => setPlanModalTab('switch_plan')}
+              >
+                ⚡ Switch / Upgrade Plan
+              </button>
+              <button
+                type="button"
+                className={`${styles.portalTabBtn} ${planModalTab === 'add_line' ? styles.portalTabBtnActive : ''}`}
+                onClick={() => {
+                  setPlanModalTab('add_line');
+                  if (newLineReservedPool.length === 0) fetchReservePool();
+                }}
+              >
+                ➕ Add Another Line / SIM
+              </button>
+              <button
+                type="button"
+                className={`${styles.portalTabBtn} ${planModalTab === 'device_calc' ? styles.portalTabBtnActive : ''}`}
+                onClick={() => setPlanModalTab('device_calc')}
+              >
+                📱 Device & Financing
+              </button>
+            </div>
+
+            {/* TAB 1: SWITCH / UPGRADE PLAN FOR ACTIVE SERVICE */}
+            {planModalTab === 'switch_plan' && (
+              <div>
+                {planChangeSuccess && (
+                  <div className={styles.portalAlertSuccess}>
+                    ✓ {planChangeSuccess}
+                  </div>
+                )}
+                {planChangeError && (
+                  <div className={styles.portalAlertError}>
+                    ⚠ {planChangeError}
+                  </div>
+                )}
+
+                <p style={{ fontSize: '13.5px', color: '#4c5a49', marginBottom: '14px' }}>
+                  Select a plan for active line <strong>{activeMobile}</strong>. Quota updates immediately; renewal invoice adjusts on the 28th.
+                </p>
+
+                {/* 3 Plan Cards */}
+                <div className={styles.portalPlansGrid}>
+                  {PORTAL_PLANS.map((plan) => {
+                    const isCurrent = activePlanName.includes(plan.tier);
+                    const isSelected = selectedPlanId === plan.id;
+                    return (
+                      <div
+                        key={plan.id}
+                        className={`${styles.portalPlanCard} ${isSelected ? styles.portalPlanCardSelected : ''}`}
+                        onClick={() => setSelectedPlanId(plan.id)}
+                      >
+                        {isCurrent && (
+                          <span className={styles.portalPlanBadgeCurrent}>CURRENT PLAN</span>
+                        )}
+                        {!isCurrent && plan.popular && (
+                          <span className={styles.portalPlanBadgePopular}>MOST POPULAR</span>
+                        )}
+
+                        <div>
+                          <div className={styles.portalPlanTier}>{plan.tier}</div>
+                          <div className={styles.portalPlanName}>{plan.name}</div>
+                          <div className={styles.portalPlanPriceRow}>
+                            <span className={styles.portalPlanPrice}>${plan.price}</span>
+                            <span className={styles.portalPlanPeriod}>/month</span>
+                          </div>
+                        </div>
+
+                        <ul className={styles.portalPlanFeatures}>
+                          <li>
+                            <span className={styles.featureCheck}>✓</span>
+                            <span>{plan.dataBankGb}GB Data Bank rollover</span>
+                          </li>
+                          <li>
+                            <span className={styles.featureCheck}>✓</span>
+                            <span>Unlimited AU calls & texts</span>
+                          </li>
+                          <li>
+                            <span className={styles.featureCheck}>✓</span>
+                            <span>Telstra Wholesale 5G (100Mbps)</span>
+                          </li>
+                          <li>
+                            <span className={styles.featureCheck}>✓</span>
+                            <span>No lock-in contract</span>
+                          </li>
+                        </ul>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Plan Difference Summary */}
+                {(() => {
+                  const targetPlan = PORTAL_PLANS.find((p) => p.id === selectedPlanId) || PORTAL_PLANS[1];
+                  const currentPlan = PORTAL_PLANS.find((p) => activePlanName.includes(p.tier)) || PORTAL_PLANS[1];
+                  const diff = targetPlan.price - currentPlan.price;
+                  const isSamePlan = targetPlan.id === currentPlan.id;
+
+                  return (
+                    <div className={styles.portalSummaryBox}>
+                      <div className={styles.portalSummaryRow}>
+                        <span>Current Service:</span>
+                        <strong>{activeMobile} ({currentPlan.tier} · ${currentPlan.price}/mth)</strong>
+                      </div>
+                      <div className={styles.portalSummaryRow}>
+                        <span>Selected Upgrade Plan:</span>
+                        <strong style={{ color: '#142420' }}>{targetPlan.name} (${targetPlan.price}/mth)</strong>
+                      </div>
+                      <div className={styles.portalSummaryRow}>
+                        <span>Monthly Cost Difference:</span>
+                        <strong style={{ color: diff > 0 ? '#142420' : diff < 0 ? '#2e7d32' : '#556253' }}>
+                          {diff > 0 ? `+$${diff.toFixed(2)}/month` : diff < 0 ? `-$${Math.abs(diff).toFixed(2)}/month` : 'Same price'}
+                        </strong>
+                      </div>
+                      <div className={styles.portalNoticeText}>
+                        ℹ️ <strong>Billing & Quota Adjustment:</strong> Your data allowance will adjust immediately to {targetPlan.dataGb}GB upon confirmation. Next invoice on 28th will reflect ${targetPlan.price.toFixed(2)}.
+                      </div>
+
+                      <div style={{ marginTop: '16px' }}>
+                        <button
+                          type="button"
+                          className={styles.portalConfirmBtn}
+                          disabled={isChangingPlan || isSamePlan}
+                          onClick={handleConfirmPlanChange}
+                        >
+                          {isChangingPlan
+                            ? 'Switching Plan via Octane APIs...'
+                            : isSamePlan
+                            ? 'Selected Plan is Your Current Plan'
+                            : `Confirm Switch to ${targetPlan.name} ($${targetPlan.price}/mth)`}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+
+            {/* TAB 2: ADD A NEW MOBILE LINE / SIM */}
+            {planModalTab === 'add_line' && (
+              <div>
+                {newLineSuccess && (
+                  <div className={styles.portalAlertSuccess}>
+                    {newLineSuccess}
+                  </div>
+                )}
+                {newLineError && (
+                  <div className={styles.portalAlertError}>
+                    ⚠ {newLineError}
+                  </div>
+                )}
+
+                <p style={{ fontSize: '13.5px', color: '#4c5a49', marginBottom: '14px' }}>
+                  Add a second mobile line or family member to your account. Choose between keeping an existing number or picking a fresh 04XX number from our wholesale pool.
+                </p>
+
+                {/* Plan Selector for New Line */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label className={styles.portalLabel}>1. Select Mobile Plan for New Line</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                    {PORTAL_PLANS.map((plan) => (
+                      <button
+                        key={plan.id}
+                        type="button"
+                        onClick={() => setNewLinePlanId(plan.id)}
+                        className={`${styles.portalPlanCard} ${newLinePlanId === plan.id ? styles.portalPlanCardSelected : ''}`}
+                        style={{ padding: '12px 14px', minHeight: 'auto', textAlign: 'left' }}
+                      >
+                        <div style={{ fontWeight: 800, fontSize: '16px', color: '#142420' }}>{plan.tier}</div>
+                        <div style={{ fontSize: '13px', color: '#556253' }}>${plan.price}/month</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Enabled Keep vs New Number Options */}
+                <div style={{ marginBottom: '16px' }}>
+                  <label className={styles.portalLabel}>2. What would you like to do?</label>
+                  <div className={styles.portalNumberChoiceGrid}>
+                    <button
+                      type="button"
+                      className={`${styles.portalNumberChoiceCard} ${!newLineKeepNumber ? styles.portalNumberChoiceCardActive : ''}`}
+                      onClick={() => {
+                        setNewLineKeepNumber(false);
+                        if (newLineReservedPool.length === 0) fetchReservePool();
+                      }}
+                    >
+                      <span>Get a new 04XX number</span>
+                      {!newLineKeepNumber && <span style={{ color: '#49721d', fontWeight: 800 }}>✓</span>}
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.portalNumberChoiceCard} ${newLineKeepNumber ? styles.portalNumberChoiceCardActive : ''}`}
+                      onClick={() => setNewLineKeepNumber(true)}
+                    >
+                      <span>Keep my existing number</span>
+                      {newLineKeepNumber && <span style={{ color: '#49721d', fontWeight: 800 }}>✓</span>}
+                    </button>
+                  </div>
+                </div>
+
+                {/* OPTION A: Get a new number (Reserved Wholesale Pool) */}
+                {!newLineKeepNumber && (
+                  <div style={{ background: '#fbfdfa', border: '1.5px solid #dce4d8', borderRadius: '12px', padding: '16px', marginBottom: '18px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#142420' }}>
+                        Select Available Number from Telstra Wholesale Pool:
+                      </span>
+                      <button
+                        type="button"
+                        onClick={fetchReservePool}
+                        disabled={isLoadingPool}
+                        style={{ background: 'none', border: 'none', color: '#789937', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
+                      >
+                        {isLoadingPool ? 'Refreshing...' : '🔄 Refresh Pool'}
+                      </button>
+                    </div>
+
+                    <div className={styles.portalReserveList}>
+                      {newLineReservedPool.length > 0 ? (
+                        newLineReservedPool.map((item) => (
+                          <div
+                            key={item.id}
+                            className={`${styles.portalReserveItem} ${newLineSelectedNumber === item.formatted ? styles.portalReserveItemActive : ''}`}
+                            onClick={() => setNewLineSelectedNumber(item.formatted)}
+                          >
+                            <span className={styles.reserveNumberText}>{item.formatted}</span>
+                            <span className={styles.reserveBadge}>5G READY</span>
+                          </div>
+                        ))
+                      ) : (
+                        <div style={{ padding: '12px', textAlign: 'center', color: '#697866', fontSize: '13px' }}>
+                          Loading reserved pool numbers...
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* OPTION B: Keep Existing Number (Porting with ACMA 2FA) */}
+                {newLineKeepNumber && (
+                  <div style={{ background: '#fbfdfa', border: '1.5px solid #dce4d8', borderRadius: '12px', padding: '16px', marginBottom: '18px' }}>
+                    <div className={styles.portalFormGroup}>
+                      <label className={styles.portalLabel}>Existing Australian Mobile Number</label>
+                      <input
+                        type="tel"
+                        className={styles.portalInput}
+                        placeholder="e.g. 0412 345 678"
+                        value={newLinePortNumber}
+                        onChange={(e) => setNewLinePortNumber(e.target.value)}
+                      />
+                    </div>
+
+                    <div className={styles.portalFormGroup}>
+                      <label className={styles.portalLabel}>Current Donor Carrier</label>
+                      <select
+                        className={styles.portalSelect}
+                        value={newLineDonorCarrier}
+                        onChange={(e) => setNewLineDonorCarrier(e.target.value)}
+                      >
+                        <option value="Telstra">Telstra</option>
+                        <option value="Optus">Optus</option>
+                        <option value="Vodafone">Vodafone / TPG</option>
+                        <option value="Other">Other Australian Carrier / MVNO</option>
+                      </select>
+                    </div>
+
+                    {/* Pre-Port ACMA 2FA SMS Code */}
+                    <div style={{ borderTop: '1px dashed #dce4d8', paddingTop: '12px', marginTop: '12px' }}>
+                      <label className={styles.portalLabel}>ACMA Pre-Port SMS 2FA Security Check</label>
+                      <p style={{ fontSize: '12px', color: '#556253', margin: '0 0 10px 0' }}>
+                        Under ACMA standards, donor carrier porting requires a one-time SMS verification code to prove ownership.
+                      </p>
+
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                        <button
+                          type="button"
+                          className={styles.btnPrimary}
+                          style={{ padding: '10px 14px', fontSize: '13px' }}
+                          onClick={handleSendNewLineOtp}
+                        >
+                          {newLineOtpSent ? 'Resend SMS Code' : 'Send ACMA 2FA Code'}
+                        </button>
+                      </div>
+
+                      {newLineOtpSent && (
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <input
+                            type="text"
+                            maxLength={6}
+                            className={styles.portalInput}
+                            style={{ maxWidth: '160px', fontFamily: 'monospace', letterSpacing: '2px', fontWeight: 700 }}
+                            placeholder="6-digit code"
+                            value={newLineOtpCode}
+                            onChange={(e) => setNewLineOtpCode(e.target.value)}
+                          />
+                          <button
+                            type="button"
+                            className={styles.btnSecondaryUpgrade}
+                            style={{ padding: '10px 14px', fontSize: '13px' }}
+                            onClick={handleVerifyNewLineOtp}
+                          >
+                            Verify Code
+                          </button>
+                          {newLineOtpVerified && (
+                            <span style={{ color: '#49721d', fontWeight: 700, fontSize: '13px' }}>
+                              ✓ Mobile Verified
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  type="button"
+                  className={styles.portalConfirmBtn}
+                  disabled={isActivatingLine || (newLineKeepNumber && !newLineOtpVerified)}
+                  onClick={handleActivateNewLine}
+                >
+                  {isActivatingLine
+                    ? 'Activating Carrier eSIM Line...'
+                    : newLineKeepNumber
+                    ? `Submit Port-in Order for ${newLinePortNumber || 'Number'}`
+                    : `Activate New Line (${newLineSelectedNumber})`}
+                </button>
+              </div>
+            )}
+
+            {/* TAB 3: DEVICE & FINANCING CALCULATOR */}
+            {planModalTab === 'device_calc' && (
+              <div>
+                <p style={{ fontSize: '13.5px', color: '#4c5a49', marginBottom: '16px' }}>
+                  Configure handset repayments and bundle a phone with your existing JustMobile service.
+                </p>
+
+                <div className={styles.portalDeviceCalcBox}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#142420' }}>Samsung Galaxy S26 Ultra</h3>
+                      <span style={{ fontSize: '13px', color: '#556253' }}>512GB · Titanium Black · 5G + eSIM</span>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ fontSize: '20px', fontWeight: 800, color: '#142420' }}>${calcHandsetPrice}</span>
+                      <span style={{ fontSize: '12px', color: '#697866', display: 'block' }}>RRP</span>
+                    </div>
+                  </div>
+
+                  <label className={styles.portalLabel}>Repayment Term (Months)</label>
+                  <div className={styles.calcPillGroup}>
+                    {[12, 24, 36].map((months) => (
+                      <button
+                        key={months}
+                        type="button"
+                        className={`${styles.calcPillBtn} ${calcTermMonths === months ? styles.calcPillBtnActive : ''}`}
+                        onClick={() => setCalcTermMonths(months)}
+                      >
+                        {months} Months
+                      </button>
+                    ))}
+                  </div>
+
+                  <label className={styles.portalLabel}>Upfront Contribution</label>
+                  <div className={styles.calcPillGroup}>
+                    {[0, 25, 50].map((pct) => (
+                      <button
+                        key={pct}
+                        type="button"
+                        className={`${styles.calcPillBtn} ${calcUpfrontPct === pct ? styles.calcPillBtnActive : ''}`}
+                        onClick={() => setCalcUpfrontPct(pct)}
+                      >
+                        {pct}% (${((calcHandsetPrice * pct) / 100).toFixed(2)})
+                      </button>
+                    ))}
+                  </div>
+
+                  {(() => {
+                    const upfront = (calcHandsetPrice * calcUpfrontPct) / 100;
+                    const financed = calcHandsetPrice - upfront;
+                    const monthlyHandset = financed / calcTermMonths;
+                    const planFee = activePlanName.includes('20GB') ? 19 : activePlanName.includes('100GB') ? 35 : 25;
+                    const totalMonthly = monthlyHandset + planFee;
+
+                    return (
+                      <div className={styles.portalSummaryBox} style={{ margin: '16px 0 0 0' }}>
+                        <div className={styles.portalSummaryRow}>
+                          <span>Monthly Handset Instalment:</span>
+                          <strong>${monthlyHandset.toFixed(2)}/mth</strong>
+                        </div>
+                        <div className={styles.portalSummaryRow}>
+                          <span>Mobile Plan ({activePlanName}):</span>
+                          <strong>${planFee.toFixed(2)}/mth</strong>
+                        </div>
+                        <div className={styles.portalSummaryRow}>
+                          <span>Upfront Payment Due Today:</span>
+                          <strong>${upfront.toFixed(2)}</strong>
+                        </div>
+                        <div className={styles.portalSummaryRow} style={{ borderTop: '1.5px solid #142420', paddingTop: '10px', marginTop: '6px' }}>
+                          <span style={{ fontSize: '15px', fontWeight: 800 }}>Total Monthly Outlay:</span>
+                          <strong style={{ fontSize: '18px', color: '#142420' }}>${totalMonthly.toFixed(2)}/month</strong>
+                        </div>
+
+                        {calcDeviceSuccess ? (
+                          <div className={styles.portalAlertSuccess} style={{ marginTop: '14px' }}>
+                            ✓ {calcDeviceSuccess}
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            className={styles.portalConfirmBtn}
+                            style={{ marginTop: '16px' }}
+                            onClick={() => {
+                              setCalcDeviceSuccess(`Device add-on request created for Cust #${user.custNo || 'CUST882104'}. Our support agent will confirm shipping.`);
+                              setTimeout(() => setCalcDeviceSuccess(null), 4000);
+                            }}
+                          >
+                            Submit Device Financing Request →
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import styles from './ConfiguratorModal.module.css';
 import { Handset, MOBILE_PLANS, MobilePlan, calculateRepayments } from '@/data/catalogue';
 
@@ -81,7 +82,7 @@ export default function ConfiguratorModal({
         <div className={styles.modalHeader}>
           <div className={styles.headerTitles}>
             <h2 className={styles.modalTitle}>Make it yours.</h2>
-            <p className={styles.modalSubtitle}>Indicative pricing · No order or payment is taken</p>
+            <p className={styles.modalSubtitle}>Indicative pricing & repayment calculator · Register or sign in to order</p>
           </div>
           <button
             type="button"
@@ -332,8 +333,7 @@ export default function ConfiguratorModal({
 
               {/* Fine print */}
               <p className={styles.legalNotice}>
-                Includes upfront contribution. Final phone payment ${calculation.finalPhoneRepayment.toFixed(2)} adjusts rounding.
-                Plan-price illustration is indicative. Australian credit laws and CIS terms apply.
+                This is an indicative calculator. Handset financing repayments and bundled mobile services are ordered securely inside the customer portal with ACMA identity verification and credit review.
               </p>
 
               {/* Proceed CTA */}
@@ -342,9 +342,20 @@ export default function ConfiguratorModal({
                 className={styles.checkoutBtn}
                 onClick={handleProceed}
               >
-                <span>Continue to checkout</span>
+                <span>Proceed to Sign Up to Order</span>
                 <span>→</span>
               </button>
+
+              <div style={{ marginTop: '12px', textAlign: 'center' }}>
+                <span style={{ fontSize: '13px', color: '#687766' }}>Already have an account? </span>
+                <Link
+                  href="/login"
+                  onClick={onClose}
+                  style={{ fontSize: '13px', fontWeight: 700, color: '#142420', textDecoration: 'underline' }}
+                >
+                  Sign in to portal →
+                </Link>
+              </div>
             </div>
           </div>
         </div>

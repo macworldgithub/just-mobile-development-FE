@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import styles from './OrderFlowModal.module.css';
 import { Handset, MobilePlan, calculateRepayments } from '@/data/catalogue';
 
@@ -285,46 +286,29 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                   </div>
                 </div>
 
-                {/* What would you like to do? Section */}
+                {/* Number Options Availability (Public View) */}
                 <div className={styles.whatSection}>
-                  <h3 className={styles.whatTitle}>What would you like to do?</h3>
+                  <h3 className={styles.whatTitle}>Number options included upon sign up</h3>
 
-                  <div className={styles.numberOptionsGrid}>
-                    <button
-                      type="button"
-                      className={`${styles.numberChoiceCard} ${keepExistingNumber ? styles.numberChoiceActive : ''}`}
-                      onClick={() => setKeepExistingNumber(true)}
-                    >
-                      <span className={styles.numberChoiceLabel}>Keep my number</span>
-                      {keepExistingNumber && (
-                        <span className={styles.checkIcon}>
-                          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                            <path d="M4 10.5L8 14.5L16 6" stroke="#142420" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </span>
-                      )}
-                    </button>
-
-                    <button
-                      type="button"
-                      className={`${styles.numberChoiceCard} ${!keepExistingNumber ? styles.numberChoiceActive : ''}`}
-                      onClick={() => setKeepExistingNumber(false)}
-                    >
-                      <span className={styles.numberChoiceLabel}>Get a new number</span>
-                      {!keepExistingNumber && (
-                        <span className={styles.checkIcon}>
-                          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
-                            <path d="M4 10.5L8 14.5L16 6" stroke="#142420" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        </span>
-                      )}
-                    </button>
+                  <div className={styles.publicOptionsBanner}>
+                    <div className={styles.publicOptionItem}>
+                      <span className={styles.optionCheckIcon}>✓</span>
+                      <div className={styles.publicOptionContent}>
+                        <strong>Keep your current mobile number</strong>
+                        <p>Transfer seamlessly from Telstra, Optus, Vodafone or any AU carrier with zero downtime.</p>
+                      </div>
+                    </div>
+                    <div className={styles.publicOptionItem}>
+                      <span className={styles.optionCheckIcon}>✓</span>
+                      <div className={styles.publicOptionContent}>
+                        <strong>Or get a fresh 04XX mobile number</strong>
+                        <p>Instant wholesale allocation from Telstra Wholesale 5G ready immediately upon account setup.</p>
+                      </div>
+                    </div>
                   </div>
 
                   <p className={styles.numberHelperText}>
-                    {keepExistingNumber
-                      ? 'When switching is available, keep your current service active until the number transfer completes. Account and identity checks will be required.'
-                      : 'When activation is available, a new Australian mobile number can be allocated to your service.'}
+                    You will choose your preferred number option and complete ACMA telecommunications identity checks when creating your secure account.
                   </p>
                 </div>
 
@@ -340,6 +324,13 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                     <polyline points="12 5 19 12 12 19" />
                   </svg>
                 </button>
+
+                <div className={styles.signInSecondaryWrap}>
+                  <span className={styles.signInSecondaryPrompt}>Already registered? </span>
+                  <Link href="/login" onClick={onClose} className={styles.signInSecondaryLink}>
+                    Sign in to change plan or order inside →
+                  </Link>
+                </div>
 
                 {/* Bottom link to explore phones */}
                 <div className={styles.bottomLinksWrap}>

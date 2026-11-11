@@ -296,6 +296,457 @@
 }
 
 /* ==========================================================================
+   IN-PORTAL PLAN UPGRADE & SERVICE MANAGEMENT MODAL
+   ========================================================================== */
+.btnSecondaryUpgrade {
+  background-color: #ffffff;
+  color: #142420;
+  border: 1.5px solid #142420;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnSecondaryUpgrade:hover {
+  background-color: #f3f6f1;
+}
+
+.btnAddLineBtn {
+  background-color: #f7faf3;
+  color: #385918;
+  border: 1.5px dashed #789937;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnAddLineBtn:hover {
+  background-color: #eef7e4;
+  border-style: solid;
+}
+
+.planModalWide {
+  background: #ffffff;
+  border-radius: 20px;
+  max-width: 760px;
+  width: 100%;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 30px 28px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+  position: relative;
+  text-align: left;
+}
+
+.modalHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #edf2eb;
+}
+
+.modalTitleLarge {
+  font-family: var(--jm-font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: #142420;
+  margin: 0 0 4px 0;
+}
+
+.modalSubtitleMuted {
+  font-size: 13.5px;
+  color: #697866;
+  margin: 0;
+}
+
+/* Tab Switcher inside Modal */
+.portalTabsNav {
+  display: flex;
+  gap: 8px;
+  background: #f1f4ee;
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.portalTabBtn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #556253;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.portalTabBtnActive {
+  background: #ffffff;
+  color: #142420;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* 3 Plan Cards in Grid */
+.portalPlansGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.portalPlanCard {
+  background: #ffffff;
+  border: 1.5px solid #dce4d8;
+  border-radius: 14px;
+  padding: 18px 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.portalPlanCard:hover {
+  border-color: #789937;
+  transform: translateY(-2px);
+}
+
+.portalPlanCardSelected {
+  border-color: #142420;
+  background: #fbfdfa;
+  box-shadow: 0 0 0 1px #142420, 0 6px 16px rgba(20, 36, 32, 0.08);
+}
+
+.portalPlanBadgeCurrent {
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  background: #eef7e4;
+  color: #3b6b14;
+  border: 1px solid #789937;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.3px;
+}
+
+.portalPlanBadgePopular {
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  background: #142420;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 10px;
+  letter-spacing: 0.3px;
+}
+
+.portalPlanTier {
+  font-family: var(--jm-font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: #142420;
+  margin-bottom: 2px;
+}
+
+.portalPlanName {
+  font-size: 13px;
+  font-weight: 600;
+  color: #556253;
+  margin-bottom: 8px;
+}
+
+.portalPlanPriceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.portalPlanPrice {
+  font-size: 26px;
+  font-weight: 800;
+  color: #142420;
+}
+
+.portalPlanPeriod {
+  font-size: 13px;
+  color: #697866;
+}
+
+.portalPlanFeatures {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 12px;
+  color: #4c5a49;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.portalPlanFeatures li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.featureCheck {
+  color: #49721d;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+/* Comparison and billing info box */
+.portalSummaryBox {
+  background: #f7faf3;
+  border: 1.5px solid #d8e5d3;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.portalSummaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13.5px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #d8e5d3;
+}
+
+.portalSummaryRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.portalNoticeText {
+  font-size: 12.5px;
+  color: #556253;
+  line-height: 1.45;
+  margin-top: 10px;
+  background: #ffffff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #e1ebd9;
+}
+
+.portalConfirmBtn {
+  background-color: #142420;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 14px 24px;
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.portalConfirmBtn:hover:not(:disabled) {
+  background-color: #243a2e;
+}
+
+.portalConfirmBtn:disabled {
+  background-color: #9ab097;
+  cursor: not-allowed;
+}
+
+.portalAlertSuccess {
+  background: #eef7e4;
+  border: 1px solid #789937;
+  color: #2b520e;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.portalAlertError {
+  background: #fdf2f2;
+  border: 1px solid #e57373;
+  color: #b71c1c;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* Number Choice Pills in Add Line */
+.portalNumberChoiceGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.portalNumberChoiceCard {
+  background: #ffffff;
+  border: 1.5px solid #dce4d8;
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #142420;
+  transition: all 0.15s ease;
+}
+
+.portalNumberChoiceCard:hover {
+  border-color: #789937;
+}
+
+.portalNumberChoiceCardActive {
+  background: #f7faf3;
+  border-color: #142420;
+  box-shadow: 0 0 0 1px #142420;
+}
+
+.portalFormGroup {
+  margin-bottom: 16px;
+}
+
+.portalLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #142420;
+  margin-bottom: 6px;
+}
+
+.portalInput {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #c9d8c4;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #ffffff;
+}
+
+.portalInput:focus {
+  outline: 2px solid #789937;
+}
+
+.portalSelect {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #c9d8c4;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #ffffff;
+}
+
+/* Reserve Pool Radio Cards */
+.portalReserveList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 18px 0;
+}
+
+.portalReserveItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #ffffff;
+  border: 1.5px solid #dce4d8;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.portalReserveItem:hover {
+  border-color: #789937;
+}
+
+.portalReserveItemActive {
+  background: #f7faf3;
+  border-color: #142420;
+  box-shadow: 0 0 0 1px #142420;
+}
+
+.reserveNumberText {
+  font-family: var(--jm-font-display);
+  font-size: 16px;
+  font-weight: 800;
+  color: #142420;
+}
+
+.reserveBadge {
+  font-size: 11px;
+  font-weight: 700;
+  background: #eef7e4;
+  color: #3b6b14;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+/* Device Calculator in Portal */
+.portalDeviceCalcBox {
+  background: #fbfdfa;
+  border: 1.5px solid #dce4d8;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.calcPillGroup {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.calcPillBtn {
+  flex: 1;
+  padding: 10px;
+  background: #ffffff;
+  border: 1.5px solid #dce4d8;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: center;
+}
+
+.calcPillBtn:hover {
+  border-color: #789937;
+}
+
+.calcPillBtnActive {
+  background: #142420;
+  color: #ffffff;
+  border-color: #142420;
+}
+
+/* ==========================================================================
    PORTING STATUS CARD & BADGES (INT-10)
    ========================================================================== */
 .portCard {
@@ -624,6 +1075,34 @@
     padding: 24px 18px;
     max-width: 95vw;
     border-radius: 16px;
+  }
+
+  .planModalWide {
+    padding: 22px 16px;
+    max-width: 95vw;
+    border-radius: 16px;
+  }
+
+  .portalPlansGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .portalNumberChoiceGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .portalTabsNav {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .btnSecondaryUpgrade,
+  .btnAddLineBtn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
   }
 }
 
