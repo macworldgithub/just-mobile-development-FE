@@ -154,18 +154,18 @@ export default function Hero({
             {/* Floating Price Pill / Action Card */}
             <div className={styles.floatingPriceCard}>
               <div className={styles.priceInfo}>
-                <span className={styles.pricePlanLabel}>PHONE + 50GB PLAN</span>
+                <span className={styles.pricePlanLabel}>BUY OUTRIGHT · IN STOCK</span>
                 <div className={styles.priceAmountRow}>
-                  <strong className={styles.priceAmount}>$91.63</strong>
-                  <span className={styles.pricePeriod}>/mth*</span>
+                  <strong className={styles.priceAmount}>$2,399</strong>
+                  <span className={styles.pricePeriod}>outright</span>
                 </div>
-                <span className={styles.priceOutrightNote}>Or $2,399 outright.</span>
+                <span className={styles.priceOutrightNote}>Listed RRP $2,499 ($100 less) · Free Express Shipping</span>
               </div>
               <button
                 type="button"
                 className={styles.configurePillBtn}
                 onClick={onConfigureFlagship}
-                aria-label="Configure Galaxy S26 Ultra"
+                aria-label="Order Galaxy S26 Ultra"
               >
                 <span>↗</span>
               </button>
@@ -173,7 +173,7 @@ export default function Hero({
 
             {/* Card fine print */}
             <p className={styles.cardFineprint}>
-              *Based on 36-month term with $0 upfront. Total cost $3,299.00 over 36 months including 50GB mobile plan. Final payment adjusts rounding.
+              Genuine Australian stock with official 24-month manufacturer warranty and free express delivery Australia-wide.
             </p>
           </div>
         </div>
