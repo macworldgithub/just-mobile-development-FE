@@ -1,18 +1,18 @@
 'use strict';
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './ConfiguratorModal.module.css';
-import { Handset, MOBILE_PLANS, MobilePlan, calculateRepayments } from '@/data/catalogue';
+import { Handset, MobilePlan, calculateRepayments } from '@/data/catalogue';
 
 interface ConfiguratorModalProps {
   isOpen: boolean;
   onClose: () => void;
   handset: Handset;
-  onProceedToOrder: (config: {
+  onProceedToOrder?: (config: {
     handset: Handset;
     paymentMode: 'outright' | 'instalments' | 'phone_and_plan';
     termMonths: number;
@@ -26,13 +26,8 @@ export default function ConfiguratorModal({
   isOpen,
   onClose,
   handset,
-  onProceedToOrder,
 }: ConfiguratorModalProps) {
   const router = useRouter();
-  const [paymentMode, setPaymentMode] = useState<'outright' | 'instalments' | 'phone_and_plan'>('phone_and_plan');
-  const [termMonths, setTermMonths] = useState<number>(24);
-  const [upfrontPct, setUpfrontPct] = useState<number>(25);
-  const [selectedPlanId, setSelectedPlanId] = useState<string>('plan-100gb');
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -54,30 +49,16 @@ export default function ConfiguratorModal({
     ? handset.features 
     : Array.isArray(handset.specs) && handset.specs.length > 0 
     ? handset.specs 
-    : ['5G + eSIM', 'Unlimited Standard AU Calls & SMS', 'Australian Manufacturer Warranty'];
+    : ['5G + eSIM', 'Free Express Delivery Australia-wide', 'Australian Manufacturer Warranty'];
   const phonePrice = handset.price ?? handset.outrightPrice ?? 0;
   const phoneOutrightPrice = handset.outrightPrice ?? handset.price ?? phonePrice;
-
-  const currentPlan = MOBILE_PLANS.find((p) => p.id === selectedPlanId) || MOBILE_PLANS[2];
-  const planPrice = paymentMode === 'phone_and_plan' ? currentPlan.pricePerMonth : 0;
-
-  const calculation = calculateRepayments(
-    phonePrice,
-    paymentMode === 'outright' ? 0 : termMonths,
-    paymentMode === 'outright' ? 100 : upfrontPct,
-    planPrice
-  );
-
-  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = Number(e.target.value);
-    // Snap to nearest 0, 25, 50
-    if (val < 13) setUpfrontPct(0);
-    else if (val < 38) setUpfrontPct(25);
-    else setUpfrontPct(50);
-  };
+  const phoneRrp = handset.rrp ?? handset.listedRrp ?? phonePrice;
+  const discount = Math.max(0, phoneRrp - phoneOutrightPrice);
+  const gstAmount = Number((phoneOutrightPrice / 11).toFixed(2));
+  const subtotalExGst = Number((phoneOutrightPrice - gstAmount).toFixed(2));
 
   const handleProceed = () => {
-    // 1. Stash selected configuration in sessionStorage so registration displays their chosen bundle
+    // 1. Stash selected e-commerce order in sessionStorage
     if (typeof window !== 'undefined') {
       try {
         sessionStorage.setItem('justmobile_selected_order', JSON.stringify({
@@ -85,29 +66,24 @@ export default function ConfiguratorModal({
           handsetPrice: phoneOutrightPrice,
           storage: handset.storage,
           color: phoneColor,
-          planName: paymentMode === 'phone_and_plan' ? currentPlan.name : null,
-          planTier: paymentMode === 'phone_and_plan' ? currentPlan.tier : null,
-          pricePerMonth: paymentMode === 'phone_and_plan' ? currentPlan.pricePerMonth : 0,
-          paymentMode,
-          termMonths,
-          upfrontPct,
-          monthlyTotal: calculation.totalMonthly,
+          paymentMode: 'outright',
+          outright: true,
+          shipping: 'Free Express Courier',
+          monthlyTotal: 0,
         }));
       } catch {
         // Storage fallback
       }
     }
 
-    // 2. Close the modal directly without opening any intermediate fake order confirmation
+    // 2. Close the modal
     onClose();
 
-    // 3. Route directly to /signup
+    // 3. Route directly to /signup with device
     const queryParams = new URLSearchParams();
-    if (paymentMode === 'phone_and_plan' && currentPlan?.name) {
-      queryParams.set('plan', currentPlan.name);
-    }
     if (handset?.name) {
       queryParams.set('device', handset.name);
+      queryParams.set('mode', 'outright');
     }
     router.push(`/signup?${queryParams.toString()}`);
   };
@@ -118,8 +94,8 @@ export default function ConfiguratorModal({
         {/* Header */}
         <div className={styles.modalHeader}>
           <div className={styles.headerTitles}>
-            <h2 className={styles.modalTitle}>Make it yours.</h2>
-            <p className={styles.modalSubtitle}>Indicative pricing & repayment calculator · Register or sign in to order</p>
+            <h2 className={styles.modalTitle}>Order Your Handset</h2>
+            <p className={styles.modalSubtitle}>Simple direct e-commerce checkout · Genuine Australian stock with free express delivery</p>
           </div>
           <button
             type="button"
@@ -161,216 +137,114 @@ export default function ConfiguratorModal({
                   <span>{feat}</span>
                 </li>
               ))}
+              <li className={styles.checkItem}>
+                <span className={styles.greenCheck}>✓</span>
+                <span>Factory unlocked · Compatible with all Australian networks</span>
+              </li>
+              <li className={styles.checkItem}>
+                <span className={styles.greenCheck}>✓</span>
+                <span>Free Express Delivery via Australia Post</span>
+              </li>
             </ul>
 
             <div className={styles.shieldBadge}>
               <span className={styles.shieldIcon}>🛡️</span>
-              <span>Supplier-listed · Subject to stock confirmation</span>
+              <span>Official 24-Month Manufacturer Warranty</span>
             </div>
           </div>
 
-          {/* Right Column: Configuration Steps */}
+          {/* Right Column: E-Commerce Fulfilment & Outright Checkout */}
           <div className={styles.controlsColumn}>
-            {/* Step 01: Payment Mode */}
+            {/* Step 01: Product Inclusions */}
             <div className={styles.stepGroup}>
               <div className={styles.stepTitleRow}>
                 <span className={styles.stepNum}>01</span>
-                <span className={styles.stepTitle}>Choose how to pay</span>
+                <span className={styles.stepTitle}>Device Specifications & Stock</span>
               </div>
-              <div className={styles.segmentedToggle}>
-                <button
-                  type="button"
-                  className={`${styles.segmentBtn} ${paymentMode === 'outright' ? styles.segmentActive : ''}`}
-                  onClick={() => setPaymentMode('outright')}
-                >
-                  Outright
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.segmentBtn} ${paymentMode === 'instalments' ? styles.segmentActive : ''}`}
-                  onClick={() => setPaymentMode('instalments')}
-                >
-                  Instalments
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.segmentBtn} ${paymentMode === 'phone_and_plan' ? styles.segmentActive : ''}`}
-                  onClick={() => setPaymentMode('phone_and_plan')}
-                >
-                  Phone + plan
-                </button>
+              <div style={{ background: '#fbfdfa', border: '1.5px solid #dce4d8', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px' }}>
+                  <span style={{ color: '#556253' }}>Selected Model:</span>
+                  <strong style={{ color: '#142420' }}>{handset.name} ({handset.storage})</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px' }}>
+                  <span style={{ color: '#556253' }}>Colour Finish:</span>
+                  <strong style={{ color: '#142420' }}>{phoneColor}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px' }}>
+                  <span style={{ color: '#556253' }}>Network Lock:</span>
+                  <strong style={{ color: '#2e7d32' }}>Factory Unlocked (SIM-free)</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px' }}>
+                  <span style={{ color: '#556253' }}>Warehouse Availability:</span>
+                  <strong style={{ color: '#2e7d32' }}>✓ In Stock (Ships 1-2 business days)</strong>
+                </div>
               </div>
             </div>
 
-            {/* Step 02: Monthly Term & Upfront (if not outright) */}
-            {paymentMode !== 'outright' && (
-              <div className={styles.stepGroup}>
-                <div className={styles.stepTitleRow}>
-                  <span className={styles.stepNum}>02</span>
-                  <span className={styles.stepTitle}>Find your monthly fit</span>
+            {/* Step 02: Simple E-Commerce Fulfilment */}
+            <div className={styles.stepGroup}>
+              <div className={styles.stepTitleRow}>
+                <span className={styles.stepNum}>02</span>
+                <span className={styles.stepTitle}>Delivery & Fulfilment</span>
+              </div>
+              <div style={{ background: '#fbfdfa', border: '1.5px solid #dce4d8', borderRadius: '12px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px' }}>
+                  <span style={{ color: '#556253' }}>Shipping Service:</span>
+                  <strong style={{ color: '#142420' }}>Australia Post Express Courier</strong>
                 </div>
-
-                {/* Term selector cards */}
-                <div className={styles.termGrid}>
-                  {[12, 24, 36].map((months) => {
-                    const isSelected = termMonths === months;
-                    return (
-                      <div
-                        key={months}
-                        className={`${styles.termCard} ${isSelected ? styles.termActive : ''}`}
-                        onClick={() => setTermMonths(months)}
-                        role="button"
-                        tabIndex={0}
-                      >
-                        {isSelected && <span className={styles.termCheck}>✓</span>}
-                        <strong className={styles.termMonths}>{months}</strong>
-                        <span className={styles.termLabel}>months</span>
-                      </div>
-                    );
-                  })}
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px' }}>
+                  <span style={{ color: '#556253' }}>Delivery Cost:</span>
+                  <strong style={{ color: '#2e7d32' }}>FREE ($0.00)</strong>
                 </div>
-
-                {/* Upfront slider */}
-                <div className={styles.upfrontContainer}>
-                  <div className={styles.upfrontHeader}>
-                    <span className={styles.upfrontTitle}>Pay a little upfront</span>
-                    <strong className={styles.upfrontAmountDisplay}>
-                      ${calculation.upfrontAmount.toFixed(2)}
-                    </strong>
-                  </div>
-
-                  <input
-                    type="range"
-                    min="0"
-                    max="50"
-                    step="25"
-                    value={upfrontPct}
-                    onChange={handleSliderChange}
-                    className={styles.rangeSlider}
-                    aria-label="Upfront percentage"
-                  />
-
-                  <div className={styles.sliderMarkers}>
-                    <span className={upfrontPct === 0 ? styles.markerActive : ''}>0%</span>
-                    <span className={upfrontPct === 25 ? styles.markerActive : ''}>25%</span>
-                    <span className={upfrontPct === 50 ? styles.markerActive : ''}>50%</span>
-                  </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px' }}>
+                  <span style={{ color: '#556253' }}>Tracking & Signature:</span>
+                  <strong style={{ color: '#142420' }}>Included on delivery</strong>
                 </div>
               </div>
-            )}
+            </div>
 
-            {/* Step 03: Mobile Plan (if phone + plan) */}
-            {paymentMode === 'phone_and_plan' && (
-              <div className={styles.stepGroup}>
-                <div className={styles.stepTitleRow}>
-                  <span className={styles.stepNum}>03</span>
-                  <span className={styles.stepTitle}>Add your mobile plan</span>
-                </div>
-
-                <div className={styles.plansSelector}>
-                  {MOBILE_PLANS.map((plan) => {
-                    const isSelected = plan.id === selectedPlanId;
-                    return (
-                      <div
-                        key={plan.id}
-                        className={`${styles.planOptionRow} ${isSelected ? styles.planOptionActive : ''}`}
-                        onClick={() => setSelectedPlanId(plan.id)}
-                        role="button"
-                        tabIndex={0}
-                      >
-                        <div className={styles.planOptionLeft}>
-                          <strong className={styles.planOptionTier}>{plan.tier}</strong>
-                          <span className={styles.planOptionName}>{plan.name}</span>
-                        </div>
-                        <div className={styles.planOptionRight}>
-                          <span className={styles.planOptionPrice}>${plan.pricePerMonth}</span>
-                          <span className={styles.planOptionPeriod}>/month</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Step 04 / Summary Card */}
+            {/* Summary Card */}
             <div className={styles.summaryCard}>
               <div className={styles.summaryHeader}>
-                <span className={styles.summaryTitle}>Your indicative total</span>
+                <span className={styles.summaryTitle}>Total Outright Price</span>
                 <span className={styles.infoIcon}>ⓘ</span>
               </div>
 
               {/* Main total display */}
               <div className={styles.totalRow}>
-                {paymentMode === 'outright' ? (
-                  <>
-                    <strong className={styles.bigTotal}>
-                      ${calculation.totalAggregateCost.toLocaleString()}
-                    </strong>
-                    <span className={styles.bigTotalPeriod}>outright</span>
-                  </>
-                ) : (
-                  <>
-                    <strong className={styles.bigTotal}>
-                      ${calculation.totalMonthly.toFixed(2)}
-                    </strong>
-                    <span className={styles.bigTotalPeriod}>/month</span>
-                  </>
-                )}
+                <strong className={styles.bigTotal}>
+                  ${phoneOutrightPrice.toLocaleString()}
+                </strong>
+                <span className={styles.bigTotalPeriod}>AUD outright (Inc. GST)</span>
               </div>
 
               {/* Breakdown lines */}
               <div className={styles.breakdownLines}>
-                {paymentMode !== 'outright' ? (
-                  <>
-                    <div className={styles.breakdownRow}>
-                      <span>Phone repayment</span>
-                      <strong>${calculation.monthlyPhoneRepayment.toFixed(2)}/mth</strong>
-                    </div>
-                    {paymentMode === 'phone_and_plan' && (
-                      <div className={styles.breakdownRow}>
-                        <span>{currentPlan.tier} mobile plan</span>
-                        <strong>${currentPlan.pricePerMonth}/mth</strong>
-                      </div>
-                    )}
-                    <div className={styles.breakdownRow}>
-                      <span>Upfront contribution</span>
-                      <strong>${calculation.upfrontAmount.toFixed(2)}</strong>
-                    </div>
-                  </>
-                ) : (
+                <div className={styles.breakdownRow}>
+                  <span>Handset outright price</span>
+                  <strong>${phoneOutrightPrice.toLocaleString()}</strong>
+                </div>
+                {discount > 0 && (
                   <div className={styles.breakdownRow}>
-                    <span>Handset outright</span>
-                    <strong>${phoneOutrightPrice.toLocaleString()}</strong>
+                    <span style={{ color: '#2e7d32' }}>Instant savings vs Listed RRP (${phoneRrp.toLocaleString()})</span>
+                    <strong style={{ color: '#2e7d32' }}>-${discount.toLocaleString()}</strong>
                   </div>
                 )}
+                <div className={styles.breakdownRow}>
+                  <span>Express Australia-wide delivery</span>
+                  <strong style={{ color: '#2e7d32' }}>FREE</strong>
+                </div>
+                <div className={styles.breakdownRow}>
+                  <span style={{ fontSize: '12px', color: '#697866' }}>Includes 10% Australian GST</span>
+                  <span style={{ fontSize: '12px', color: '#697866' }}>${gstAmount.toFixed(2)}</span>
+                </div>
               </div>
 
               <div className={styles.summaryDivider}></div>
 
-              {/* Aggregate full term */}
-              <div className={styles.aggregateRow}>
-                {paymentMode === 'phone_and_plan' ? (
-                  <>
-                    <span>Phone + plan over {termMonths} months</span>
-                    <strong>${calculation.totalAggregateCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
-                  </>
-                ) : paymentMode === 'instalments' ? (
-                  <>
-                    <span>Phone over {termMonths} months</span>
-                    <strong>${calculation.totalAggregateCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
-                  </>
-                ) : (
-                  <>
-                    <span>Total outright</span>
-                    <strong>${calculation.totalAggregateCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
-                  </>
-                )}
-              </div>
-
               {/* Fine print */}
               <p className={styles.legalNotice}>
-                This is an indicative calculator. Handset financing repayments and bundled mobile services are ordered securely inside the customer portal with ACMA identity verification and credit review.
+                Standard e-commerce purchase with no lock-in telco contracts or ongoing repayment debt. Covered by Australian Consumer Law and official manufacturer warranty.
               </p>
 
               {/* Proceed CTA */}
@@ -379,7 +253,7 @@ export default function ConfiguratorModal({
                 className={styles.checkoutBtn}
                 onClick={handleProceed}
               >
-                <span>Proceed to Sign Up to Order</span>
+                <span>Order Handset (${phoneOutrightPrice.toLocaleString()} Outright)</span>
                 <span>→</span>
               </button>
 

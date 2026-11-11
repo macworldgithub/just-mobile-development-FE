@@ -21,9 +21,6 @@ interface CarrierUsage {
     dataUsedGb: number;
     dataRemainingGb: number;
     percentRemaining: number;
-    bankedDataGb: number;
-    bankedMaxGb: number;
-    autoRollover: boolean;
   };
   voiceAndSms?: {
     unlimitedStandardAuCalls: boolean;
@@ -90,7 +87,6 @@ interface PortalPlanOption {
   tier: string;
   price: number;
   dataGb: number;
-  dataBankGb: number;
   popular?: boolean;
 }
 
@@ -101,7 +97,6 @@ const PORTAL_PLANS: PortalPlanOption[] = [
     tier: '20GB',
     price: 19,
     dataGb: 20,
-    dataBankGb: 200,
   },
   {
     id: 'plan-50gb',
@@ -109,7 +104,6 @@ const PORTAL_PLANS: PortalPlanOption[] = [
     tier: '50GB',
     price: 25,
     dataGb: 50,
-    dataBankGb: 500,
     popular: true,
   },
   {
@@ -118,7 +112,6 @@ const PORTAL_PLANS: PortalPlanOption[] = [
     tier: '100GB',
     price: 35,
     dataGb: 100,
-    dataBankGb: 500,
   },
 ];
 
@@ -181,7 +174,7 @@ export default function AccountPage() {
 
   // Comprehensive data loader for live carrier sync
   const loadAccountData = (custNo: string) => {
-    // 1. Fetch live unbilled usage & data bank
+    // 1. Fetch live unbilled usage
     fetch(`/api/carrier/customers/${custNo}/usage`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
@@ -273,7 +266,6 @@ export default function AccountPage() {
           planName: targetPlan.name,
           monthlyFee: targetPlan.price,
           dataGb: targetPlan.dataGb,
-          dataBankMaxGb: targetPlan.dataBankGb,
           msn: activeMobile,
         }),
       });
@@ -505,7 +497,6 @@ export default function AccountPage() {
   // Safe defaults from carrier or fallback
   const remainingGb = usage?.dataMeter?.dataRemainingGb ?? 42.4;
   const totalGb = usage?.dataMeter?.planTotalGb ?? 50;
-  const bankedGb = usage?.dataMeter?.bankedDataGb ?? 148.2;
   const percentRemaining = Math.round((remainingGb / totalGb) * 100);
 
   // In-flight or completed mobile number porting order (INT-10)
@@ -631,7 +622,7 @@ export default function AccountPage() {
                 {activePlanName} (${(activePlanName.includes('20GB') || activePlanName.includes('Starter') || activePlanName.includes('5GB') ? 19 : activePlanName.includes('100GB') ? 35 : 25).toFixed(2)}/mth)
               </h2>
 
-              {/* Data bank meter synced with live carrier usage */}
+              {/* Monthly data meter synced with live carrier usage */}
               <div className={styles.meterContainer}>
                 <div className={styles.meterInfo}>
                   <span>Current Data Cycle (Renews 28th)</span>
@@ -639,9 +630,6 @@ export default function AccountPage() {
                 </div>
                 <div className={styles.progressBar}>
                   <div className={styles.progressFill} style={{ width: `${percentRemaining}%` }} />
-                </div>
-                <div className={styles.bankedNotice}>
-                  <span>Banked Data Balance: <strong>{bankedGb} GB</strong> (auto rolls over to next billing cycle)</span>
                 </div>
               </div>
 
@@ -1073,7 +1061,7 @@ export default function AccountPage() {
                         <ul className={styles.portalPlanFeatures}>
                           <li>
                             <span className={styles.featureCheck}>✓</span>
-                            <span>{plan.dataBankGb}GB Data Bank rollover</span>
+                            <span>Zero bill shock · data stops at cap</span>
                           </li>
                           <li>
                             <span className={styles.featureCheck}>✓</span>
@@ -1332,99 +1320,61 @@ export default function AccountPage() {
               </div>
             )}
 
-            {/* TAB 3: DEVICE & FINANCING CALCULATOR */}
+            {/* TAB 3: HANDSET E-COMMERCE STORE */}
             {planModalTab === 'device_calc' && (
               <div>
                 <p style={{ fontSize: '13.5px', color: '#4c5a49', marginBottom: '16px' }}>
-                  Configure handset repayments and bundle a phone with your existing JustMobile service.
+                  Order genuine factory unlocked Australian handsets outright with free express delivery.
                 </p>
 
                 <div className={styles.portalDeviceCalcBox}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                     <div>
                       <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#142420' }}>Samsung Galaxy S26 Ultra</h3>
-                      <span style={{ fontSize: '13px', color: '#556253' }}>512GB · Titanium Black · 5G + eSIM</span>
+                      <span style={{ fontSize: '13px', color: '#556253' }}>512GB · Titanium Black · Factory Unlocked · 5G + eSIM</span>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <span style={{ fontSize: '20px', fontWeight: 800, color: '#142420' }}>${calcHandsetPrice}</span>
-                      <span style={{ fontSize: '12px', color: '#697866', display: 'block' }}>RRP</span>
+                      <span style={{ fontSize: '12px', color: '#697866', display: 'block' }}>Outright (Inc. GST)</span>
                     </div>
                   </div>
 
-                  <label className={styles.portalLabel}>Repayment Term (Months)</label>
-                  <div className={styles.calcPillGroup}>
-                    {[12, 24, 36].map((months) => (
-                      <button
-                        key={months}
-                        type="button"
-                        className={`${styles.calcPillBtn} ${calcTermMonths === months ? styles.calcPillBtnActive : ''}`}
-                        onClick={() => setCalcTermMonths(months)}
-                      >
-                        {months} Months
-                      </button>
-                    ))}
-                  </div>
+                  <div className={styles.portalSummaryBox} style={{ margin: '16px 0 0 0' }}>
+                    <div className={styles.portalSummaryRow}>
+                      <span>Device Price:</span>
+                      <strong>${calcHandsetPrice.toLocaleString()}.00 AUD</strong>
+                    </div>
+                    <div className={styles.portalSummaryRow}>
+                      <span>Shipping (Australia Post Express):</span>
+                      <strong style={{ color: '#2e7d32' }}>FREE ($0.00)</strong>
+                    </div>
+                    <div className={styles.portalSummaryRow}>
+                      <span>Includes 10% GST:</span>
+                      <strong>${(calcHandsetPrice / 11).toFixed(2)}</strong>
+                    </div>
+                    <div className={styles.portalSummaryRow} style={{ borderTop: '1.5px solid #142420', paddingTop: '10px', marginTop: '6px' }}>
+                      <span style={{ fontSize: '15px', fontWeight: 800 }}>Total Due Today:</span>
+                      <strong style={{ fontSize: '18px', color: '#142420' }}>${calcHandsetPrice.toLocaleString()}.00</strong>
+                    </div>
 
-                  <label className={styles.portalLabel}>Upfront Contribution</label>
-                  <div className={styles.calcPillGroup}>
-                    {[0, 25, 50].map((pct) => (
-                      <button
-                        key={pct}
-                        type="button"
-                        className={`${styles.calcPillBtn} ${calcUpfrontPct === pct ? styles.calcPillBtnActive : ''}`}
-                        onClick={() => setCalcUpfrontPct(pct)}
-                      >
-                        {pct}% (${((calcHandsetPrice * pct) / 100).toFixed(2)})
-                      </button>
-                    ))}
-                  </div>
-
-                  {(() => {
-                    const upfront = (calcHandsetPrice * calcUpfrontPct) / 100;
-                    const financed = calcHandsetPrice - upfront;
-                    const monthlyHandset = financed / calcTermMonths;
-                    const planFee = activePlanName.includes('20GB') ? 19 : activePlanName.includes('100GB') ? 35 : 25;
-                    const totalMonthly = monthlyHandset + planFee;
-
-                    return (
-                      <div className={styles.portalSummaryBox} style={{ margin: '16px 0 0 0' }}>
-                        <div className={styles.portalSummaryRow}>
-                          <span>Monthly Handset Instalment:</span>
-                          <strong>${monthlyHandset.toFixed(2)}/mth</strong>
-                        </div>
-                        <div className={styles.portalSummaryRow}>
-                          <span>Mobile Plan ({activePlanName}):</span>
-                          <strong>${planFee.toFixed(2)}/mth</strong>
-                        </div>
-                        <div className={styles.portalSummaryRow}>
-                          <span>Upfront Payment Due Today:</span>
-                          <strong>${upfront.toFixed(2)}</strong>
-                        </div>
-                        <div className={styles.portalSummaryRow} style={{ borderTop: '1.5px solid #142420', paddingTop: '10px', marginTop: '6px' }}>
-                          <span style={{ fontSize: '15px', fontWeight: 800 }}>Total Monthly Outlay:</span>
-                          <strong style={{ fontSize: '18px', color: '#142420' }}>${totalMonthly.toFixed(2)}/month</strong>
-                        </div>
-
-                        {calcDeviceSuccess ? (
-                          <div className={styles.portalAlertSuccess} style={{ marginTop: '14px' }}>
-                            ✓ {calcDeviceSuccess}
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            className={styles.portalConfirmBtn}
-                            style={{ marginTop: '16px' }}
-                            onClick={() => {
-                              setCalcDeviceSuccess(`Device add-on request created for Cust #${user.custNo || 'CUST882104'}. Our support agent will confirm shipping.`);
-                              setTimeout(() => setCalcDeviceSuccess(null), 4000);
-                            }}
-                          >
-                            Submit Device Financing Request →
-                          </button>
-                        )}
+                    {calcDeviceSuccess ? (
+                      <div className={styles.portalAlertSuccess} style={{ marginTop: '14px' }}>
+                        ✓ {calcDeviceSuccess}
                       </div>
-                    );
-                  })()}
+                    ) : (
+                      <button
+                        type="button"
+                        className={styles.portalConfirmBtn}
+                        style={{ marginTop: '16px' }}
+                        onClick={() => {
+                          setCalcDeviceSuccess(`Handset order created for Cust #${user.custNo || 'CUST882104'}. Free express shipping confirmed to your registered address.`);
+                          setTimeout(() => setCalcDeviceSuccess(null), 5000);
+                        }}
+                      >
+                        Place Handset Order (${calcHandsetPrice.toLocaleString()} Outright) →
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

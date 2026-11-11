@@ -18,6 +18,10 @@ export default function SignupPage() {
     planTier?: string;
     pricePerMonth?: number;
     handsetName?: string;
+    handsetPrice?: number;
+    storage?: string;
+    color?: string;
+    outright?: boolean;
     monthlyTotal?: number;
     keepExistingNumber?: boolean;
   } | null>(null);
@@ -55,7 +59,7 @@ export default function SignupPage() {
         const stored = sessionStorage.getItem('justmobile_selected_order');
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (parsed && (parsed.planName || parsed.planTier)) {
+          if (parsed && (parsed.planName || parsed.planTier || parsed.handsetName)) {
             setSelectedPlanInfo(parsed);
             if (parsed.keepExistingNumber === false) {
               setNeedNewNumber(true);
@@ -228,23 +232,32 @@ export default function SignupPage() {
               <div className={styles.selectedPlanLeft}>
                 <span className={styles.selectedPlanTier}>
                   {selectedPlanInfo.handsetName
-                    ? `${selectedPlanInfo.handsetName} + ${selectedPlanInfo.planTier || selectedPlanInfo.planName || 'Plan'}`
+                    ? selectedPlanInfo.outright
+                      ? `${selectedPlanInfo.handsetName} (${selectedPlanInfo.storage || 'Unlocked'})`
+                      : `${selectedPlanInfo.handsetName} + ${selectedPlanInfo.planTier || selectedPlanInfo.planName || 'Plan'}`
                     : selectedPlanInfo.planTier || selectedPlanInfo.planName}
                 </span>
                 <span className={styles.selectedPlanPreference}>
                   {selectedPlanInfo.handsetName
-                    ? 'Device bundle · Select number option in portal'
+                    ? selectedPlanInfo.outright
+                      ? 'Outright device order · Free express courier delivery'
+                      : 'Device bundle · Select number option in portal'
                     : needNewNumber
                     ? 'New 04XX mobile number'
                     : 'Both number options supported'}
                 </span>
               </div>
-              {(selectedPlanInfo.monthlyTotal || selectedPlanInfo.pricePerMonth || 0) > 0 && (
+              {selectedPlanInfo.outright ? (
+                <div className={styles.selectedPlanPrice}>
+                  ${Number(selectedPlanInfo.handsetPrice || 0).toLocaleString()}
+                  <span> outright</span>
+                </div>
+              ) : (selectedPlanInfo.monthlyTotal || selectedPlanInfo.pricePerMonth || 0) > 0 ? (
                 <div className={styles.selectedPlanPrice}>
                   ${(selectedPlanInfo.monthlyTotal || selectedPlanInfo.pricePerMonth || 0).toFixed(2)}
                   <span>/mth</span>
                 </div>
-              )}
+              ) : null}
             </div>
           )}
 

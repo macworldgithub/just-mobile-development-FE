@@ -31,7 +31,7 @@ export interface MobilePlan {
   fit: string;
   popular?: boolean;
   features: string[];
-  dataBankingMaxGb: number;
+  dataBankingMaxGb?: number;
   roamingInternationalMinutes?: boolean;
 }
 
@@ -131,14 +131,13 @@ export const MOBILE_PLANS: MobilePlan[] = [
     fit: 'Mostly on Wi-Fi',
     popular: false,
     features: [
-      '20GB high-speed 4G & 5G data',
+      '20GB high-speed 4G & 5G monthly data',
       'Unlimited standard calls & SMS within Australia',
       'Keep your current number or pick a new one',
       'eSIM instant digital activation',
-      'Data banking up to 200GB',
+      'Zero surprise overages · data stops at cap',
       'No lock-in contract · cancel anytime',
     ],
-    dataBankingMaxGb: 200,
     roamingInternationalMinutes: false,
   },
   {
@@ -151,15 +150,14 @@ export const MOBILE_PLANS: MobilePlan[] = [
     description: 'A little more room for life.',
     fit: 'A bit of everything',
     features: [
-      '50GB superfast 5G data (capped up to 250Mbps)',
+      '50GB superfast 5G monthly data (capped up to 250Mbps)',
       'Unlimited standard calls & SMS within Australia',
       'Unlimited standard MMS within Australia',
-      'Data banking up to 500GB',
       'Instant eSIM QR code delivery',
       'Telstra Wholesale 4G & 5G network coverage',
+      'Zero bill shock · data stops when quota reached',
       'No lock-in contract',
     ],
-    dataBankingMaxGb: 500,
     roamingInternationalMinutes: false,
   },
   {
@@ -172,15 +170,14 @@ export const MOBILE_PLANS: MobilePlan[] = [
     description: 'For life in full stream.',
     fit: 'Streaming on the go',
     features: [
-      '100GB uncapped 5G maximum speed data',
+      '100GB uncapped 5G maximum speed monthly data',
       'Unlimited standard calls & SMS within Australia',
       'Unlimited standard international calls to 35 countries',
-      'Data banking up to 1,000GB',
       'Priority Australian customer support queue',
       'eSIM or physical SIM card delivered free',
+      'Zero bill shock · data stops when quota reached',
       'No lock-in contract',
     ],
-    dataBankingMaxGb: 1000,
     roamingInternationalMinutes: true,
   },
 ];

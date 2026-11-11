@@ -12,6 +12,10 @@ export interface User {
   phone?: string;
   custNo?: string;
   role: 'customer' | 'admin';
+  address?: string;
+  suburb?: string;
+  state?: string;
+  postcode?: string;
 }
 
 export interface SignupPayload {

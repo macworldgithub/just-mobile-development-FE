@@ -421,7 +421,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                         <span>${config.plan.pricePerMonth}/mth</span>
                       </div>
                       <span className={styles.itemSub}>
-                        5G Data Banking · Unlimited AU Calls & SMS · No lock-in
+                        Telstra Wholesale 5G · Unlimited AU Calls & SMS · No lock-in
                       </span>
                     </div>
                   )}

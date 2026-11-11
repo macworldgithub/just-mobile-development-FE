@@ -15,7 +15,6 @@ interface PlanCisDetails {
   name: string;
   monthlyFee: number;
   dataGb: number;
-  dataBankMax: number;
   costPerGb: number;
 }
 
@@ -25,7 +24,6 @@ const PLAN_DATA: Record<string, PlanCisDetails> = {
     name: '20GB Just enough Plan',
     monthlyFee: 19,
     dataGb: 20,
-    dataBankMax: 200,
     costPerGb: 0.95,
   },
   '50gb': {
@@ -33,7 +31,6 @@ const PLAN_DATA: Record<string, PlanCisDetails> = {
     name: '50GB Just right Plan',
     monthlyFee: 25,
     dataGb: 50,
-    dataBankMax: 500,
     costPerGb: 0.50,
   },
   '100gb': {
@@ -41,7 +38,6 @@ const PLAN_DATA: Record<string, PlanCisDetails> = {
     name: '100GB Just heaps Plan',
     monthlyFee: 35,
     dataGb: 100,
-    dataBankMax: 500,
     costPerGb: 0.35,
   },
 };
@@ -123,8 +119,8 @@ export default function CisModal({ isOpen, onClose, defaultPlan = '50gb' }: CisM
                 <div className={styles.cellValue}>{plan.dataGb} GB (at 5G speeds)</div>
               </div>
               <div className={styles.cisCell}>
-                <div className={styles.cellLabel}>Data Banking Limit</div>
-                <div className={styles.cellValue}>Up to {plan.dataBankMax} GB auto-rollover</div>
+                <div className={styles.cellLabel}>Excess Data Policy</div>
+                <div className={styles.cellValue}>Data stops at cap (Zero bill shock)</div>
               </div>
             </div>
           </div>
@@ -142,15 +138,15 @@ export default function CisModal({ isOpen, onClose, defaultPlan = '50gb' }: CisM
             </p>
           </div>
 
-          {/* Section 3: Data Usage & Banking Policy */}
+          {/* Section 3: Data Usage & Policy */}
           <div className={styles.section}>
             <div className={styles.sectionHeader}>
-              <span>💾 3. Data Usage & Rollover</span>
+              <span>💾 3. Data Usage & Allowance Policy</span>
             </div>
             <p>
               • <strong>Cost of 1MB / 1GB in allowance:</strong> ${plan.costPerGb.toFixed(2)} per GB included in monthly charge.
-              <br />• <strong>Data Banking:</strong> Unused data automatically rolls into your Data Bank each month, accumulating up to a maximum of {plan.dataBankMax}GB as long as your service remains active on an eligible plan.
-              <br />• <strong>Excess Data:</strong> No surprise overage bills. Data stops when allowance and bank are depleted, with optional top-up packs available in your Customer Portal.
+              <br />• <strong>Monthly Allowance:</strong> Full data quota is refreshed on the 28th of each monthly billing cycle on the Telstra Wholesale 5G & 4G network.
+              <br />• <strong>Excess Data:</strong> No surprise overage bills. Data stops automatically when your monthly allowance is depleted, with optional top-up packs available in your Customer Portal.
             </p>
           </div>
 

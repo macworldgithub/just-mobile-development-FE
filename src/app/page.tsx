@@ -134,7 +134,7 @@ export default function Home() {
         {/* 2. Trust Pillars Bar */}
         <TrustBar />
 
-        {/* 3. Mobile Plans Section ($19, $25, $35 + Data Banking + Number Switching) */}
+        {/* 3. Mobile Plans Section ($19, $25, $35 + Number Switching) */}
         <PlansSection
           onSelectPlan={handleSelectPlan}
           onExplorePhones={() => handleScrollTo('phones')}

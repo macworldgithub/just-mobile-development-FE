@@ -66,7 +66,7 @@ export default function TermsPage() {
             <li className={styles.tocItem}><a href="#s2">2. Month-to-Month Flexibility</a></li>
             <li className={styles.tocItem}><a href="#s3">3. Network Access &amp; Speeds</a></li>
             <li className={styles.tocItem}><a href="#s4">4. Plan Inclusions &amp; Exclusions</a></li>
-            <li className={styles.tocItem}><a href="#s5">5. Data Banking &amp; Rollover</a></li>
+            <li className={styles.tocItem}><a href="#s5">5. Data Usage &amp; Monthly Allowances</a></li>
             <li className={styles.tocItem}><a href="#s6">6. Fair Use Policy</a></li>
             <li className={styles.tocItem}><a href="#s7">7. Billing &amp; Auto-Pay</a></li>
             <li className={styles.tocItem}><a href="#s8">8. Mobile Number Transfers</a></li>
@@ -131,14 +131,14 @@ export default function TermsPage() {
 
           {/* Section 5 */}
           <section id="s5" className={styles.section}>
-            <h2 className={styles.sectionHeader}>5. Data Banking &amp; Rollover</h2>
+            <h2 className={styles.sectionHeader}>5. Data Usage &amp; Monthly Allowances</h2>
             <p className={styles.textParagraph}>
-              Unused data from your standard monthly allowance automatically rolls over into your <strong>Data Bank</strong> at the end of each billing cycle, subject to the following rules:
+              Your JustMobile plan includes a generous monthly data allowance on the 4G and 5G Telstra Wholesale Network:
             </p>
             <ul className={styles.bulletList}>
-              <li><strong>Accumulation Limits:</strong> You can bank up to a maximum of <strong>200 GB</strong> (on the 20GB plan) or <strong>500 GB</strong> (on 50GB and 100GB plans).</li>
-              <li><strong>Auto-Draw Priority:</strong> During any billing cycle, your service will first draw down from your monthly plan allowance. If your monthly allowance is depleted, your phone will automatically draw from your banked data balance with no speed throttling.</li>
-              <li><strong>Forfeiture on Cancellation:</strong> If you cancel your service or your account is terminated for non-payment, any banked data balance is forfeited and has zero monetary or redeemable cash value.</li>
+              <li><strong>Monthly Cycle:</strong> Data allowances reset automatically on the 28th of each calendar billing month. Monthly data allowances do not accumulate or roll over between billing cycles.</li>
+              <li><strong>Zero Bill Shock Policy:</strong> To protect you from unexpected excess data charges, your mobile data session automatically pauses once your monthly plan allowance is reached.</li>
+              <li><strong>Top-Up Data Packs:</strong> If you exhaust your monthly quota before the cycle ends, you may purchase immediate data top-ups anytime directly via your Customer Portal (/account).</li>
             </ul>
           </section>
 

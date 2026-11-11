@@ -70,17 +70,14 @@ export default function AccountDrawer({
               <strong className={styles.planValue}>50GB Just right ($25.00/mth)</strong>
             </div>
 
-            {/* Data Bank Meter */}
+            {/* Monthly Data Meter */}
             <div className={styles.meterContainer}>
               <div className={styles.meterHeader}>
-                <span>Current Data Remaining</span>
-                <strong>42.4 GB of 50 GB</strong>
+                <span>Current Monthly Cycle (Renews 28th)</span>
+                <strong>42.4 GB remaining of 50 GB</strong>
               </div>
               <div className={styles.progressBar}>
                 <div className={styles.progressFill} style={{ width: '84%' }}></div>
-              </div>
-              <div className={styles.bankedNotice}>
-                <span>Data Bank Balance: <strong>148.2 GB</strong> (rolls over automatically)</span>
               </div>
             </div>
 

@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import styles from './PhonesSection.module.css';
-import { HANDSETS, Handset, calculateRepayments, formatCurrency } from '@/data/catalogue';
+import { HANDSETS, Handset, formatCurrency } from '@/data/catalogue';
 
 interface PhonesSectionProps {
   onConfigurePhone: (phone: Handset, initialMode?: 'outright' | 'instalments' | 'phone_and_plan') => void;
@@ -13,7 +13,6 @@ interface PhonesSectionProps {
 export default function PhonesSection({ onConfigurePhone, initialPhones }: PhonesSectionProps) {
   const [phones, setPhones] = useState<Handset[]>(initialPhones || HANDSETS);
   const [activeBrand, setActiveBrand] = useState<string>('All phones');
-  const [priceMode, setPriceMode] = useState<'outright' | 'bundle'>('outright');
 
   // Fetch handsets from MongoDB API
   useEffect(() => {
@@ -53,15 +52,15 @@ export default function PhonesSection({ onConfigurePhone, initialPhones }: Phone
         {/* Section Heading */}
         <div className={styles.sectionHeading}>
           <div>
-            <span className={styles.eyebrow}>NEW PHONES. FRESH POSSIBILITIES.</span>
+            <span className={styles.eyebrow}>NEW PHONES. DIRECT E-COMMERCE.</span>
             <h2 className={styles.title}>
               A phone you love.
               <br />
-              A price that feels right.
+              Delivered straight to your door.
             </h2>
             <p className={styles.subtitle}>
               A considered selection from Samsung and Google.
-              <br className={styles.desktopBreak} /> Buy outright, spread the cost, or make it a phone + plan.
+              <br className={styles.desktopBreak} /> Buy outright with free express delivery Australia-wide and genuine Australian manufacturer warranty.
             </p>
           </div>
           <a
@@ -77,7 +76,7 @@ export default function PhonesSection({ onConfigurePhone, initialPhones }: Phone
           </a>
         </div>
 
-        {/* Shop Controls: Filter Tabs & Price Display Switch */}
+        {/* Shop Controls: Filter Tabs */}
         <div className={styles.shopControls}>
           <div className={styles.brandFilters} role="tablist" aria-label="Filter by brand">
             {['All phones', 'Samsung', 'Google'].map((brand) => (
@@ -94,34 +93,15 @@ export default function PhonesSection({ onConfigurePhone, initialPhones }: Phone
             ))}
           </div>
 
-          <div className={styles.priceDisplayToggle}>
-            <span className={styles.priceToggleLabel}>Show price</span>
-            <div className={styles.toggleButtonsGroup}>
-              <button
-                type="button"
-                aria-pressed={priceMode === 'outright'}
-                className={`${styles.toggleBtn} ${priceMode === 'outright' ? styles.toggleSelected : ''}`}
-                onClick={() => setPriceMode('outright')}
-              >
-                Outright
-              </button>
-              <button
-                type="button"
-                aria-pressed={priceMode === 'bundle'}
-                className={`${styles.toggleBtn} ${priceMode === 'bundle' ? styles.toggleSelected : ''}`}
-                onClick={() => setPriceMode('bundle')}
-              >
-                Phone + plan
-              </button>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#556253' }}>
+            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#49721d' }}></span>
+            <span>All devices in stock · Free express delivery</span>
           </div>
         </div>
 
         {/* Phone Cards Grid */}
         <div className={styles.phoneGrid}>
           {filteredPhones.map((phone) => {
-            // 36 months, 0 upfront, 50GB plan ($25)
-            const bundleRepay = calculateRepayments(phone.price, 36, 0, 25);
             const discount = phone.rrp - phone.price;
 
             return (
@@ -133,8 +113,8 @@ export default function PhonesSection({ onConfigurePhone, initialPhones }: Phone
                   <button
                     type="button"
                     className={styles.imageButton}
-                    aria-label={`Explore ${phone.name}`}
-                    onClick={() => onConfigurePhone(phone, priceMode === 'outright' ? 'outright' : 'phone_and_plan')}
+                    aria-label={`Order ${phone.name}`}
+                    onClick={() => onConfigurePhone(phone, 'outright')}
                   >
                     <img
                       src={phone.image}
@@ -163,37 +143,25 @@ export default function PhonesSection({ onConfigurePhone, initialPhones }: Phone
 
                   {/* Price display row */}
                   <div className={styles.phonePrice}>
-                    {priceMode === 'outright'
-                      ? formatCurrency(phone.price)
-                      : formatCurrency(bundleRepay.monthly, 2)}
+                    {formatCurrency(phone.price)}
                     <span className={styles.priceUnit}>
-                      {priceMode === 'outright' ? 'outright' : '/month*'}
+                      outright
                     </span>
                   </div>
 
                   {/* Price detail subtext */}
                   <p className={styles.phonePriceDetail}>
-                    {priceMode === 'outright' ? (
-                      <>
-                        Listed RRP <s>{formatCurrency(phone.rrp)}</s>{' '}
-                        <b className={styles.savingsTag}>{formatCurrency(discount)} less</b>
-                      </>
-                    ) : (
-                      <>
-                        Phone + 50GB plan.
-                        <br />
-                        36 months; {formatCurrency(bundleRepay.termTotal, 2)} full-term illustration.
-                      </>
-                    )}
+                    Listed RRP <s>{formatCurrency(phone.rrp)}</s>{' '}
+                    <b className={styles.savingsTag}>{formatCurrency(discount)} less</b>
                   </p>
 
-                  {/* Explore button */}
+                  {/* Order button */}
                   <button
                     type="button"
                     className={styles.exploreBtn}
-                    onClick={() => onConfigurePhone(phone, priceMode === 'outright' ? 'outright' : 'phone_and_plan')}
+                    onClick={() => onConfigurePhone(phone, 'outright')}
                   >
-                    <span>Explore phone</span>
+                    <span>Order Handset</span>
                     <span className={styles.buttonArrow}>↗</span>
                   </button>
                 </div>
@@ -204,10 +172,7 @@ export default function PhonesSection({ onConfigurePhone, initialPhones }: Phone
 
         {/* Section Fineprint */}
         <p className={styles.sectionFineprint}>
-          All handset prices include GST. Outright purchases and instalment terms (12, 24, 36 months) available with optional upfront contributions.{' '}
-          {priceMode === 'bundle'
-            ? 'Monthly bundle includes your device instalment and mobile plan. Final payment adjusts rounding.'
-            : 'Genuine Australian stock with manufacturer warranty and free express delivery Australia-wide.'}
+          All handset prices include 10% Australian GST. Genuine Australian stock with manufacturer warranty and free express delivery Australia-wide via Australia Post Express.
         </p>
       </div>
     </section>
