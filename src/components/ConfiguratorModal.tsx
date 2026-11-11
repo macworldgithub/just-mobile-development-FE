@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import styles from './ConfiguratorModal.module.css';
 import { Handset, MOBILE_PLANS, MobilePlan, calculateRepayments } from '@/data/catalogue';
 
@@ -27,6 +28,7 @@ export default function ConfiguratorModal({
   handset,
   onProceedToOrder,
 }: ConfiguratorModalProps) {
+  const router = useRouter();
   const [paymentMode, setPaymentMode] = useState<'outright' | 'instalments' | 'phone_and_plan'>('phone_and_plan');
   const [termMonths, setTermMonths] = useState<number>(24);
   const [upfrontPct, setUpfrontPct] = useState<number>(25);
@@ -75,14 +77,39 @@ export default function ConfiguratorModal({
   };
 
   const handleProceed = () => {
-    onProceedToOrder({
-      handset,
-      paymentMode,
-      termMonths,
-      upfrontPct,
-      plan: paymentMode === 'phone_and_plan' ? currentPlan : undefined,
-      repayments: calculation,
-    });
+    // 1. Stash selected configuration in sessionStorage so registration displays their chosen bundle
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.setItem('justmobile_selected_order', JSON.stringify({
+          handsetName: handset.name,
+          handsetPrice: phoneOutrightPrice,
+          storage: handset.storage,
+          color: phoneColor,
+          planName: paymentMode === 'phone_and_plan' ? currentPlan.name : null,
+          planTier: paymentMode === 'phone_and_plan' ? currentPlan.tier : null,
+          pricePerMonth: paymentMode === 'phone_and_plan' ? currentPlan.pricePerMonth : 0,
+          paymentMode,
+          termMonths,
+          upfrontPct,
+          monthlyTotal: calculation.totalMonthly,
+        }));
+      } catch {
+        // Storage fallback
+      }
+    }
+
+    // 2. Close the modal directly without opening any intermediate fake order confirmation
+    onClose();
+
+    // 3. Route directly to /signup
+    const queryParams = new URLSearchParams();
+    if (paymentMode === 'phone_and_plan' && currentPlan?.name) {
+      queryParams.set('plan', currentPlan.name);
+    }
+    if (handset?.name) {
+      queryParams.set('device', handset.name);
+    }
+    router.push(`/signup?${queryParams.toString()}`);
   };
 
   return (

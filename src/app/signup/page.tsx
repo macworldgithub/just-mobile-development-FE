@@ -14,10 +14,12 @@ export default function SignupPage() {
 
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedPlanInfo, setSelectedPlanInfo] = useState<{
-    planName: string;
-    planTier: string;
-    pricePerMonth: number;
-    keepExistingNumber: boolean;
+    planName?: string;
+    planTier?: string;
+    pricePerMonth?: number;
+    handsetName?: string;
+    monthlyTotal?: number;
+    keepExistingNumber?: boolean;
   } | null>(null);
 
   // Personal Information
@@ -225,15 +227,22 @@ export default function SignupPage() {
             <div className={styles.selectedPlanBanner}>
               <div className={styles.selectedPlanLeft}>
                 <span className={styles.selectedPlanTier}>
-                  {selectedPlanInfo.planTier || selectedPlanInfo.planName}
+                  {selectedPlanInfo.handsetName
+                    ? `${selectedPlanInfo.handsetName} + ${selectedPlanInfo.planTier || selectedPlanInfo.planName || 'Plan'}`
+                    : selectedPlanInfo.planTier || selectedPlanInfo.planName}
                 </span>
                 <span className={styles.selectedPlanPreference}>
-                  {needNewNumber ? 'New 04XX mobile number' : 'Keep existing mobile number'}
+                  {selectedPlanInfo.handsetName
+                    ? 'Device bundle · Select number option in portal'
+                    : needNewNumber
+                    ? 'New 04XX mobile number'
+                    : 'Both number options supported'}
                 </span>
               </div>
-              {selectedPlanInfo.pricePerMonth > 0 && (
+              {(selectedPlanInfo.monthlyTotal || selectedPlanInfo.pricePerMonth || 0) > 0 && (
                 <div className={styles.selectedPlanPrice}>
-                  ${selectedPlanInfo.pricePerMonth}<span>/mth</span>
+                  ${(selectedPlanInfo.monthlyTotal || selectedPlanInfo.pricePerMonth || 0).toFixed(2)}
+                  <span>/mth</span>
                 </div>
               )}
             </div>

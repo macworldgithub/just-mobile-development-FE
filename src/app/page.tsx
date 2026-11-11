@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import TrustBar from '@/components/TrustBar';
@@ -21,6 +22,7 @@ import BeleChatWidget from '@/components/BeleChatWidget';
 import { HANDSETS, Handset, MOBILE_PLANS, MobilePlan, calculateRepayments } from '@/data/catalogue';
 
 export default function Home() {
+  const router = useRouter();
   // Modal states
   const [configuratorOpen, setConfiguratorOpen] = useState(false);
   const [activeHandset, setActiveHandset] = useState<Handset>(HANDSETS[0]);
@@ -68,7 +70,7 @@ export default function Home() {
     setOrderModalOpen(true);
   };
 
-  // Proceeding from configurator into checkout order flow
+  // Proceeding from configurator into signup directly without intermediate fake order modal
   const handleProceedToOrder = (config: {
     handset: Handset;
     paymentMode: 'outright' | 'instalments' | 'phone_and_plan';
@@ -78,8 +80,27 @@ export default function Home() {
     repayments: any;
   }) => {
     setConfiguratorOpen(false);
-    setOrderConfig(config);
-    setOrderModalOpen(true);
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.setItem('justmobile_selected_order', JSON.stringify({
+          handsetName: config.handset.name,
+          handsetPrice: config.handset.outrightPrice || config.handset.price,
+          planName: config.plan?.name || null,
+          planTier: config.plan?.tier || null,
+          pricePerMonth: config.plan?.pricePerMonth || 0,
+          paymentMode: config.paymentMode,
+          termMonths: config.termMonths,
+          upfrontPct: config.upfrontPct,
+          monthlyTotal: config.repayments?.totalMonthly || 0,
+        }));
+      } catch {
+        // Storage fallback
+      }
+    }
+    const q = new URLSearchParams();
+    if (config.plan?.name) q.set('plan', config.plan.name);
+    if (config.handset?.name) q.set('device', config.handset.name);
+    router.push(`/signup?${q.toString()}`);
   };
 
   // Quick eSIM QR trigger from Account Drawer
