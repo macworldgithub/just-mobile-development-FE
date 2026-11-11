@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 import styles from './OrderFlowModal.module.css';
 import { Handset, MobilePlan, calculateRepayments } from '@/data/catalogue';
 
@@ -39,11 +40,28 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
   const [selectedNumber, setSelectedNumber] = useState<string>('0488 912 340');
   const [isLoadingNumbers, setIsLoadingNumbers] = useState<boolean>(false);
 
+  // Auth state
+  const { user } = useAuth();
+
   // Customer info
   const [name, setName] = useState('Alexander Wright');
   const [email, setEmail] = useState('alexander.wright@justmobile.com.au');
   const [dob, setDob] = useState('14/06/1992');
   const [address, setAddress] = useState('Unit 4, 182 George Street, Sydney NSW 2000');
+  const [emailNotice, setEmailNotice] = useState<string | null>(null);
+  const [isResendingEmail, setIsResendingEmail] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      if (user.name) setName(user.name);
+      if (user.email) setEmail(user.email);
+      if (user.address) {
+        setAddress(
+          `${user.address}${user.suburb ? `, ${user.suburb}` : ''}${user.state ? ` ${user.state}` : ''}${user.postcode ? ` ${user.postcode}` : ''}`
+        );
+      }
+    }
+  }, [user]);
 
   // Order state & QR details from native backend
   const [orderId, setOrderId] = useState('');
@@ -169,20 +187,25 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
   const startAutomatedFulfillment = async () => {
     setStep(3);
     setCurrentOrderState('quote_accepted');
+    setEmailNotice(null);
 
     try {
       const endpoint = keepExistingNumber ? '/api/carrier/orders/activate-port' : '/api/carrier/orders/activate';
+      const activeCustNo = user?.custNo || 'CUST882104';
+      const activeEmail = email || user?.email || 'alexander.wright@justmobile.com.au';
       const orderPayload = {
-        custNo: 'CUST882104',
+        custNo: activeCustNo,
         msn: keepExistingNumber ? portNumber : selectedNumber.replace(/\s+/g, ''),
         planNo: '13369',
         planName: config?.plan?.name || '50GB Just right Plan',
         pricePerMonth: config?.plan?.pricePerMonth || 25,
-        email: email || 'alexander.wright@justmobile.com.au',
-        address: address || 'Unit 4, 182 George Street',
-        suburb: 'Sydney',
-        state: 'NSW',
-        postcode: '2000',
+        email: activeEmail,
+        address: address || user?.address || 'Unit 4, 182 George Street',
+        suburb: user?.suburb || 'Sydney',
+        state: user?.state || 'NSW',
+        postcode: user?.postcode || '2000',
+        firstName: name.split(' ')[0] || user?.name?.split(' ')[0] || 'Alexander',
+        lastName: name.split(' ').slice(1).join(' ') || user?.name?.split(' ').slice(1).join(' ') || 'Wright',
         ...(keepExistingNumber ? { numType: 'prepaid', dob: dob || '1992-06-14' } : {}),
       };
 
@@ -195,6 +218,10 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
       const activateData = await activateRes.json();
       const createdOrderId = activateData?.orderId || orderId;
       setOrderId(createdOrderId);
+
+      if (activateData?.emailSent) {
+        setEmailNotice(`✓ eSIM activation QR code dispatched to ${activateData.emailRecipient || activeEmail}`);
+      }
 
       // Fetch QR Code details
       const qrRes = await fetch(`/api/carrier/qrcodes/${createdOrderId}`);
@@ -213,6 +240,30 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
     setTimeout(() => setCurrentOrderState('service_confirmed'), 6200);
     setTimeout(() => setCurrentOrderState('profile_available'), 7600);
     setTimeout(() => setCurrentOrderState('ready_to_use'), 9000);
+  };
+
+  const handleResendEmail = async () => {
+    if (!orderId) return;
+    setIsResendingEmail(true);
+    try {
+      const activeCustNo = user?.custNo || 'CUST882104';
+      const targetEmail = email || user?.email || 'alexander.wright@justmobile.com.au';
+      const res = await fetch(`/api/carrier/customers/${activeCustNo}/orders/${orderId}/send-esim-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: targetEmail }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setEmailNotice(`✓ Fresh eSIM QR code dispatched to ${targetEmail}`);
+      } else {
+        setEmailNotice('Could not send email at this time.');
+      }
+    } catch {
+      setEmailNotice('Network error dispatching email.');
+    } finally {
+      setIsResendingEmail(false);
+    }
   };
 
   const handleCopyLpa = () => {
@@ -697,6 +748,51 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                       </button>
                     </div>
                   )}
+
+                  {/* Automated eSIM Email Dispatch Status Banner (INT-07) */}
+                  <div
+                    style={{
+                      background: '#F0F9EA',
+                      border: '1px solid #789937',
+                      borderRadius: '10px',
+                      padding: '12px 16px',
+                      margin: '0 auto 18px',
+                      width: '100%',
+                      textAlign: 'center',
+                      boxSizing: 'border-box',
+                    }}
+                  >
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: '#275210', marginBottom: '4px' }}>
+                      ✉ eSIM Welcome Email Dispatched
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#495746', marginBottom: '8px', lineHeight: 1.45 }}>
+                      A scannable QR code image, SM-DP+ LPA code, and step-by-step setup instructions have been emailed to{' '}
+                      <strong>{email || user?.email || 'your email address'}</strong>.
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleResendEmail}
+                      disabled={isResendingEmail}
+                      style={{
+                        background: '#ffffff',
+                        border: '1px solid #789937',
+                        borderRadius: '6px',
+                        padding: '5px 14px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        color: '#275210',
+                        cursor: isResendingEmail ? 'not-allowed' : 'pointer',
+                        opacity: isResendingEmail ? 0.6 : 1,
+                      }}
+                    >
+                      {isResendingEmail ? 'Sending via Hostinger SMTP...' : '📨 Resend Welcome Email'}
+                    </button>
+                    {emailNotice && (
+                      <div style={{ fontSize: '11.5px', color: '#1B5E20', marginTop: '8px', fontWeight: 600 }}>
+                        {emailNotice}
+                      </div>
+                    )}
+                  </div>
 
                   <div className={styles.esimInstructions}>
                     <p><strong>iOS:</strong> Settings → Mobile / Cellular → Add eSIM → Scan QR Code</p>

@@ -10,10 +10,14 @@ import styles from './admin.module.css';
 
 interface CustomerRecord {
   id: string;
+  custNo?: string;
   name: string;
   email: string;
   phone: string;
   role: string;
+  planName?: string;
+  planPrice?: number;
+  lineStatus?: string;
   createdAt: string;
   lastLoginAt?: string;
 }
@@ -135,10 +139,12 @@ export default function AdminPage() {
             <table className={styles.table}>
               <thead>
                 <tr>
+                  <th>Cust #</th>
                   <th>Subscriber Name</th>
                   <th>Email Address</th>
                   <th>Mobile Number</th>
-                  <th>Role</th>
+                  <th>Active Plan / Package</th>
+                  <th>Network Status</th>
                   <th>Created At</th>
                   <th>Last Login</th>
                 </tr>
@@ -146,18 +152,24 @@ export default function AdminPage() {
               <tbody>
                 {customers.length === 0 ? (
                   <tr>
-                    <td colSpan={6} style={{ textAlign: 'center', padding: '32px', color: '#7e968a' }}>
+                    <td colSpan={8} style={{ textAlign: 'center', padding: '32px', color: '#7e968a' }}>
                       {loadingData ? 'Loading subscribers...' : 'No customer records found.'}
                     </td>
                   </tr>
                 ) : (
                   customers.map((c) => (
                     <tr key={c.id}>
+                      <td>
+                        <span className={styles.custNoBadge}>{c.custNo || '—'}</span>
+                      </td>
                       <td style={{ fontWeight: 600 }}>{c.name}</td>
                       <td>{c.email}</td>
                       <td>{c.phone || '0488 912 340'}</td>
                       <td>
-                        <span className={styles.roleBadge}>{c.role}</span>
+                        <span className={styles.planBadge}>{c.planName || 'Starter Mobile 5G'}</span>
+                      </td>
+                      <td>
+                        <span className={styles.statusActiveBadge}>{c.lineStatus || 'Active'}</span>
                       </td>
                       <td>{new Date(c.createdAt).toLocaleDateString('en-AU')}</td>
                       <td>{c.lastLoginAt ? new Date(c.lastLoginAt).toLocaleTimeString('en-AU') : 'Never'}</td>

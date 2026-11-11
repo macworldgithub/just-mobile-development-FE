@@ -628,7 +628,7 @@ export default function AccountPage() {
               </div>
 
               <h2 className={styles.cardTitle}>
-                {activePlanName} (${(activePlanName.includes('20GB') ? 19 : activePlanName.includes('100GB') ? 35 : 25).toFixed(2)}/mth)
+                {activePlanName} (${(activePlanName.includes('20GB') || activePlanName.includes('Starter') || activePlanName.includes('5GB') ? 19 : activePlanName.includes('100GB') ? 35 : 25).toFixed(2)}/mth)
               </h2>
 
               {/* Data bank meter synced with live carrier usage */}
@@ -683,37 +683,77 @@ export default function AccountPage() {
             {/* Handset Financing Card */}
             <div className={styles.card}>
               <h2 className={styles.cardTitle}>Device & Financing</h2>
-              <div className={styles.detailsList}>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Device</span>
-                  <span className={styles.detailValue}>Samsung Galaxy S26 Ultra 512GB (Black)</span>
-                </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Instalment Term</span>
-                  <span className={styles.detailValue}>Month 1 of 24</span>
-                </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Monthly Instalment</span>
-                  <span className={styles.detailValue}>$74.96/mth</span>
-                </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Remaining Balance</span>
-                  <span className={styles.detailValue}>$1,724.29</span>
-                </div>
-              </div>
-              <div style={{ marginTop: '16px' }}>
-                <button
-                  type="button"
-                  className={styles.btnSecondaryUpgrade}
-                  onClick={() => {
-                    setPlanModalTab('device_calc');
-                    setIsPlanModalOpen(true);
-                  }}
-                  style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
-                >
-                  <span>📱 Calculate & Add Device to Plan</span>
-                </button>
-              </div>
+              {user.custNo === 'CUST882104' ? (
+                <>
+                  <div className={styles.detailsList}>
+                    <div className={styles.detailItem}>
+                      <span className={styles.detailLabel}>Device</span>
+                      <span className={styles.detailValue}>Samsung Galaxy S26 Ultra 512GB (Black)</span>
+                    </div>
+                    <div className={styles.detailItem}>
+                      <span className={styles.detailLabel}>Instalment Term</span>
+                      <span className={styles.detailValue}>Month 1 of 24</span>
+                    </div>
+                    <div className={styles.detailItem}>
+                      <span className={styles.detailLabel}>Monthly Instalment</span>
+                      <span className={styles.detailValue}>$74.96/mth</span>
+                    </div>
+                    <div className={styles.detailItem}>
+                      <span className={styles.detailLabel}>Remaining Balance</span>
+                      <span className={styles.detailValue}>$1,724.29</span>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '16px' }}>
+                    <button
+                      type="button"
+                      className={styles.btnSecondaryUpgrade}
+                      onClick={() => {
+                        setPlanModalTab('device_calc');
+                        setIsPlanModalOpen(true);
+                      }}
+                      style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
+                    >
+                      <span>📱 View Repayment Schedule</span>
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className={styles.detailsList}>
+                    <div className={styles.detailItem}>
+                      <span className={styles.detailLabel}>Device Status</span>
+                      <span className={styles.detailValue}>BYO Phone (SIM-Only · Unlocked)</span>
+                    </div>
+                    <div className={styles.detailItem}>
+                      <span className={styles.detailLabel}>Financing Contract</span>
+                      <span className={styles.detailValue} style={{ color: '#49721d', fontWeight: 600 }}>
+                        ✓ No Active Device Debt ($0.00 / Contract-Free)
+                      </span>
+                    </div>
+                    <div className={styles.detailItem}>
+                      <span className={styles.detailLabel}>Monthly Instalment</span>
+                      <span className={styles.detailValue}>$0.00/mth</span>
+                    </div>
+                    <div className={styles.detailItem}>
+                      <span className={styles.detailLabel}>Device Upgrade</span>
+                      <span className={styles.detailValue}>Eligible for Flagship Handset Add-On</span>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '16px' }}>
+                    <button
+                      type="button"
+                      className={styles.btnSecondaryUpgrade}
+                      onClick={() => {
+                        setPlanModalTab('device_calc');
+                        setIsPlanModalOpen(true);
+                      }}
+                      style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
+                    >
+                      <span>📱 Browse Handsets & Add to Plan</span>
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
