@@ -21,7 +21,22 @@ export default function PhonesSection({ onConfigurePhone, initialPhones }: Phone
       .then((res) => res.json())
       .then((data) => {
         if (data.data && Array.isArray(data.data)) {
-          setPhones(data.data);
+          const normalized: Handset[] = data.data.map((p: any) => ({
+            ...p,
+            color: p.color || p.colour || 'Black',
+            colour: p.colour || p.color || 'Black',
+            outrightPrice: p.outrightPrice ?? p.price ?? 0,
+            price: p.price ?? p.outrightPrice ?? 0,
+            listedRrp: p.listedRrp ?? p.rrp ?? 0,
+            rrp: p.rrp ?? p.listedRrp ?? 0,
+            headline: p.headline || p.description || '',
+            description: p.description || p.headline || '',
+            features: Array.isArray(p.features) && p.features.length > 0 ? p.features : p.specs || [],
+            specs: Array.isArray(p.specs) && p.specs.length > 0 ? p.specs : p.features || [],
+            tag: p.tag || p.label || '',
+            label: p.label || p.tag || '',
+          }));
+          setPhones(normalized);
         }
       })
       .catch((err) => console.error('Failed to load handsets from DB:', err));

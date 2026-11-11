@@ -44,13 +44,23 @@ export default function ConfiguratorModal({
     };
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !handset) return null;
+
+  const phoneColor = handset.color || handset.colour || 'Black';
+  const phoneHeadline = handset.headline || handset.description || '';
+  const phoneFeatures = Array.isArray(handset.features) && handset.features.length > 0 
+    ? handset.features 
+    : Array.isArray(handset.specs) && handset.specs.length > 0 
+    ? handset.specs 
+    : ['5G + eSIM', 'Unlimited Standard AU Calls & SMS', 'Australian Manufacturer Warranty'];
+  const phonePrice = handset.price ?? handset.outrightPrice ?? 0;
+  const phoneOutrightPrice = handset.outrightPrice ?? handset.price ?? phonePrice;
 
   const currentPlan = MOBILE_PLANS.find((p) => p.id === selectedPlanId) || MOBILE_PLANS[2];
   const planPrice = paymentMode === 'phone_and_plan' ? currentPlan.pricePerMonth : 0;
 
   const calculation = calculateRepayments(
-    handset.price,
+    phonePrice,
     paymentMode === 'outright' ? 0 : termMonths,
     paymentMode === 'outright' ? 100 : upfrontPct,
     planPrice
@@ -101,13 +111,13 @@ export default function ConfiguratorModal({
             <div className={styles.deviceHeader}>
               <span className={styles.brandSubtitle}>{handset.brand}</span>
               <h3 className={styles.deviceTitle}>{handset.name}</h3>
-              <span className={styles.variantSubtitle}>{handset.storage} · {handset.color}</span>
+              <span className={styles.variantSubtitle}>{handset.storage} · {phoneColor}</span>
             </div>
 
             <div className={styles.imageWrap}>
               <Image
                 src={handset.image}
-                alt={`${handset.name} in ${handset.color}`}
+                alt={`${handset.name} in ${phoneColor}`}
                 width={360}
                 height={400}
                 className={styles.previewImage}
@@ -115,10 +125,10 @@ export default function ConfiguratorModal({
               />
             </div>
 
-            <p className={styles.tagline}>{handset.headline}</p>
+            <p className={styles.tagline}>{phoneHeadline}</p>
 
             <ul className={styles.featureChecks}>
-              {handset.features.map((feat, i) => (
+              {phoneFeatures.map((feat, i) => (
                 <li key={i} className={styles.checkItem}>
                   <span className={styles.greenCheck}>✓</span>
                   <span>{feat}</span>
@@ -304,7 +314,7 @@ export default function ConfiguratorModal({
                 ) : (
                   <div className={styles.breakdownRow}>
                     <span>Handset outright</span>
-                    <strong>${handset.outrightPrice.toLocaleString()}</strong>
+                    <strong>${phoneOutrightPrice.toLocaleString()}</strong>
                   </div>
                 )}
               </div>

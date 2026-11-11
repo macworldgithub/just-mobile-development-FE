@@ -355,10 +355,10 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                     <div className={styles.reviewItem}>
                       <div className={styles.itemHeader}>
                         <strong>{config.handset.name}</strong>
-                        <span>${config.handset.outrightPrice} outright</span>
+                        <span>${config.handset.outrightPrice ?? config.handset.price} outright</span>
                       </div>
                       <span className={styles.itemSub}>
-                        {config.handset.storage} · {config.handset.color}
+                        {config.handset.storage} · {config.handset.color || config.handset.colour}
                       </span>
                     </div>
                   )}

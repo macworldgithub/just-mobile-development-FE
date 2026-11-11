@@ -39,7 +39,22 @@ export default function Home() {
 
   // Handset configuration trigger
   const handleOpenConfigurator = (handset: Handset, initialMode?: 'outright' | 'instalments' | 'phone_and_plan') => {
-    setActiveHandset(handset);
+    const normalized: Handset = {
+      ...handset,
+      color: handset.color || handset.colour || 'Black',
+      colour: handset.colour || handset.color || 'Black',
+      outrightPrice: handset.outrightPrice ?? handset.price ?? 0,
+      price: handset.price ?? handset.outrightPrice ?? 0,
+      listedRrp: handset.listedRrp ?? handset.rrp ?? 0,
+      rrp: handset.rrp ?? handset.listedRrp ?? 0,
+      headline: handset.headline || handset.description || '',
+      description: handset.description || handset.headline || '',
+      features: Array.isArray(handset.features) && handset.features.length > 0 ? handset.features : handset.specs || [],
+      specs: Array.isArray(handset.specs) && handset.specs.length > 0 ? handset.specs : handset.features || [],
+      tag: handset.tag || handset.label || '',
+      label: handset.label || handset.tag || '',
+    };
+    setActiveHandset(normalized);
     setConfiguratorOpen(true);
   };
 
