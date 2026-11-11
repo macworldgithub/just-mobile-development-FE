@@ -181,8 +181,8 @@ export default function ConfiguratorModal({
                   <strong style={{ color: '#2e7d32' }}>Factory Unlocked (SIM-free)</strong>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13.5px' }}>
-                  <span style={{ color: '#556253' }}>Warehouse Availability:</span>
-                  <strong style={{ color: '#2e7d32' }}>✓ In Stock (Ships 1-2 business days)</strong>
+                  <span style={{ color: '#556253' }}>Fulfilment:</span>
+                  <strong style={{ color: '#142420' }}>Express dispatch (1-2 business days)</strong>
                 </div>
               </div>
             </div>

@@ -154,7 +154,7 @@ export default function Hero({
             {/* Floating Price Pill / Action Card */}
             <div className={styles.floatingPriceCard}>
               <div className={styles.priceInfo}>
-                <span className={styles.pricePlanLabel}>BUY OUTRIGHT · IN STOCK</span>
+                <span className={styles.pricePlanLabel}>BUY OUTRIGHT · FACTORY UNLOCKED</span>
                 <div className={styles.priceAmountRow}>
                   <strong className={styles.priceAmount}>$2,399</strong>
                   <span className={styles.pricePeriod}>outright</span>

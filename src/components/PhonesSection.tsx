@@ -92,11 +92,6 @@ export default function PhonesSection({ onConfigurePhone, initialPhones }: Phone
               </button>
             ))}
           </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#556253' }}>
-            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#49721d' }}></span>
-            <span>All devices in stock · Free express delivery</span>
-          </div>
         </div>
 
         {/* Phone Cards Grid */}
