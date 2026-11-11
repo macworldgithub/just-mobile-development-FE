@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './ConfiguratorModal.module.css';
 import { Handset, MobilePlan, calculateRepayments } from '@/data/catalogue';
+import { useAuth } from '@/context/AuthContext';
 
 interface ConfiguratorModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export default function ConfiguratorModal({
   handset,
 }: ConfiguratorModalProps) {
   const router = useRouter();
+  const { user } = useAuth();
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -79,13 +81,17 @@ export default function ConfiguratorModal({
     // 2. Close the modal
     onClose();
 
-    // 3. Route directly to /signup with device
-    const queryParams = new URLSearchParams();
-    if (handset?.name) {
-      queryParams.set('device', handset.name);
-      queryParams.set('mode', 'outright');
+    // 3. If logged in, go to customer portal to confirm order; if guest, route to sign up to register delivery address
+    if (user) {
+      router.push('/account');
+    } else {
+      const queryParams = new URLSearchParams();
+      if (handset?.name) {
+        queryParams.set('device', handset.name);
+        queryParams.set('mode', 'outright');
+      }
+      router.push(`/signup?${queryParams.toString()}`);
     }
-    router.push(`/signup?${queryParams.toString()}`);
   };
 
   return (
@@ -95,7 +101,7 @@ export default function ConfiguratorModal({
         <div className={styles.modalHeader}>
           <div className={styles.headerTitles}>
             <h2 className={styles.modalTitle}>Order Your Handset</h2>
-            <p className={styles.modalSubtitle}>Simple direct e-commerce checkout · Genuine Australian stock with free express delivery</p>
+            <p className={styles.modalSubtitle}>Simple direct e-commerce checkout · Sign up or log in to complete your order</p>
           </div>
           <button
             type="button"
@@ -253,20 +259,30 @@ export default function ConfiguratorModal({
                 className={styles.checkoutBtn}
                 onClick={handleProceed}
               >
-                <span>Order Handset (${phoneOutrightPrice.toLocaleString()} Outright)</span>
+                <span>
+                  {user
+                    ? `Proceed to Order Handset ($${phoneOutrightPrice.toLocaleString()} Outright)`
+                    : `Sign Up to Order ($${phoneOutrightPrice.toLocaleString()} Outright)`}
+                </span>
                 <span>→</span>
               </button>
 
-              <div style={{ marginTop: '12px', textAlign: 'center' }}>
-                <span style={{ fontSize: '13px', color: '#687766' }}>Already have an account? </span>
-                <Link
-                  href="/login"
-                  onClick={onClose}
-                  style={{ fontSize: '13px', fontWeight: 700, color: '#142420', textDecoration: 'underline' }}
-                >
-                  Sign in to portal →
-                </Link>
-              </div>
+              {!user ? (
+                <div style={{ marginTop: '12px', textAlign: 'center' }}>
+                  <span style={{ fontSize: '13px', color: '#687766' }}>Already have an account? </span>
+                  <Link
+                    href={`/login?redirect=${encodeURIComponent('/account')}`}
+                    onClick={onClose}
+                    style={{ fontSize: '13px', fontWeight: 700, color: '#142420', textDecoration: 'underline' }}
+                  >
+                    Sign in to portal →
+                  </Link>
+                </div>
+              ) : (
+                <div style={{ marginTop: '12px', textAlign: 'center', fontSize: '12.5px', color: '#556253' }}>
+                  <span>✓ Signed in as <strong>{user.name}</strong></span>
+                </div>
+              )}
             </div>
           </div>
         </div>
