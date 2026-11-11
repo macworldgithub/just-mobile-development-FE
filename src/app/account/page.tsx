@@ -134,6 +134,8 @@ export default function AccountPage() {
   const [esimDetails, setEsimDetails] = useState<EsimDetails | null>(null);
   const [isLoadingEsim, setIsLoadingEsim] = useState<boolean>(false);
   const [copiedLpa, setCopiedLpa] = useState<boolean>(false);
+  const [isSendingEmail, setIsSendingEmail] = useState<boolean>(false);
+  const [emailSentNotice, setEmailSentNotice] = useState<string | null>(null);
 
   // Invoices & Porting state (INT-08 & INT-10)
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
@@ -453,6 +455,31 @@ export default function AccountPage() {
       navigator.clipboard.writeText(esimDetails.lpa);
       setCopiedLpa(true);
       setTimeout(() => setCopiedLpa(false), 2000);
+    }
+  };
+
+  const handleEmailEsim = async () => {
+    if (!user || !esimDetails) return;
+    const custNo = user.custNo || 'CUST882104';
+    setIsSendingEmail(true);
+    setEmailSentNotice(null);
+    try {
+      const res = await fetch(`/api/carrier/customers/${custNo}/orders/${esimDetails.orderId}/send-esim-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: user.email }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setEmailSentNotice(`✓ QR code & LPA details emailed to ${user.email}`);
+        setTimeout(() => setEmailSentNotice(null), 4000);
+      } else {
+        setEmailSentNotice('⚠ Could not dispatch email at this time.');
+      }
+    } catch {
+      setEmailSentNotice('⚠ Network error while requesting email.');
+    } finally {
+      setIsSendingEmail(false);
     }
   };
 
@@ -862,6 +889,30 @@ export default function AccountPage() {
                 >
                   {copiedLpa ? '✓ Copied LPA Activation String!' : '📋 Copy LPA String for Manual Activation'}
                 </button>
+                <button
+                  type="button"
+                  onClick={handleEmailEsim}
+                  disabled={isSendingEmail}
+                  style={{
+                    width: '100%',
+                    marginTop: '8px',
+                    background: '#f7faf3',
+                    color: '#3b6b14',
+                    border: '1.5px solid #789937',
+                    borderRadius: '8px',
+                    padding: '10px 14px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {isSendingEmail ? 'Sending via Hostinger SMTP...' : '📧 Email Me This QR Code'}
+                </button>
+                {emailSentNotice && (
+                  <div style={{ marginTop: '8px', fontSize: '12.5px', color: '#2e7d32', fontWeight: 600 }}>
+                    {emailSentNotice}
+                  </div>
+                )}
               </div>
             )}
 
