@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import FormattedChatMessage from './FormattedChatMessage';
 import styles from './BeleChatWidget.module.css';
 import { CHATBOT_CONFIG } from '@/config/chatbotConfig';
 
@@ -175,7 +176,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
                     m.role === 'user' ? styles.userBubble : styles.botBubble
                   }`}
                 >
-                  {m.content}
+                  <FormattedChatMessage content={m.content} role={m.role} />
                 </div>
               </div>
             ))}

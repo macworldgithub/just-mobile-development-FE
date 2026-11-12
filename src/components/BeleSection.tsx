@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import FormattedChatMessage from './FormattedChatMessage';
 import styles from './BeleSection.module.css';
 
 interface Message {
@@ -182,7 +183,7 @@ export default function BeleSection() {
                       m.role === 'user' ? styles.userBubble : styles.assistantBubble
                     }`}
                   >
-                    {m.content}
+                    <FormattedChatMessage content={m.content} role={m.role} />
                   </div>
                 </div>
               ))}

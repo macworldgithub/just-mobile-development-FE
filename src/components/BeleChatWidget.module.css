@@ -213,10 +213,11 @@
 }
 
 .bubble {
-  padding: 10px 14px;
+  padding: 11px 15px;
   border-radius: 12px;
   font-size: 13px;
   line-height: 1.45;
+  word-break: break-word;
 }
 
 .botBubble {

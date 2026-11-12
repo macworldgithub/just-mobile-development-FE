@@ -1,0 +1,84 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.paragraph {
+  margin: 0;
+  line-height: 1.55;
+  color: inherit;
+  font-size: inherit;
+  word-break: break-word;
+}
+
+.bulletList {
+  margin: 2px 0 4px 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.listItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  line-height: 1.5;
+  font-size: inherit;
+}
+
+.bulletDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #557c2c;
+  margin-top: 7px;
+  flex-shrink: 0;
+}
+
+.numberBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background-color: #edf2e8;
+  color: #142420;
+  font-size: 11px;
+  font-weight: 800;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.itemBody {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.boldText {
+  font-weight: 700;
+  color: #142420;
+}
+
+.chatLink {
+  color: #2e5917;
+  text-decoration: underline;
+  font-weight: 600;
+  text-underline-offset: 2.5px;
+  transition: opacity 0.15s ease;
+}
+
+.chatLink:hover {
+  opacity: 0.8;
+}
+
+.userText {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.45;
+}
