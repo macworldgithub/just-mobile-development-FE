@@ -44,10 +44,10 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
   const { user } = useAuth();
 
   // Customer info
-  const [name, setName] = useState('Alexander Wright');
-  const [email, setEmail] = useState('alexander.wright@justmobile.com.au');
-  const [dob, setDob] = useState('14/06/1992');
-  const [address, setAddress] = useState('Unit 4, 182 George Street, Sydney NSW 2000');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [dob, setDob] = useState('');
+  const [address, setAddress] = useState('');
   const [emailNotice, setEmailNotice] = useState<string | null>(null);
   const [isResendingEmail, setIsResendingEmail] = useState(false);
 
@@ -191,8 +191,8 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
 
     try {
       const endpoint = keepExistingNumber ? '/api/carrier/orders/activate-port' : '/api/carrier/orders/activate';
-      const activeCustNo = user?.custNo || 'CUST882104';
-      const activeEmail = email || user?.email || 'alexander.wright@justmobile.com.au';
+      const activeCustNo = user?.custNo || '';
+      const activeEmail = email || user?.email || '';
       const orderPayload = {
         custNo: activeCustNo,
         msn: keepExistingNumber ? portNumber : selectedNumber.replace(/\s+/g, ''),
@@ -246,8 +246,8 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
     if (!orderId) return;
     setIsResendingEmail(true);
     try {
-      const activeCustNo = user?.custNo || 'CUST882104';
-      const targetEmail = email || user?.email || 'alexander.wright@justmobile.com.au';
+      const activeCustNo = user?.custNo || '';
+      const targetEmail = email || user?.email || '';
       const res = await fetch(`/api/carrier/customers/${activeCustNo}/orders/${orderId}/send-esim-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

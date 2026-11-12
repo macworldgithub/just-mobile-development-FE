@@ -298,7 +298,7 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (!user) return;
-    const custNo = user.custNo || (user.email === 'alexander.wright@justmobile.com.au' ? 'CUST882104' : '');
+    const custNo = user.custNo || '';
     if (custNo) {
       loadAccountData(custNo);
     }
@@ -326,7 +326,7 @@ export default function AccountPage() {
   // In-portal Plan Change Handler (INT-11)
   const handleConfirmPlanChange = async () => {
     if (!user) return;
-    const custNo = user.custNo || (user.email === 'alexander.wright@justmobile.com.au' ? 'CUST882104' : '');
+    const custNo = user.custNo || '';
     const targetPlan = PORTAL_PLANS.find((p) => p.id === selectedPlanId);
     if (!targetPlan) return;
 
@@ -375,7 +375,7 @@ export default function AccountPage() {
       setNewLineError('Please enter a valid 10-digit Australian mobile number (e.g. 0412 345 678).');
       return;
     }
-    const custNo = user?.custNo || (user?.email === 'alexander.wright@justmobile.com.au' ? 'CUST882104' : '');
+    const custNo = user?.custNo || '';
     try {
       const res = await fetch('/api/carrier/otp/send', {
         method: 'POST',
