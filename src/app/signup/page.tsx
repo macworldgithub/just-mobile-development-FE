@@ -196,7 +196,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className={styles.pageContainer}>
+    <div className={styles.pageContainer} suppressHydrationWarning>
       <header className={styles.topBar}>
         <Link href="/" aria-label="Return to Homepage">
           <Image

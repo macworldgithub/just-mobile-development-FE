@@ -613,7 +613,7 @@ export default function AccountPage() {
 
   if (isLoading || !user) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }} suppressHydrationWarning>
         <p>Loading your account details...</p>
       </div>
     );
@@ -621,7 +621,7 @@ export default function AccountPage() {
 
   const handleLogout = () => {
     logout();
-    router.push('/login');
+    window.location.href = '/login';
   };
 
   const formatAccountId = (id?: string) => {
@@ -654,7 +654,7 @@ export default function AccountPage() {
   }, [portOrder]);
 
   return (
-    <div className={styles.pageContainer}>
+    <div className={styles.pageContainer} suppressHydrationWarning>
       {/* Top Bar */}
       <header className={styles.topBar}>
         <div className={styles.topBarInner}>
