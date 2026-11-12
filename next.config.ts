@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     const rawBackendUrl =
       process.env.BACKEND_URL ||
       process.env.NEXT_PUBLIC_API_URL ||
-      'https://just-mobile-development-be-6igm.vercel.app';
+      'https://just-mobile-development-be.vercel.app';
     const backendUrl = rawBackendUrl.replace(/\/$/, '');
 
     return [
