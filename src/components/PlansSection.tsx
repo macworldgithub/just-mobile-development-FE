@@ -15,14 +15,14 @@ interface PlansSectionProps {
 export default function PlansSection({ onSelectPlan, onExplorePhones, initialPlans }: PlansSectionProps) {
   const [plans, setPlans] = useState<MobilePlan[]>(initialPlans || MOBILE_PLANS);
   const [cisOpen, setCisOpen] = useState<boolean>(false);
-  const [selectedCisPlan, setSelectedCisPlan] = useState<'20gb' | '50gb' | '100gb'>('50gb');
+  const [selectedCisPlan, setSelectedCisPlan] = useState<string>('65gb');
 
   // Fetch plans from MongoDB API
   useEffect(() => {
     fetch('/api/plans')
       .then((res) => res.json())
       .then((data) => {
-        if (data.data && Array.isArray(data.data)) {
+        if (data.data && Array.isArray(data.data) && data.data.length > 0) {
           setPlans(data.data);
         }
       })
@@ -41,7 +41,7 @@ export default function PlansSection({ onSelectPlan, onExplorePhones, initialPla
               Small on the bill.
             </h2>
             <p className={styles.subtitle}>
-              Three straightforward choices. No maze of add-ons.
+              Straightforward plan choices. No maze of add-ons.
               <br />
               Just pick the data that feels like you.
             </p>
@@ -71,7 +71,9 @@ export default function PlansSection({ onSelectPlan, onExplorePhones, initialPla
                       Our sweet spot ↗
                     </span>
                   ) : (
-                    <span className={styles.simOnlyBadge}>SIM-only</span>
+                    <span className={styles.simOnlyBadge}>
+                      {plan.network ? `${plan.network} · SIM-only` : 'SIM-only'}
+                    </span>
                   )}
                 </div>
 
@@ -87,7 +89,7 @@ export default function PlansSection({ onSelectPlan, onExplorePhones, initialPla
 
                   {/* Monthly price */}
                   <div className={styles.planCost}>
-                    ${plan.pricePerMonth}
+                    ${Number(plan.pricePerMonth).toFixed(2)}
                     <span>/month</span>
                   </div>
 

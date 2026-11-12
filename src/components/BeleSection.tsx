@@ -53,7 +53,7 @@ export default function BeleSection() {
           {
             role: 'assistant',
             content:
-              "I'm here to help! Our plans start from $19/mth for 20GB, $25 for 50GB, and $35 for 100GB on the Telstra Wholesale Network.",
+              "I'm here to help! Our plans start from $20.54/mth (10GB) up to $67.00/mth (180GB) on the Telstra Wholesale Network.",
           },
         ]);
       }

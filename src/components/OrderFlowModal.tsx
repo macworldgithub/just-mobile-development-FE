@@ -196,9 +196,9 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
       const orderPayload = {
         custNo: activeCustNo,
         msn: keepExistingNumber ? portNumber : selectedNumber.replace(/\s+/g, ''),
-        planNo: '13369',
-        planName: config?.plan?.name || '50GB Just right Plan',
-        pricePerMonth: config?.plan?.pricePerMonth || 25,
+        planNo: config?.plan?.planNo ? String(config.plan.planNo) : '11144157',
+        planName: config?.plan?.name || 'JM 65GB Auto',
+        pricePerMonth: config?.plan?.pricePerMonth || 37.55,
         email: activeEmail,
         address: address || user?.address || 'Unit 4, 182 George Street',
         suburb: user?.suburb || 'Sydney',

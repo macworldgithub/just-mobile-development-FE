@@ -87,31 +87,84 @@ interface PortalPlanOption {
   tier: string;
   price: number;
   dataGb: number;
+  planNo?: number;
+  network?: string;
   popular?: boolean;
 }
 
 const PORTAL_PLANS: PortalPlanOption[] = [
   {
-    id: 'plan-20gb',
-    name: '20GB Just enough Plan',
-    tier: '20GB',
-    price: 19,
-    dataGb: 20,
+    id: 'plan-10gb',
+    planNo: 11144153,
+    name: 'JM 10GB Auto',
+    tier: '10GB',
+    price: 20.54,
+    dataGb: 10,
+    network: '4G',
   },
   {
-    id: 'plan-50gb',
-    name: '50GB Just right Plan',
-    tier: '50GB',
-    price: 25,
-    dataGb: 50,
+    id: 'plan-15gb',
+    planNo: 11144154,
+    name: 'JM 15GB Auto',
+    tier: '15GB',
+    price: 24.60,
+    dataGb: 15,
+    network: '4G',
+  },
+  {
+    id: 'plan-29gb',
+    planNo: 11144155,
+    name: 'JM 29GB Auto',
+    tier: '29GB',
+    price: 28.53,
+    dataGb: 29,
+    network: '4G',
+  },
+  {
+    id: 'plan-65gb',
+    planNo: 11144157,
+    name: 'JM 65GB Auto',
+    tier: '65GB',
+    price: 37.55,
+    dataGb: 65,
+    network: '5G',
     popular: true,
   },
   {
     id: 'plan-100gb',
-    name: '100GB Just heaps Plan',
+    planNo: 11144168,
+    name: 'JM 100GB Auto',
     tier: '100GB',
-    price: 35,
+    price: 46.40,
     dataGb: 100,
+    network: '5G',
+  },
+  {
+    id: 'plan-120gb',
+    planNo: 11144169,
+    name: 'JM 120GB Auto',
+    tier: '120GB',
+    price: 54.86,
+    dataGb: 120,
+    network: '5G',
+  },
+  {
+    id: 'plan-150gb',
+    planNo: 11144170,
+    name: 'JM 150GB Auto',
+    tier: '150GB',
+    price: 59.89,
+    dataGb: 150,
+    network: '5G',
+  },
+  {
+    id: 'plan-180gb',
+    planNo: 11144171,
+    name: 'JM 180GB Auto',
+    tier: '180GB',
+    price: 67.00,
+    dataGb: 180,
+    network: '5G',
   },
 ];
 
@@ -122,7 +175,7 @@ export default function AccountPage() {
   const [usage, setUsage] = useState<CarrierUsage | null>(null);
   const [balance, setBalance] = useState<CarrierBalance | null>(null);
   const [activeMobile, setActiveMobile] = useState<string>('0488 912 340');
-  const [activePlanName, setActivePlanName] = useState<string>('50GB Just right Plan');
+  const [activePlanName, setActivePlanName] = useState<string>('JM 65GB Auto');
   const [esimModalOpen, setEsimModalOpen] = useState<boolean>(false);
   const [esimDetails, setEsimDetails] = useState<EsimDetails | null>(null);
   const [isLoadingEsim, setIsLoadingEsim] = useState<boolean>(false);
@@ -139,14 +192,14 @@ export default function AccountPage() {
   // In-portal Plan Upgrade & Add Line Modal State
   const [isPlanModalOpen, setIsPlanModalOpen] = useState<boolean>(false);
   const [planModalTab, setPlanModalTab] = useState<'switch_plan' | 'add_line' | 'device_calc'>('switch_plan');
-  const [selectedPlanId, setSelectedPlanId] = useState<string>('plan-100gb');
+  const [selectedPlanId, setSelectedPlanId] = useState<string>('plan-65gb');
   const [isChangingPlan, setIsChangingPlan] = useState<boolean>(false);
   const [planChangeSuccess, setPlanChangeSuccess] = useState<string | null>(null);
   const [planChangeError, setPlanChangeError] = useState<string | null>(null);
 
   // In-portal Add Line State
   const [newLineKeepNumber, setNewLineKeepNumber] = useState<boolean>(false);
-  const [newLinePlanId, setNewLinePlanId] = useState<string>('plan-50gb');
+  const [newLinePlanId, setNewLinePlanId] = useState<string>('plan-65gb');
   const [newLinePortNumber, setNewLinePortNumber] = useState<string>('');
   const [newLineDonorCarrier, setNewLineDonorCarrier] = useState<string>('Telstra');
   const [newLineOtpSent, setNewLineOtpSent] = useState<boolean>(false);
@@ -559,7 +612,7 @@ export default function AccountPage() {
                   </span>
                 </div>
                 <div className={styles.portBody}>
-                  Transferring <strong>{portOrder.msn}</strong> to JustMobile ({portOrder.planName || '50GB Just right Plan'}).
+                  Transferring <strong>{portOrder.msn}</strong> to JustMobile ({portOrder.planName || 'JM 65GB Auto'}).
                   <br />
                   Carrier porting orders are processed through Australian donor carriers (15m to 24h window). Our durable background worker is continuously monitoring carrier release status.
                   {syncMessage && (
@@ -619,7 +672,7 @@ export default function AccountPage() {
               </div>
 
               <h2 className={styles.cardTitle}>
-                {activePlanName} (${(activePlanName.includes('20GB') || activePlanName.includes('Starter') || activePlanName.includes('5GB') ? 19 : activePlanName.includes('100GB') ? 35 : 25).toFixed(2)}/mth)
+                {activePlanName} (${(PORTAL_PLANS.find(p => p.name === activePlanName || activePlanName.includes(p.tier))?.price ?? 37.55).toFixed(2)}/mth)
               </h2>
 
               {/* Monthly data meter synced with live carrier usage */}
@@ -1053,7 +1106,7 @@ export default function AccountPage() {
                           <div className={styles.portalPlanTier}>{plan.tier}</div>
                           <div className={styles.portalPlanName}>{plan.name}</div>
                           <div className={styles.portalPlanPriceRow}>
-                            <span className={styles.portalPlanPrice}>${plan.price}</span>
+                            <span className={styles.portalPlanPrice}>${plan.price.toFixed(2)}</span>
                             <span className={styles.portalPlanPeriod}>/month</span>
                           </div>
                         </div>
@@ -1069,7 +1122,7 @@ export default function AccountPage() {
                           </li>
                           <li>
                             <span className={styles.featureCheck}>✓</span>
-                            <span>Telstra Wholesale 5G (100Mbps)</span>
+                            <span>Telstra Wholesale {plan.network || '5G'}</span>
                           </li>
                           <li>
                             <span className={styles.featureCheck}>✓</span>
@@ -1083,8 +1136,8 @@ export default function AccountPage() {
 
                 {/* Plan Difference Summary */}
                 {(() => {
-                  const targetPlan = PORTAL_PLANS.find((p) => p.id === selectedPlanId) || PORTAL_PLANS[1];
-                  const currentPlan = PORTAL_PLANS.find((p) => activePlanName.includes(p.tier)) || PORTAL_PLANS[1];
+                  const targetPlan = PORTAL_PLANS.find((p) => p.id === selectedPlanId) || PORTAL_PLANS[3];
+                  const currentPlan = PORTAL_PLANS.find((p) => activePlanName.includes(p.tier) || activePlanName === p.name) || PORTAL_PLANS[3];
                   const diff = targetPlan.price - currentPlan.price;
                   const isSamePlan = targetPlan.id === currentPlan.id;
 
@@ -1092,11 +1145,11 @@ export default function AccountPage() {
                     <div className={styles.portalSummaryBox}>
                       <div className={styles.portalSummaryRow}>
                         <span>Current Service:</span>
-                        <strong>{activeMobile} ({currentPlan.tier} · ${currentPlan.price}/mth)</strong>
+                        <strong>{activeMobile} ({currentPlan.tier} · ${currentPlan.price.toFixed(2)}/mth)</strong>
                       </div>
                       <div className={styles.portalSummaryRow}>
                         <span>Selected Upgrade Plan:</span>
-                        <strong style={{ color: '#142420' }}>{targetPlan.name} (${targetPlan.price}/mth)</strong>
+                        <strong style={{ color: '#142420' }}>{targetPlan.name} (${targetPlan.price.toFixed(2)}/mth)</strong>
                       </div>
                       <div className={styles.portalSummaryRow}>
                         <span>Monthly Cost Difference:</span>
@@ -1119,7 +1172,7 @@ export default function AccountPage() {
                             ? 'Switching Plan via Octane APIs...'
                             : isSamePlan
                             ? 'Selected Plan is Your Current Plan'
-                            : `Confirm Switch to ${targetPlan.name} ($${targetPlan.price}/mth)`}
+                            : `Confirm Switch to ${targetPlan.name} ($${targetPlan.price.toFixed(2)}/mth)`}
                         </button>
                       </div>
                     </div>
@@ -1149,7 +1202,7 @@ export default function AccountPage() {
                 {/* Plan Selector for New Line */}
                 <div style={{ marginBottom: '16px' }}>
                   <label className={styles.portalLabel}>1. Select Mobile Plan for New Line</label>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
                     {PORTAL_PLANS.map((plan) => (
                       <button
                         key={plan.id}
@@ -1159,7 +1212,7 @@ export default function AccountPage() {
                         style={{ padding: '12px 14px', minHeight: 'auto', textAlign: 'left' }}
                       >
                         <div style={{ fontWeight: 800, fontSize: '16px', color: '#142420' }}>{plan.tier}</div>
-                        <div style={{ fontSize: '13px', color: '#556253' }}>${plan.price}/month</div>
+                        <div style={{ fontSize: '13px', color: '#556253' }}>${plan.price.toFixed(2)}/month</div>
                       </button>
                     ))}
                   </div>

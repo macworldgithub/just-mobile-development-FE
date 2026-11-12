@@ -107,9 +107,9 @@ export default function Home() {
   const handleShowActivationQr = () => {
     setOrderConfig({
       handset: HANDSETS[0],
-      plan: MOBILE_PLANS[1],
+      plan: MOBILE_PLANS[3],
       paymentMode: 'phone_and_plan',
-      repayments: calculateRepayments(2399, 24, 25, 25),
+      repayments: calculateRepayments(2399, 24, 37.55, 37.55),
     });
     setOrderModalOpen(true);
   };

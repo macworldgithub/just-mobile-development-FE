@@ -399,10 +399,10 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
-/* 3 Plan Cards in Grid */
+/* Plan Cards in Grid */
 .portalPlansGrid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
   margin-bottom: 22px;
 }

@@ -67,7 +67,7 @@ export default function AccountDrawer({
 
             <div className={styles.planDetailsRow}>
               <span className={styles.planLabel}>Plan:</span>
-              <strong className={styles.planValue}>50GB Just right ($25.00/mth)</strong>
+              <strong className={styles.planValue}>JM 65GB Auto ($37.55/mth)</strong>
             </div>
 
             {/* Monthly Data Meter */}
