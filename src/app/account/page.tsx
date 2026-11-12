@@ -310,7 +310,7 @@ export default function AccountPage() {
   // In-portal Plan Change Handler (INT-11)
   const handleConfirmPlanChange = async () => {
     if (!user) return;
-    const custNo = user.custNo || 'CUST882104';
+    const custNo = user.custNo || (user.email === 'alexander.wright@justmobile.com.au' ? 'CUST882104' : '');
     const targetPlan = PORTAL_PLANS.find((p) => p.id === selectedPlanId);
     if (!targetPlan) return;
 
@@ -327,7 +327,7 @@ export default function AccountPage() {
           planName: targetPlan.name,
           monthlyFee: targetPlan.price,
           dataGb: targetPlan.dataGb,
-          msn: activeMobile,
+          msn: activeMobile || '0488912340',
         }),
       });
 
@@ -359,7 +359,7 @@ export default function AccountPage() {
       setNewLineError('Please enter a valid 10-digit Australian mobile number (e.g. 0412 345 678).');
       return;
     }
-    const custNo = user?.custNo || 'CUST882104';
+    const custNo = user?.custNo || (user?.email === 'alexander.wright@justmobile.com.au' ? 'CUST882104' : '');
     try {
       const res = await fetch('/api/carrier/otp/send', {
         method: 'POST',
@@ -1169,7 +1169,7 @@ export default function AccountPage() {
                 className={`${styles.portalTabBtn} ${planModalTab === 'switch_plan' ? styles.portalTabBtnActive : ''}`}
                 onClick={() => setPlanModalTab('switch_plan')}
               >
-                ⚡ Switch / Upgrade Plan
+                {hasActivePlan ? '⚡ Switch / Upgrade Plan' : '⚡ Choose Mobile Plan'}
               </button>
               <button
                 type="button"
@@ -1190,7 +1190,7 @@ export default function AccountPage() {
               </button>
             </div>
 
-            {/* TAB 1: SWITCH / UPGRADE PLAN FOR ACTIVE SERVICE */}
+            {/* TAB 1: SWITCH / UPGRADE PLAN FOR ACTIVE SERVICE OR ACTIVATE NEW PLAN */}
             {planModalTab === 'switch_plan' && (
               <div>
                 {planChangeSuccess && (
@@ -1205,13 +1205,17 @@ export default function AccountPage() {
                 )}
 
                 <p style={{ fontSize: '13.5px', color: '#4c5a49', marginBottom: '14px' }}>
-                  Select a plan for active line <strong>{activeMobile}</strong>. Quota updates immediately; renewal invoice adjusts on the 28th.
+                  {hasActivePlan ? (
+                    <>Select a plan to upgrade or change active line <strong>{activeMobile}</strong>. Quota updates immediately; renewal invoice adjusts on the 28th.</>
+                  ) : (
+                    <>Select an official Telstra Wholesale 5G mobile plan to get connected. All plans include unlimited AU standard calls & texts with zero lock-in contract.</>
+                  )}
                 </p>
 
-                {/* 3 Plan Cards */}
+                {/* 8 Plan Cards */}
                 <div className={styles.portalPlansGrid}>
                   {PORTAL_PLANS.map((plan) => {
-                    const isCurrent = Boolean(activePlanName && activePlanName.includes(plan.tier));
+                    const isCurrent = Boolean(hasActivePlan && activePlanName && activePlanName.includes(plan.tier));
                     const isSelected = selectedPlanId === plan.id;
                     return (
                       <div
@@ -1260,43 +1264,67 @@ export default function AccountPage() {
 
                 {/* Plan Difference Summary */}
                 {(() => {
-                  const targetPlan = PORTAL_PLANS.find((p) => p.id === selectedPlanId) || PORTAL_PLANS[3];
-                  const currentPlan = PORTAL_PLANS.find((p) => activePlanName && (activePlanName.includes(p.tier) || activePlanName === p.name)) || PORTAL_PLANS[3];
-                  const diff = targetPlan.price - currentPlan.price;
-                  const isSamePlan = Boolean(activePlanName && targetPlan.id === currentPlan.id);
+                  const targetPlan = PORTAL_PLANS.find((p) => p.id === selectedPlanId) || PORTAL_PLANS[0];
+                  const currentPlan = hasActivePlan && activePlanName
+                    ? PORTAL_PLANS.find((p) => activePlanName.includes(p.tier) || activePlanName === p.name) || null
+                    : null;
+                  const diff = currentPlan ? targetPlan.price - currentPlan.price : 0;
+                  const isSamePlan = Boolean(hasActivePlan && currentPlan && targetPlan.id === currentPlan.id);
 
                   return (
                     <div className={styles.portalSummaryBox}>
-                      <div className={styles.portalSummaryRow}>
-                        <span>Current Service:</span>
-                        <strong>{activeMobile || 'New Line'} ({currentPlan.tier} · ${currentPlan.price.toFixed(2)}/mth)</strong>
-                      </div>
-                      <div className={styles.portalSummaryRow}>
-                        <span>Selected Upgrade Plan:</span>
-                        <strong style={{ color: '#142420' }}>{targetPlan.name} (${targetPlan.price.toFixed(2)}/mth)</strong>
-                      </div>
-                      <div className={styles.portalSummaryRow}>
-                        <span>Monthly Cost Difference:</span>
-                        <strong style={{ color: diff > 0 ? '#142420' : diff < 0 ? '#2e7d32' : '#556253' }}>
-                          {diff > 0 ? `+$${diff.toFixed(2)}/month` : diff < 0 ? `-$${Math.abs(diff).toFixed(2)}/month` : 'Same price'}
-                        </strong>
-                      </div>
-                      <div className={styles.portalNoticeText}>
-                        ℹ️ <strong>Billing & Quota Adjustment:</strong> Your data allowance will adjust immediately to {targetPlan.dataGb}GB upon confirmation. Next invoice on 28th will reflect ${targetPlan.price.toFixed(2)}.
-                      </div>
+                      {hasActivePlan && currentPlan ? (
+                        <>
+                          <div className={styles.portalSummaryRow}>
+                            <span>Current Service:</span>
+                            <strong>{activeMobile || 'Active Line'} ({currentPlan.tier} · ${currentPlan.price.toFixed(2)}/mth)</strong>
+                          </div>
+                          <div className={styles.portalSummaryRow}>
+                            <span>Selected Upgrade Plan:</span>
+                            <strong style={{ color: '#142420' }}>{targetPlan.name} (${targetPlan.price.toFixed(2)}/mth)</strong>
+                          </div>
+                          <div className={styles.portalSummaryRow}>
+                            <span>Monthly Cost Difference:</span>
+                            <strong style={{ color: diff > 0 ? '#142420' : diff < 0 ? '#2e7d32' : '#556253' }}>
+                              {diff > 0 ? `+$${diff.toFixed(2)}/month` : diff < 0 ? `-$${Math.abs(diff).toFixed(2)}/month` : 'Same price'}
+                            </strong>
+                          </div>
+                          <div className={styles.portalNoticeText}>
+                            ℹ️ <strong>Billing & Quota Adjustment:</strong> Your data allowance will adjust immediately to {targetPlan.dataGb}GB upon confirmation. Next invoice on 28th will reflect ${targetPlan.price.toFixed(2)}.
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className={styles.portalSummaryRow}>
+                            <span>Account Status:</span>
+                            <strong style={{ color: '#2e7d32' }}>Ready for Plan Activation (No active plan)</strong>
+                          </div>
+                          <div className={styles.portalSummaryRow}>
+                            <span>Selected Mobile Plan:</span>
+                            <strong style={{ color: '#142420' }}>{targetPlan.name} (${targetPlan.price.toFixed(2)}/mth)</strong>
+                          </div>
+                          <div className={styles.portalSummaryRow}>
+                            <span>Monthly Recurring Cost:</span>
+                            <strong style={{ color: '#142420' }}>${targetPlan.price.toFixed(2)} / month</strong>
+                          </div>
+                          <div className={styles.portalNoticeText}>
+                            ℹ️ <strong>Activation Quota:</strong> Your new service will be provisioned on Telstra Wholesale 5G with {targetPlan.dataGb}GB data allowance and zero lock-in contract.
+                          </div>
+                        </>
+                      )}
 
                       <div style={{ marginTop: '16px' }}>
                         <button
                           type="button"
                           className={styles.portalConfirmBtn}
-                          disabled={isChangingPlan || isSamePlan}
+                          disabled={isChangingPlan || (hasActivePlan && isSamePlan)}
                           onClick={handleConfirmPlanChange}
                         >
                           {isChangingPlan
-                            ? 'Switching Plan via Octane APIs...'
-                            : isSamePlan
-                            ? 'Selected Plan is Your Current Plan'
-                            : `Confirm Switch to ${targetPlan.name} ($${targetPlan.price.toFixed(2)}/mth)`}
+                            ? 'Activating Plan via Carrier...'
+                            : hasActivePlan
+                            ? (isSamePlan ? 'Selected Plan is Your Current Plan' : `Confirm Switch to ${targetPlan.name} ($${targetPlan.price.toFixed(2)}/mth)`)
+                            : `Activate ${targetPlan.name} ($${targetPlan.price.toFixed(2)}/mth)`}
                         </button>
                       </div>
                     </div>
