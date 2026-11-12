@@ -79,6 +79,13 @@ interface OrderRecord {
   createdAt: string;
   completedAt?: string;
   donorNetworkNote?: string;
+  numType?: 'prepaid' | 'postpaid';
+  dob?: string;
+  arn?: string;
+  donorCarrier?: string;
+  rejectionReason?: string | null;
+  rejectionCode?: string | null;
+  portRetries?: number;
 }
 
 interface PortalPlanOption {
@@ -219,6 +226,15 @@ export default function AccountPage() {
   const [calcUpfrontPct, setCalcUpfrontPct] = useState<number>(25);
   const [calcHandsetPrice] = useState<number>(2399); // S26 Ultra
   const [calcDeviceSuccess, setCalcDeviceSuccess] = useState<string | null>(null);
+
+  // Donor Port Rejection & Resubmission State (INT-10 UX)
+  const [resubmitNumType, setResubmitNumType] = useState<'prepaid' | 'postpaid'>('prepaid');
+  const [resubmitDob, setResubmitDob] = useState<string>('');
+  const [resubmitArn, setResubmitArn] = useState<string>('');
+  const [resubmitDonor, setResubmitDonor] = useState<string>('Optus');
+  const [isResubmitting, setIsResubmitting] = useState<boolean>(false);
+  const [resubmitError, setResubmitError] = useState<string | null>(null);
+  const [resubmitSuccess, setResubmitSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -469,17 +485,76 @@ export default function AccountPage() {
       if (res.ok) {
         const data = await res.json();
         setSyncMessage(data.message || 'Port synchronized successfully!');
-        const custNo = user?.custNo || 'CUST882104';
-        const ordersRes = await fetch(`/api/carrier/customers/${custNo}/orders`);
-        if (ordersRes.ok) {
-          const freshOrders = await ordersRes.json();
-          setOrders(freshOrders);
+        const custNo = user?.custNo || '';
+        if (custNo) {
+          const ordersRes = await fetch(`/api/carrier/customers/${custNo}/orders`);
+          if (ordersRes.ok) {
+            const freshOrders = await ordersRes.json();
+            setOrders(freshOrders);
+          }
         }
       }
     } catch (err) {
       console.warn('Sync port error:', err);
     } finally {
       setSyncingOrderId(null);
+    }
+  };
+
+  // Resubmit rejected mobile port order with updated credentials (INT-10 UX)
+  const handleResubmitPort = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!portOrder) return;
+    setIsResubmitting(true);
+    setResubmitError(null);
+    setResubmitSuccess(null);
+
+    try {
+      const res = await fetch(`/api/carrier/orders/${portOrder.orderId}/resubmit-port`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          numType: resubmitNumType,
+          dob: resubmitNumType === 'prepaid' ? resubmitDob : undefined,
+          arn: resubmitNumType === 'postpaid' ? resubmitArn : undefined,
+          donorCarrier: resubmitDonor,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to resubmit number transfer.');
+      }
+
+      setResubmitSuccess(data.message || 'Details updated. Number transfer re-submitted to donor carrier.');
+      const custNo = user?.custNo || '';
+      if (custNo) {
+        loadAccountData(custNo);
+      }
+    } catch (err: any) {
+      setResubmitError(err.message || 'An error occurred while resubmitting transfer details.');
+    } finally {
+      setIsResubmitting(false);
+    }
+  };
+
+  // Simulate donor carrier rejection for testing edge cases
+  const handleSimulateRejection = async (orderId: string) => {
+    try {
+      await fetch(`/api/carrier/orders/${orderId}/simulate-rejection`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          reason: 'Date of Birth does not match donor carrier records (Optus). Please verify the birthdate on your account.',
+          donor: 'Optus',
+        }),
+      });
+      const custNo = user?.custNo || '';
+      if (custNo) {
+        loadAccountData(custNo);
+      }
+    } catch (err) {
+      console.warn('Simulation error:', err);
     }
   };
 
@@ -569,6 +644,15 @@ export default function AccountPage() {
   // In-flight or completed mobile number porting order (INT-10)
   const portOrder = orders.find((o) => o.orderType === 'PORT_IN');
 
+  useEffect(() => {
+    if (portOrder) {
+      if (portOrder.numType) setResubmitNumType(portOrder.numType);
+      if (portOrder.dob) setResubmitDob(portOrder.dob);
+      if (portOrder.arn) setResubmitArn(portOrder.arn);
+      if (portOrder.donorCarrier) setResubmitDonor(portOrder.donorCarrier);
+    }
+  }, [portOrder]);
+
   return (
     <div className={styles.pageContainer}>
       {/* Top Bar */}
@@ -615,7 +699,7 @@ export default function AccountPage() {
         <div className={styles.grid}>
           {/* Left Column: Service Details & Port Status */}
           <div>
-            {/* Live Mobile Porting Tracker (INT-10) */}
+            {/* 1. Live Mobile Porting Tracker (INT-10) */}
             {portOrder && portOrder.status === 'PORT_IN_PROGRESS' && (
               <div className={styles.portCard}>
                 <div className={styles.portHeader}>
@@ -638,14 +722,25 @@ export default function AccountPage() {
                   )}
                 </div>
                 <div className={styles.portActions}>
-                  <button
-                    type="button"
-                    className={styles.syncPortBtn}
-                    onClick={() => handleSyncPort(portOrder.orderId)}
-                    disabled={syncingOrderId === portOrder.orderId}
-                  >
-                    {syncingOrderId === portOrder.orderId ? 'Checking Carrier Release...' : '⚡ Check / Sync Port Status'}
-                  </button>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className={styles.syncPortBtn}
+                      onClick={() => handleSyncPort(portOrder.orderId)}
+                      disabled={syncingOrderId === portOrder.orderId}
+                    >
+                      {syncingOrderId === portOrder.orderId ? 'Checking Carrier Release...' : '⚡ Check / Sync Port Status'}
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.syncPortBtn}
+                      onClick={() => handleSimulateRejection(portOrder.orderId)}
+                      style={{ background: '#fff1f2', borderColor: '#fecdd3', color: '#be123c', fontSize: '12px' }}
+                      title="Test helper: simulate what happens when Optus/Vodafone rejects transfer"
+                    >
+                      🧪 Simulate Rejection
+                    </button>
+                  </div>
                   <span style={{ fontSize: '12px', color: '#718096' }}>
                     Order ID: {portOrder.orderId}
                   </span>
@@ -653,6 +748,136 @@ export default function AccountPage() {
               </div>
             )}
 
+            {/* 2. Donor Carrier Rejection Alert & Resubmission Form (INT-10 UX) */}
+            {portOrder && (portOrder.status === 'REJECTED' || (portOrder.status === 'FAILED' && portOrder.rejectionReason)) && (
+              <div className={styles.portCardRejected}>
+                <div className={styles.portHeader}>
+                  <h3 className={styles.portTitleRejected}>
+                    <span>⚠️ Transfer Action Required</span>
+                  </h3>
+                  <span className={styles.badgePortRejected}>
+                    DECLINED BY PREVIOUS CARRIER
+                  </span>
+                </div>
+
+                <div className={styles.portBody}>
+                  <p style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#142420' }}>
+                    Your previous carrier (<strong>{portOrder.donorCarrier || 'Donor Network'}</strong>) declined the release of mobile number <strong>{portOrder.msn}</strong>.
+                  </p>
+
+                  <div className={styles.rejectionReasonBox}>
+                    <div style={{ fontWeight: 700, fontSize: '11.5px', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#991b1b', marginBottom: '4px' }}>
+                      Carrier Reason:
+                    </div>
+                    <div style={{ fontSize: '13.5px', color: '#7f1d1d', fontWeight: 500 }}>
+                      "{portOrder.rejectionReason || 'Identity details do not match the records on file with your previous carrier.'}"
+                    </div>
+                  </div>
+
+                  <p style={{ margin: '12px 0 14px 0', fontSize: '13px', color: '#4b5563' }}>
+                    This usually means a minor typo in your date of birth or account number. Please verify your details below and resubmit:
+                  </p>
+
+                  {resubmitSuccess && (
+                    <div className={styles.portalAlertSuccess} style={{ marginBottom: '14px' }}>
+                      ✓ {resubmitSuccess}
+                    </div>
+                  )}
+
+                  {resubmitError && (
+                    <div className={styles.portalAlertError} style={{ marginBottom: '14px' }}>
+                      ⚠ {resubmitError}
+                    </div>
+                  )}
+
+                  <form onSubmit={handleResubmitPort} className={styles.rejectionForm}>
+                    <div className={styles.formRow}>
+                      <label className={styles.fieldLabel}>Previous Service Type</label>
+                      <div className={styles.serviceTypeToggle}>
+                        <button
+                          type="button"
+                          className={`${styles.typeToggleBtn} ${resubmitNumType === 'prepaid' ? styles.typeToggleActive : ''}`}
+                          onClick={() => setResubmitNumType('prepaid')}
+                        >
+                          Prepaid Service
+                        </button>
+                        <button
+                          type="button"
+                          className={`${styles.typeToggleBtn} ${resubmitNumType === 'postpaid' ? styles.typeToggleActive : ''}`}
+                          onClick={() => setResubmitNumType('postpaid')}
+                        >
+                          Postpaid (Monthly Bill)
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className={styles.formGridTwo}>
+                      <div>
+                        <label className={styles.fieldLabel}>Previous Carrier</label>
+                        <select
+                          className={styles.fieldInput}
+                          value={resubmitDonor}
+                          onChange={(e) => setResubmitDonor(e.target.value)}
+                        >
+                          <option value="Optus">Optus</option>
+                          <option value="Telstra">Telstra</option>
+                          <option value="Vodafone">Vodafone</option>
+                          <option value="TPG">TPG / iiNet</option>
+                          <option value="Amaysim">Amaysim</option>
+                          <option value="Woolworths Mobile">Everyday Mobile (Woolworths)</option>
+                          <option value="Boost Mobile">Boost Mobile</option>
+                          <option value="ALDI Mobile">ALDI Mobile</option>
+                          <option value="Other">Other Australian Carrier</option>
+                        </select>
+                      </div>
+
+                      {resubmitNumType === 'prepaid' ? (
+                        <div>
+                          <label className={styles.fieldLabel}>Date of Birth on Old Account</label>
+                          <input
+                            type="date"
+                            className={styles.fieldInput}
+                            value={resubmitDob}
+                            onChange={(e) => setResubmitDob(e.target.value)}
+                            required
+                          />
+                          <span className={styles.fieldHelp}>Must match the birthdate on your old carrier registration</span>
+                        </div>
+                      ) : (
+                        <div>
+                          <label className={styles.fieldLabel}>Account Number on Bill</label>
+                          <input
+                            type="text"
+                            className={styles.fieldInput}
+                            placeholder="e.g. 9841029481"
+                            value={resubmitArn}
+                            onChange={(e) => setResubmitArn(e.target.value)}
+                            required
+                          />
+                          <span className={styles.fieldHelp}>Look for 'Account Number' on your latest monthly bill</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className={styles.resubmitActions}>
+                      <button
+                        type="submit"
+                        className={styles.btnResubmitPort}
+                        disabled={isResubmitting}
+                      >
+                        {isResubmitting ? 'Submitting to Carrier...' : '⚡ Update Details & Resubmit Transfer'}
+                      </button>
+
+                      <span style={{ fontSize: '12px', color: '#6b7280' }}>
+                        Order ID: {portOrder.orderId} · Retries: {portOrder.portRetries || 0}
+                      </span>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* 3. Port Completed Card */}
             {portOrder && portOrder.status === 'ACTIVE' && (
               <div className={styles.portCardActive}>
                 <div className={styles.portHeader}>
