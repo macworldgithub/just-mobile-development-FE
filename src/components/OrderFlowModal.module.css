@@ -782,7 +782,7 @@
     font-size: 14px;
   }
   .planOverviewCard {
-    padding: 16px 18px;
+    padding: 16px 16px;
   }
   .planDataTier {
     font-size: 26px;
@@ -809,6 +809,34 @@
     grid-template-columns: 1fr;
     gap: 8px;
   }
+  .portInputRow {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sendOtpBtn,
+  .verifyOtpBtn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+  }
+  .otpRow {
+    flex-direction: column;
+    gap: 8px;
+    max-width: 100%;
+  }
+  .buttonRow {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+  .backBtn {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+  }
+  .primaryNextBtn {
+    width: 100%;
+    justify-content: center;
+  }
   .reviewCard {
     padding: 16px;
   }
@@ -817,6 +845,45 @@
   }
   .actionBtn {
     padding: 13px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 440px) {
+  .overlay {
+    padding: 6px;
+  }
+  .modal {
+    padding: 18px 12px;
+    border-radius: 14px;
+  }
+  .planChoiceModal {
+    padding: 20px 14px 16px;
+    border-radius: 16px;
+  }
+  .planOverviewCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 12px;
+  }
+  .planOverviewRight {
+    align-items: flex-start;
+  }
+  .planTitle {
+    font-size: 22px;
+  }
+  .planDataTier {
+    font-size: 24px;
+  }
+  .planPriceAmount {
+    font-size: 24px;
+  }
+  .publicOptionsBanner {
+    padding: 12px;
+  }
+  .doneExploringBtn {
+    padding: 14px 16px;
     font-size: 14px;
   }
 }

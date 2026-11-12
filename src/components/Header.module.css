@@ -458,11 +458,34 @@
 }
 
 @media (max-width: 420px) {
+  .announcementBar {
+    padding: 6px 12px;
+  }
   .announcementLeft {
-    font-size: 11.5px;
+    font-size: 11px;
     gap: 4px;
+    letter-spacing: -0.01em;
+  }
+  .navContainer {
+    padding: 10px 12px;
   }
   .logoImage {
-    height: 28px;
+    width: 125px;
+    height: auto;
+  }
+  .accountBtn {
+    padding: 6px;
+  }
+  .menuToggle {
+    padding: 6px;
+  }
+}
+
+@media (max-width: 360px) {
+  .logoImage {
+    width: 112px;
+  }
+  .announcementLeft {
+    font-size: 10.5px;
   }
 }

@@ -534,3 +534,42 @@
     font-size: 10.5px;
   }
 }
+
+@media (max-width: 420px) {
+  .heroSection {
+    padding-top: 24px;
+    padding-bottom: 28px;
+  }
+  .headline {
+    font-size: clamp(32px, 8.5vw, 38px);
+    margin-bottom: 12px;
+  }
+  .subheadline {
+    font-size: 14px;
+    line-height: 1.45;
+    margin-bottom: 18px;
+  }
+  .flagshipCard {
+    padding: 18px 14px 16px;
+    border-radius: 18px;
+  }
+  .phoneVisualWrap {
+    min-height: 210px;
+  }
+  .heroPhoneImage {
+    max-height: 220px;
+  }
+  .floatingPriceCard {
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+  .priceAmount {
+    font-size: 20px;
+  }
+  .pricePeriod {
+    font-size: 11px;
+  }
+  .planTag {
+    font-size: 11px;
+  }
+}

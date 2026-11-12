@@ -397,3 +397,23 @@
     gap: 10px;
   }
 }
+
+@media (max-width: 420px) {
+  .planData {
+    font-size: clamp(38px, 11vw, 48px);
+    letter-spacing: -1.5px;
+  }
+  .planCardTop {
+    padding: 12px 14px;
+  }
+  .planCardContent {
+    padding: 16px 14px 14px;
+  }
+  .planCost {
+    font-size: 24px;
+  }
+  .planActionBtn {
+    padding: 12px 16px;
+    font-size: 13.5px;
+  }
+}

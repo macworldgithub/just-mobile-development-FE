@@ -428,3 +428,32 @@
     font-size: 18px;
   }
 }
+
+@media (max-width: 440px) {
+  .shopSection {
+    padding: 40px 0;
+  }
+  .phoneCardContent {
+    padding: 16px 14px;
+  }
+  .phoneImageWrapper {
+    height: 180px;
+  }
+  .brandFilters {
+    gap: 4px;
+  }
+  .filterBtn {
+    padding: 7px 6px;
+    font-size: 12px;
+  }
+  .cardFooter {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .configureBtn {
+    width: 100%;
+    justify-content: center;
+    padding: 11px;
+  }
+}

@@ -1108,19 +1108,44 @@
 }
 
 @media (max-width: 480px) {
+  .topBar {
+    padding: 10px 12px;
+  }
+
+  .topBarInner {
+    gap: 8px;
+  }
+
+  .userMenu {
+    gap: 6px;
+  }
+
+  .userName {
+    max-width: 95px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 12px;
+  }
+
+  .logoutBtn {
+    padding: 5px 8px;
+    font-size: 11.5px;
+  }
+
   .headerBanner {
-    padding: 18px 16px;
+    padding: 16px 14px;
   }
 
   .accountBadge {
-    font-size: 11.5px;
-    padding: 5px 12px;
+    font-size: 11px;
+    padding: 4px 10px;
     width: 100%;
     text-align: center;
   }
 
   .card {
-    padding: 16px 14px;
+    padding: 16px 12px;
   }
 
   .btnPrimary {
@@ -1130,12 +1155,19 @@
   }
 
   .detailItem {
-    font-size: 12.5px;
+    font-size: 12px;
   }
 
   .lpaCodeBox {
-    font-size: 11px;
-    padding: 8px 10px;
+    font-size: 10.5px;
+    padding: 8px;
+    word-break: break-all;
+  }
+}
+
+@media (max-width: 360px) {
+  .userName {
+    display: none;
   }
 }
 
@@ -1296,4 +1328,23 @@
 .btnResubmitPort:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+  .portCardRejected {
+    padding: 16px 14px;
+    border-radius: 14px;
+  }
+  .rejectionForm {
+    padding: 14px 12px;
+  }
+  .resubmitActions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .btnResubmitPort {
+    width: 100%;
+    justify-content: center;
+  }
 }
