@@ -611,13 +611,17 @@ export default function AccountPage() {
     }
   };
 
-  if (isLoading || !user) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }} suppressHydrationWarning>
-        <p>Loading your account details...</p>
-      </div>
-    );
-  }
+  // In-flight or completed mobile number porting order (INT-10)
+  const portOrder = orders.find((o) => o.orderType === 'PORT_IN');
+
+  useEffect(() => {
+    if (portOrder) {
+      if (portOrder.numType) setResubmitNumType(portOrder.numType);
+      if (portOrder.dob) setResubmitDob(portOrder.dob);
+      if (portOrder.arn) setResubmitArn(portOrder.arn);
+      if (portOrder.donorCarrier) setResubmitDonor(portOrder.donorCarrier);
+    }
+  }, [portOrder]);
 
   const handleLogout = () => {
     logout();
@@ -641,17 +645,13 @@ export default function AccountPage() {
   const totalGb = usage?.dataMeter?.planTotalGb ?? (hasActivePlan ? 65 : 0);
   const percentRemaining = totalGb > 0 ? Math.round((remainingGb / totalGb) * 100) : 0;
 
-  // In-flight or completed mobile number porting order (INT-10)
-  const portOrder = orders.find((o) => o.orderType === 'PORT_IN');
-
-  useEffect(() => {
-    if (portOrder) {
-      if (portOrder.numType) setResubmitNumType(portOrder.numType);
-      if (portOrder.dob) setResubmitDob(portOrder.dob);
-      if (portOrder.arn) setResubmitArn(portOrder.arn);
-      if (portOrder.donorCarrier) setResubmitDonor(portOrder.donorCarrier);
-    }
-  }, [portOrder]);
+  if (isLoading || !user) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }} suppressHydrationWarning>
+        <p>Loading your account details...</p>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.pageContainer} suppressHydrationWarning>

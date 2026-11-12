@@ -14,6 +14,11 @@ function LoginFormContent() {
   const initialPortal = searchParams.get('portal') === 'admin' ? 'admin' : 'customer';
 
   const { login, user } = useAuth();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [portal, setPortal] = useState<'customer' | 'admin'>(initialPortal);
   const [authMethod, setAuthMethod] = useState<'pin' | 'password'>('pin');
@@ -211,6 +216,14 @@ function LoginFormContent() {
       setForgotError(err.message || 'Failed to connect to authentication service.');
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className={styles.card} style={{ minHeight: '360px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#6b7280', fontSize: '14px' }}>Loading portal sign in...</p>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.card + (portal === 'admin' ? ` ${styles.cardAdmin}` : '')}>
