@@ -10,12 +10,40 @@ interface LaunchSectionProps {
 
 export default function LaunchSection({ onFindPlan }: LaunchSectionProps) {
   const [email, setEmail] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    setSubmitted(true);
+    if (!email || !email.includes('@')) return;
+
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const res = await fetch(`${API_URL}/api/newsletter/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), source: 'homepage_launch_banner' }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setIsSuccess(true);
+        setMessage(data.message || "You're on the list. We'll be in touch soon.");
+        setEmail('');
+      } else {
+        setIsSuccess(false);
+        setMessage(data.message || 'Unable to register email at this time.');
+      }
+    } catch {
+      setIsSuccess(false);
+      setMessage('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -60,32 +88,50 @@ export default function LaunchSection({ onFindPlan }: LaunchSectionProps) {
                 value={email}
                 placeholder="Your email address"
                 required
+                disabled={loading}
                 onChange={(e) => {
                   setEmail(e.target.value);
-                  setSubmitted(false);
+                  setMessage(null);
                 }}
                 className={styles.signupInput}
               />
               <button
                 type="submit"
                 aria-label="Subscribe to newsletter"
+                disabled={loading}
                 className={styles.signupSubmitBtn}
               >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
+                {loading ? (
+                  <span style={{ fontSize: '11px', fontWeight: 700 }}>...</span>
+                ) : (
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                    <polyline points="12 5 19 12 12 19"></polyline>
+                  </svg>
+                )}
               </button>
             </form>
+            {message && (
+              <p
+                style={{
+                  marginTop: '10px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  color: isSuccess ? '#142420' : '#b91c1c',
+                }}
+              >
+                {message}
+              </p>
+            )}
           </div>
         </div>
       </div>
