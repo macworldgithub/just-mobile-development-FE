@@ -40,6 +40,16 @@ interface BroadcastHistoryItem {
   sentAt: string;
 }
 
+const formatStatus = (s?: string) => {
+  if (!s) return 'Active';
+  const upper = s.trim().toUpperCase();
+  if (upper === 'ACTIVE') return 'Active';
+  if (upper === 'DISCONNECTED') return 'Disconnected';
+  if (upper === 'SUSPENDED') return 'Suspended';
+  if (upper.includes('PROGRESS') || upper === 'PENDING') return 'Pending';
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+};
+
 export default function AdminPage() {
   const router = useRouter();
   const { user, token, logout, isLoading } = useAuth();
@@ -329,7 +339,9 @@ export default function AdminPage() {
                             <span className={styles.planBadge}>{c.planName || 'Starter Mobile 5G'}</span>
                           </td>
                           <td>
-                            <span className={styles.statusActiveBadge}>{c.lineStatus || 'Active'}</span>
+                            <span className={formatStatus(c.lineStatus) === 'Disconnected' ? styles.statusInactiveBadge : styles.statusActiveBadge}>
+                              {formatStatus(c.lineStatus)}
+                            </span>
                           </td>
                           <td>{new Date(c.createdAt).toLocaleDateString('en-AU')}</td>
                           <td>{c.lastLoginAt ? new Date(c.lastLoginAt).toLocaleTimeString('en-AU') : 'Never'}</td>
