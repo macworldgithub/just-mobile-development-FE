@@ -216,7 +216,7 @@ export default function SignupPage() {
         <div className={styles.card}>
           <div className={styles.headerArea}>
             <h1 className={styles.title}>
-              {createdCustNo ? 'Welcome to JustMobile! 🎉' : 'Create your account'}
+              {createdCustNo ? 'Welcome to JustMobile' : 'Create your account'}
             </h1>
             <p className={styles.subtitle}>
               {createdCustNo

@@ -154,7 +154,9 @@ export default function ConfiguratorModal({
             </ul>
 
             <div className={styles.shieldBadge}>
-              <span className={styles.shieldIcon}>🛡️</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              </svg>
               <span>Official 24-Month Manufacturer Warranty</span>
             </div>
           </div>

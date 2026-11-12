@@ -602,10 +602,10 @@ export default function AccountPage() {
         setEmailSentNotice(`✓ QR code & LPA details emailed to ${user.email}`);
         setTimeout(() => setEmailSentNotice(null), 4000);
       } else {
-        setEmailSentNotice('⚠ Could not dispatch email at this time.');
+        setEmailSentNotice('Could not dispatch email at this time.');
       }
     } catch {
-      setEmailSentNotice('⚠ Network error while requesting email.');
+      setEmailSentNotice('Network error while requesting email.');
     } finally {
       setIsSendingEmail(false);
     }
@@ -688,7 +688,7 @@ export default function AccountPage() {
         <div className={styles.headerBanner}>
           <div>
             <h1 className={styles.greetingTitle}>
-              {hasActivePlan ? `Welcome back, ${user.name.split(' ')[0]}` : `Welcome to JustMobile, ${user.name.split(' ')[0]}! 🎉`}
+              {hasActivePlan ? `Welcome back, ${user.name.split(' ')[0]}` : `Welcome to JustMobile, ${user.name.split(' ')[0]}`}
             </h1>
             <p className={styles.greetingSub}>
               Customer ID: {user.custNo || formatAccountId(user.id)} · {hasActivePlan ? 'Connected to Telstra 5G Wholesale Network' : 'Account Ready · Ready to Activate Plan'}
@@ -704,7 +704,7 @@ export default function AccountPage() {
               <div className={styles.portCard}>
                 <div className={styles.portHeader}>
                   <h3 className={styles.portTitle}>
-                    <span>🔄 Mobile Number Port In-Flight</span>
+                    <span>Mobile Number Port In-Flight</span>
                   </h3>
                   <span className={styles.badgePortInProgress}>
                     <span className={styles.pulseDot} />
@@ -717,7 +717,7 @@ export default function AccountPage() {
                   Carrier porting orders are processed through Australian donor carriers (15m to 24h window). Our durable background worker is continuously monitoring carrier release status.
                   {syncMessage && (
                     <div style={{ marginTop: '8px', color: '#15803d', fontWeight: 600 }}>
-                      ✓ {syncMessage}
+                      {syncMessage}
                     </div>
                   )}
                 </div>
@@ -729,7 +729,7 @@ export default function AccountPage() {
                       onClick={() => handleSyncPort(portOrder.orderId)}
                       disabled={syncingOrderId === portOrder.orderId}
                     >
-                      {syncingOrderId === portOrder.orderId ? 'Checking Carrier Release...' : '⚡ Check / Sync Port Status'}
+                      {syncingOrderId === portOrder.orderId ? 'Checking Carrier Release...' : 'Check Port Status'}
                     </button>
                     <button
                       type="button"
@@ -738,7 +738,7 @@ export default function AccountPage() {
                       style={{ background: '#fff1f2', borderColor: '#fecdd3', color: '#be123c', fontSize: '12px' }}
                       title="Test helper: simulate what happens when Optus/Vodafone rejects transfer"
                     >
-                      🧪 Simulate Rejection
+                      Simulate Rejection
                     </button>
                   </div>
                   <span style={{ fontSize: '12px', color: '#718096' }}>
@@ -753,7 +753,7 @@ export default function AccountPage() {
               <div className={styles.portCardRejected}>
                 <div className={styles.portHeader}>
                   <h3 className={styles.portTitleRejected}>
-                    <span>⚠️ Transfer Action Required</span>
+                    <span>Transfer Action Required</span>
                   </h3>
                   <span className={styles.badgePortRejected}>
                     DECLINED BY PREVIOUS CARRIER
@@ -780,13 +780,13 @@ export default function AccountPage() {
 
                   {resubmitSuccess && (
                     <div className={styles.portalAlertSuccess} style={{ marginBottom: '14px' }}>
-                      ✓ {resubmitSuccess}
+                      {resubmitSuccess}
                     </div>
                   )}
 
                   {resubmitError && (
                     <div className={styles.portalAlertError} style={{ marginBottom: '14px' }}>
-                      ⚠ {resubmitError}
+                      {resubmitError}
                     </div>
                   )}
 
@@ -865,7 +865,7 @@ export default function AccountPage() {
                         className={styles.btnResubmitPort}
                         disabled={isResubmitting}
                       >
-                        {isResubmitting ? 'Submitting to Carrier...' : '⚡ Update Details & Resubmit Transfer'}
+                        {isResubmitting ? 'Submitting to Carrier...' : 'Update Details & Resubmit Transfer'}
                       </button>
 
                       <span style={{ fontSize: '12px', color: '#6b7280' }}>
@@ -935,7 +935,7 @@ export default function AccountPage() {
                     onClick={handleOpenEsimModal}
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                   >
-                    <span>📱 View eSIM QR & Profile</span>
+                    <span>View eSIM Profile</span>
                   </button>
                   <button
                     type="button"
@@ -946,7 +946,7 @@ export default function AccountPage() {
                     }}
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                   >
-                    <span>⚡ Upgrade / Switch Plan</span>
+                    <span>Switch Plan</span>
                   </button>
                   <button
                     type="button"
@@ -958,7 +958,7 @@ export default function AccountPage() {
                     }}
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                   >
-                    <span>➕ Add Another Line</span>
+                    <span>Add Another Line</span>
                   </button>
                 </div>
               </div>
@@ -974,10 +974,11 @@ export default function AccountPage() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '24px',
                     flexShrink: 0,
                   }}>
-                    🚀
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#49721d" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
                   </div>
                   <div>
                     <span style={{
@@ -993,7 +994,7 @@ export default function AccountPage() {
                       GET CONNECTED · READY FOR SETUP
                     </span>
                     <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#142420', margin: '0 0 6px 0' }}>
-                      You haven't selected a mobile package yet
+                      You have not selected a mobile package yet
                     </h2>
                     <p style={{ fontSize: '13.5px', color: '#556253', margin: 0, lineHeight: 1.5 }}>
                       Your JustMobile customer profile <strong>#{user.custNo || '—'}</strong> is registered and verified. Choose any month-to-month plan below to activate instant digital eSIM access on Australia's Telstra Wholesale 5G Network.
@@ -1049,7 +1050,7 @@ export default function AccountPage() {
                     }}
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                   >
-                    <span>⚡ Choose a Mobile Plan</span>
+                    <span>Choose a Mobile Plan</span>
                     <span>→</span>
                   </button>
 
@@ -1058,7 +1059,7 @@ export default function AccountPage() {
                     className={styles.btnSecondaryUpgrade}
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
                   >
-                    <span>📱 Explore Outright Phones</span>
+                    <span>Explore Outright Phones</span>
                     <span>↗</span>
                   </Link>
                 </div>
@@ -1098,7 +1099,7 @@ export default function AccountPage() {
                       }}
                       style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
                     >
-                      <span>📱 View Repayment Schedule</span>
+                      <span>View Repayment Schedule</span>
                     </button>
                   </div>
                 </>
@@ -1112,7 +1113,7 @@ export default function AccountPage() {
                     <div className={styles.detailItem}>
                       <span className={styles.detailLabel}>Financing Contract</span>
                       <span className={styles.detailValue} style={{ color: '#49721d', fontWeight: 600 }}>
-                        ✓ No Active Device Debt ($0.00 / Contract-Free)
+                        No Active Device Debt ($0.00 / Contract-Free)
                       </span>
                     </div>
                     <div className={styles.detailItem}>
@@ -1134,7 +1135,7 @@ export default function AccountPage() {
                       }}
                       style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
                     >
-                      <span>📱 Browse Handsets & Add to Plan</span>
+                      <span>Browse Handsets</span>
                     </button>
                   </div>
                 </>
@@ -1219,7 +1220,7 @@ export default function AccountPage() {
                           className={styles.downloadPdfBtn}
                           title="Download ATO-compliant PDF Tax Invoice"
                         >
-                          <span>📄 Download PDF</span>
+                          <span>Download PDF</span>
                         </a>
                       </div>
                     </div>
@@ -1317,7 +1318,7 @@ export default function AccountPage() {
                     cursor: 'pointer',
                   }}
                 >
-                  {copiedLpa ? '✓ Copied LPA Activation String!' : '📋 Copy LPA String for Manual Activation'}
+                  {copiedLpa ? 'Copied LPA Activation String' : 'Copy LPA String for Manual Activation'}
                 </button>
                 <button
                   type="button"
@@ -1336,7 +1337,7 @@ export default function AccountPage() {
                     cursor: 'pointer',
                   }}
                 >
-                  {isSendingEmail ? 'Sending via Hostinger SMTP...' : '📧 Email Me This QR Code'}
+                  {isSendingEmail ? 'Sending via Hostinger SMTP...' : 'Email Me This QR Code'}
                 </button>
                 {emailSentNotice && (
                   <div style={{ marginTop: '8px', fontSize: '12.5px', color: '#2e7d32', fontWeight: 600 }}>
@@ -1394,7 +1395,7 @@ export default function AccountPage() {
                 className={`${styles.portalTabBtn} ${planModalTab === 'switch_plan' ? styles.portalTabBtnActive : ''}`}
                 onClick={() => setPlanModalTab('switch_plan')}
               >
-                {hasActivePlan ? '⚡ Switch / Upgrade Plan' : '⚡ Choose Mobile Plan'}
+                {hasActivePlan ? 'Switch / Upgrade Plan' : 'Choose Mobile Plan'}
               </button>
               <button
                 type="button"
@@ -1404,14 +1405,14 @@ export default function AccountPage() {
                   if (newLineReservedPool.length === 0) fetchReservePool();
                 }}
               >
-                ➕ Add Another Line / SIM
+                Add Another Line / SIM
               </button>
               <button
                 type="button"
                 className={`${styles.portalTabBtn} ${planModalTab === 'device_calc' ? styles.portalTabBtnActive : ''}`}
                 onClick={() => setPlanModalTab('device_calc')}
               >
-                📱 Device & Financing
+                Device & Financing
               </button>
             </div>
 
@@ -1425,7 +1426,7 @@ export default function AccountPage() {
                 )}
                 {planChangeError && (
                   <div className={styles.portalAlertError}>
-                    ⚠ {planChangeError}
+                    {planChangeError}
                   </div>
                 )}
 
@@ -1568,7 +1569,7 @@ export default function AccountPage() {
                 )}
                 {newLineError && (
                   <div className={styles.portalAlertError}>
-                    ⚠ {newLineError}
+                    {newLineError}
                   </div>
                 )}
 
@@ -1634,7 +1635,7 @@ export default function AccountPage() {
                         disabled={isLoadingPool}
                         style={{ background: 'none', border: 'none', color: '#789937', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }}
                       >
-                        {isLoadingPool ? 'Refreshing...' : '🔄 Refresh Pool'}
+                        {isLoadingPool ? 'Refreshing...' : 'Refresh Pool'}
                       </button>
                     </div>
 

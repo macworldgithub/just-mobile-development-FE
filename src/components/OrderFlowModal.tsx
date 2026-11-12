@@ -744,7 +744,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                           cursor: 'pointer',
                         }}
                       >
-                        {copiedLpa ? '✓ Copied LPA String!' : '📋 Copy Full LPA String'}
+                        {copiedLpa ? 'Copied LPA String' : 'Copy Full LPA String'}
                       </button>
                     </div>
                   )}
@@ -763,7 +763,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                     }}
                   >
                     <div style={{ fontSize: '13px', fontWeight: 700, color: '#275210', marginBottom: '4px' }}>
-                      ✉ eSIM Welcome Email Dispatched
+                      eSIM Welcome Email Dispatched
                     </div>
                     <div style={{ fontSize: '12px', color: '#495746', marginBottom: '8px', lineHeight: 1.45 }}>
                       A scannable QR code image, SM-DP+ LPA code, and step-by-step setup instructions have been emailed to{' '}
@@ -785,7 +785,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                         opacity: isResendingEmail ? 0.6 : 1,
                       }}
                     >
-                      {isResendingEmail ? 'Sending via Hostinger SMTP...' : '📨 Resend Welcome Email'}
+                      {isResendingEmail ? 'Sending via Hostinger SMTP...' : 'Resend Welcome Email'}
                     </button>
                     {emailNotice && (
                       <div style={{ fontSize: '11.5px', color: '#1B5E20', marginTop: '8px', fontWeight: 600 }}>

@@ -302,7 +302,7 @@ function LoginFormContent() {
                 setErrorMsg('');
               }}
             >
-              <span>🔑 4-Digit PIN</span>
+              <span>4-Digit PIN</span>
             </button>
             <button
               type="button"
@@ -314,7 +314,7 @@ function LoginFormContent() {
                 setErrorMsg('');
               }}
             >
-              <span>🔒 Password</span>
+              <span>Password</span>
             </button>
           </div>
         )}
@@ -349,7 +349,6 @@ function LoginFormContent() {
               </button>
             </div>
             <div className={styles.pinInputWrapper}>
-              <span className={styles.pinIcon}>🔑</span>
               <input
                 id="pinInput"
                 type="password"
@@ -363,7 +362,7 @@ function LoginFormContent() {
               />
             </div>
             <span className={styles.pinHint}>
-              💡 Enter your 4-digit PIN, or switch to Password above.
+              Enter your 4-digit PIN, or switch to Password above.
             </span>
           </div>
         ) : (
