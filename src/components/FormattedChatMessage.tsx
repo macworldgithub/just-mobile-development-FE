@@ -164,3 +164,4 @@ export default function FormattedChatMessage({ content, role }: FormattedChatMes
 
   return <div className={styles.container}>{blocks}</div>;
 }
+
