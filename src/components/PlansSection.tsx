@@ -130,7 +130,7 @@ export default function PlansSection({ onSelectPlan, onExplorePhones, initialPla
                     className={`${styles.planButton} ${isPopular ? styles.popularButton : styles.outlineButton}`}
                     onClick={() => onSelectPlan(plan)}
                   >
-                    <span>Choose {plan.name.toLowerCase()}</span>
+                    <span>Choose this plan</span>
                     <span className={styles.btnArrow}>→</span>
                   </button>
 

@@ -285,7 +285,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
           <div className={styles.modalHeaderRow}>
             <div className={styles.planHeader}>
               <h2 className={styles.planTitle}>
-                Your {config.plan?.name ? config.plan.name.toLowerCase() : 'plan'} plan.
+                Your {config.plan?.name || 'mobile'} plan.
               </h2>
               <p className={styles.planSubtitle}>
                 A clear look at your choice
