@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { getApiUrl } from '../config/api';
 import styles from './LaunchSection.module.css';
 
 interface LaunchSectionProps {
@@ -14,7 +15,7 @@ export default function LaunchSection({ onFindPlan }: LaunchSectionProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const API_URL = getApiUrl();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

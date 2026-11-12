@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { getApiUrl } from '@/config/api';
 import styles from './admin.module.css';
 
 interface CustomerRecord {
@@ -65,7 +66,7 @@ export default function AdminPage() {
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
   const [broadcastAlert, setBroadcastAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const API_URL = getApiUrl();
 
   const fetchAdminData = useCallback(async () => {
     if (!token) return;
