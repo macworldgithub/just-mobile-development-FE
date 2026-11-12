@@ -174,8 +174,9 @@ export default function AccountPage() {
 
   const [usage, setUsage] = useState<CarrierUsage | null>(null);
   const [balance, setBalance] = useState<CarrierBalance | null>(null);
-  const [activeMobile, setActiveMobile] = useState<string>('0488 912 340');
-  const [activePlanName, setActivePlanName] = useState<string>('JM 65GB Auto');
+  const [services, setServices] = useState<any[]>([]);
+  const [activeMobile, setActiveMobile] = useState<string | null>(null);
+  const [activePlanName, setActivePlanName] = useState<string | null>(null);
   const [esimModalOpen, setEsimModalOpen] = useState<boolean>(false);
   const [esimDetails, setEsimDetails] = useState<EsimDetails | null>(null);
   const [isLoadingEsim, setIsLoadingEsim] = useState<boolean>(false);
@@ -250,9 +251,14 @@ export default function AccountPage() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && data.services && data.services.length > 0) {
+          setServices(data.services);
           const mainService = data.services[0];
-          if (mainService.serviceNumber) setActiveMobile(mainService.serviceNumber);
-          if (mainService.planName) setActivePlanName(mainService.planName);
+          setActiveMobile(mainService.serviceNumber || null);
+          setActivePlanName(mainService.planName || null);
+        } else {
+          setServices([]);
+          setActiveMobile(null);
+          setActivePlanName(null);
         }
       })
       .catch((err) => console.warn('Services fetch error:', err));
@@ -276,8 +282,10 @@ export default function AccountPage() {
 
   useEffect(() => {
     if (!user) return;
-    const custNo = user.custNo || 'CUST882104';
-    loadAccountData(custNo);
+    const custNo = user.custNo || (user.email === 'alexander.wright@justmobile.com.au' ? 'CUST882104' : '');
+    if (custNo) {
+      loadAccountData(custNo);
+    }
   }, [user]);
 
   // Fetch reserve pool numbers for Add Line tab
@@ -547,10 +555,16 @@ export default function AccountPage() {
     return `JM-AU-${clean}`;
   };
 
+  const hasActivePlan = Boolean(
+    activePlanName || 
+    (services && services.length > 0) || 
+    (orders && orders.some((o) => o.status === 'ACTIVE' || o.status === 'PORT_IN_PROGRESS'))
+  );
+
   // Safe defaults from carrier or fallback
-  const remainingGb = usage?.dataMeter?.dataRemainingGb ?? 42.4;
-  const totalGb = usage?.dataMeter?.planTotalGb ?? 50;
-  const percentRemaining = Math.round((remainingGb / totalGb) * 100);
+  const remainingGb = usage?.dataMeter?.dataRemainingGb ?? (hasActivePlan ? 42.4 : 0);
+  const totalGb = usage?.dataMeter?.planTotalGb ?? (hasActivePlan ? 65 : 0);
+  const percentRemaining = totalGb > 0 ? Math.round((remainingGb / totalGb) * 100) : 0;
 
   // In-flight or completed mobile number porting order (INT-10)
   const portOrder = orders.find((o) => o.orderType === 'PORT_IN');
@@ -589,9 +603,11 @@ export default function AccountPage() {
       <main className={styles.mainContent}>
         <div className={styles.headerBanner}>
           <div>
-            <h1 className={styles.greetingTitle}>Welcome back, {user.name.split(' ')[0]}</h1>
+            <h1 className={styles.greetingTitle}>
+              {hasActivePlan ? `Welcome back, ${user.name.split(' ')[0]}` : `Welcome to JustMobile, ${user.name.split(' ')[0]}! 🎉`}
+            </h1>
             <p className={styles.greetingSub}>
-              Customer ID: {user.custNo || formatAccountId(user.id)} · Connected to Telstra 5G Wholesale Network
+              Customer ID: {user.custNo || formatAccountId(user.id)} · {hasActivePlan ? 'Connected to Telstra 5G Wholesale Network' : 'Account Ready · Ready to Activate Plan'}
             </p>
           </div>
         </div>
@@ -658,68 +674,171 @@ export default function AccountPage() {
               </div>
             )}
 
-            <div className={styles.card}>
-              <div className={styles.serviceRow}>
-                <div>
-                  <div className={styles.mobileNum}>
-                    {activeMobile}
+            {hasActivePlan ? (
+              <div className={styles.card}>
+                <div className={styles.serviceRow}>
+                  <div>
+                    <div className={styles.mobileNum}>
+                      {activeMobile || '04XX XXX XXX'}
+                    </div>
+                    <span style={{ fontSize: '13px', color: '#697866' }}>
+                      Allocated Telstra Wholesale 5G Mobile · Unlimited AU Calls & Texts
+                    </span>
                   </div>
-                  <span style={{ fontSize: '13px', color: '#697866' }}>
-                    Allocated Telstra Wholesale 5G Mobile · Unlimited AU Calls & Texts
-                  </span>
+                  <span className={styles.statusActive}>Active · eSIM</span>
                 </div>
-                <span className={styles.statusActive}>Active · eSIM</span>
-              </div>
 
-              <h2 className={styles.cardTitle}>
-                {activePlanName} (${(PORTAL_PLANS.find(p => p.name === activePlanName || activePlanName.includes(p.tier))?.price ?? 37.55).toFixed(2)}/mth)
-              </h2>
+                <h2 className={styles.cardTitle}>
+                  {activePlanName} (${(PORTAL_PLANS.find(p => p.name === activePlanName || (activePlanName && activePlanName.includes(p.tier)))?.price ?? 37.55).toFixed(2)}/mth)
+                </h2>
 
-              {/* Monthly data meter synced with live carrier usage */}
-              <div className={styles.meterContainer}>
-                <div className={styles.meterInfo}>
-                  <span>Current Data Cycle (Renews 28th)</span>
-                  <strong>{remainingGb} GB remaining of {totalGb} GB</strong>
+                {/* Monthly data meter synced with live carrier usage */}
+                <div className={styles.meterContainer}>
+                  <div className={styles.meterInfo}>
+                    <span>Current Data Cycle (Renews 28th)</span>
+                    <strong>{remainingGb} GB remaining of {totalGb} GB</strong>
+                  </div>
+                  <div className={styles.progressBar}>
+                    <div className={styles.progressFill} style={{ width: `${percentRemaining}%` }} />
+                  </div>
                 </div>
-                <div className={styles.progressBar}>
-                  <div className={styles.progressFill} style={{ width: `${percentRemaining}%` }} />
+
+                <div style={{ display: 'flex', gap: '10px', marginTop: '20px', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className={styles.btnPrimary}
+                    onClick={handleOpenEsimModal}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <span>📱 View eSIM QR & Profile</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.btnSecondaryUpgrade}
+                    onClick={() => {
+                      setPlanModalTab('switch_plan');
+                      setIsPlanModalOpen(true);
+                    }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <span>⚡ Upgrade / Switch Plan</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.btnAddLineBtn}
+                    onClick={() => {
+                      setPlanModalTab('add_line');
+                      setIsPlanModalOpen(true);
+                      if (newLineReservedPool.length === 0) fetchReservePool();
+                    }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <span>➕ Add Another Line</span>
+                  </button>
                 </div>
               </div>
+            ) : (
+              <div className={styles.card} style={{ background: '#ffffff', border: '1.5px solid #dce4d8' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '16px' }}>
+                  <div style={{
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '12px',
+                    background: '#f4faee',
+                    border: '1.5px solid #a3dc8f',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '24px',
+                    flexShrink: 0,
+                  }}>
+                    🚀
+                  </div>
+                  <div>
+                    <span style={{
+                      background: '#e8f3e5',
+                      color: '#3b5c28',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      padding: '3px 10px',
+                      borderRadius: '9999px',
+                      display: 'inline-block',
+                      marginBottom: '6px'
+                    }}>
+                      GET CONNECTED · READY FOR SETUP
+                    </span>
+                    <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#142420', margin: '0 0 6px 0' }}>
+                      You haven't selected a mobile package yet
+                    </h2>
+                    <p style={{ fontSize: '13.5px', color: '#556253', margin: 0, lineHeight: 1.5 }}>
+                      Your JustMobile customer profile <strong>#{user.custNo || '—'}</strong> is registered and verified. Choose any month-to-month plan below to activate instant digital eSIM access on Australia's Telstra Wholesale 5G Network.
+                    </p>
+                  </div>
+                </div>
 
-              <div style={{ display: 'flex', gap: '10px', marginTop: '20px', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  className={styles.btnPrimary}
-                  onClick={handleOpenEsimModal}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                >
-                  <span>📱 View eSIM QR & Profile</span>
-                </button>
-                <button
-                  type="button"
-                  className={styles.btnSecondaryUpgrade}
-                  onClick={() => {
-                    setPlanModalTab('switch_plan');
-                    setIsPlanModalOpen(true);
-                  }}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                >
-                  <span>⚡ Upgrade / Switch Plan</span>
-                </button>
-                <button
-                  type="button"
-                  className={styles.btnAddLineBtn}
-                  onClick={() => {
-                    setPlanModalTab('add_line');
-                    setIsPlanModalOpen(true);
-                    if (newLineReservedPool.length === 0) fetchReservePool();
-                  }}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                >
-                  <span>➕ Add Another Line</span>
-                </button>
+                {/* 3 Step Quick Guide */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                  gap: '12px',
+                  background: '#f9fbf8',
+                  border: '1px solid #e5ede2',
+                  borderRadius: '12px',
+                  padding: '16px',
+                  margin: '18px 0 20px 0'
+                }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '13px', color: '#142420', marginBottom: '4px' }}>
+                      1. Choose Your Plan
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#687765' }}>
+                      Plans start from $20.54/mth with zero lock-in contracts and zero bill shock.
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '13px', color: '#142420', marginBottom: '4px' }}>
+                      2. Pick Your Number
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#687765' }}>
+                      Transfer your existing 04XX mobile number or pick a fresh number from our pool.
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '13px', color: '#142420', marginBottom: '4px' }}>
+                      3. Instant eSIM QR
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#687765' }}>
+                      Scan the on-screen QR code and connect your phone in under 2 minutes.
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className={styles.btnPrimary}
+                    onClick={() => {
+                      setPlanModalTab('switch_plan');
+                      setIsPlanModalOpen(true);
+                    }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    <span>⚡ Choose a Mobile Plan</span>
+                    <span>→</span>
+                  </button>
+
+                  <Link
+                    href="/#phones"
+                    className={styles.btnSecondaryUpgrade}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
+                  >
+                    <span>📱 Explore Outright Phones</span>
+                    <span>↗</span>
+                  </Link>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Handset Financing Card */}
             <div className={styles.card}>
@@ -821,7 +940,7 @@ export default function AccountPage() {
                 </div>
                 <div className={styles.detailItem}>
                   <span className={styles.detailLabel}>Primary Mobile</span>
-                  <span className={styles.detailValue}>{user.phone || activeMobile}</span>
+                  <span className={styles.detailValue}>{user.phone || activeMobile || 'No mobile linked yet'}</span>
                 </div>
                 <div className={styles.detailItem}>
                   <span className={styles.detailLabel}>ACMA ID Verification</span>
@@ -835,10 +954,15 @@ export default function AccountPage() {
             <div className={styles.card}>
               <h2 className={styles.cardTitle}>Payment & Invoicing</h2>
               <p style={{ fontSize: '13.5px', color: '#556253', margin: '0 0 12px 0' }}>
-                Next invoice due: <strong>{balance?.nextInvoiceDate || '28 Nov 2026'} (${balance?.nextInvoiceAmount?.toFixed(2) || '25.00'})</strong>
+                Next invoice due:{' '}
+                <strong>
+                  {hasActivePlan
+                    ? `${balance?.nextInvoiceDate || '28 Nov 2026'} ($${balance?.nextInvoiceAmount?.toFixed(2) || '37.55'})`
+                    : 'No upcoming invoice (no active plan)'}
+                </strong>
               </p>
-              <div style={{ fontSize: '13px', color: '#789937', fontWeight: 600, marginBottom: '18px' }}>
-                {balance?.paymentMethod || 'Mastercard ending in •••• 4192'} ({balance?.autoPayStatus || 'Auto-pay active'})
+              <div style={{ fontSize: '13px', color: hasActivePlan ? '#789937' : '#718096', fontWeight: 600, marginBottom: '18px' }}>
+                {balance?.paymentMethod || 'No card registered'} ({balance?.autoPayStatus || (hasActivePlan ? 'Auto-pay active' : 'Auto-pay inactive')})
               </div>
 
               {/* ATO Tax Invoices Section (INT-08) */}
@@ -1087,7 +1211,7 @@ export default function AccountPage() {
                 {/* 3 Plan Cards */}
                 <div className={styles.portalPlansGrid}>
                   {PORTAL_PLANS.map((plan) => {
-                    const isCurrent = activePlanName.includes(plan.tier);
+                    const isCurrent = Boolean(activePlanName && activePlanName.includes(plan.tier));
                     const isSelected = selectedPlanId === plan.id;
                     return (
                       <div
@@ -1137,15 +1261,15 @@ export default function AccountPage() {
                 {/* Plan Difference Summary */}
                 {(() => {
                   const targetPlan = PORTAL_PLANS.find((p) => p.id === selectedPlanId) || PORTAL_PLANS[3];
-                  const currentPlan = PORTAL_PLANS.find((p) => activePlanName.includes(p.tier) || activePlanName === p.name) || PORTAL_PLANS[3];
+                  const currentPlan = PORTAL_PLANS.find((p) => activePlanName && (activePlanName.includes(p.tier) || activePlanName === p.name)) || PORTAL_PLANS[3];
                   const diff = targetPlan.price - currentPlan.price;
-                  const isSamePlan = targetPlan.id === currentPlan.id;
+                  const isSamePlan = Boolean(activePlanName && targetPlan.id === currentPlan.id);
 
                   return (
                     <div className={styles.portalSummaryBox}>
                       <div className={styles.portalSummaryRow}>
                         <span>Current Service:</span>
-                        <strong>{activeMobile} ({currentPlan.tier} · ${currentPlan.price.toFixed(2)}/mth)</strong>
+                        <strong>{activeMobile || 'New Line'} ({currentPlan.tier} · ${currentPlan.price.toFixed(2)}/mth)</strong>
                       </div>
                       <div className={styles.portalSummaryRow}>
                         <span>Selected Upgrade Plan:</span>
