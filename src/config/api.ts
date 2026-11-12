@@ -16,3 +16,4 @@ export const getApiUrl = (): string => {
 };
 
 export const API_BASE_URL = getApiUrl();
+
