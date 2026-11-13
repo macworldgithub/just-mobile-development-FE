@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { getApiUrl } from '@/config/api';
 import styles from './account.module.css';
 
 interface CarrierUsage {
@@ -178,6 +179,7 @@ const PORTAL_PLANS: PortalPlanOption[] = [
 export default function AccountPage() {
   const router = useRouter();
   const { user, logout, isLoading } = useAuth();
+  const API_URL = getApiUrl();
 
   const [usage, setUsage] = useState<CarrierUsage | null>(null);
   const [balance, setBalance] = useState<CarrierBalance | null>(null);
@@ -215,7 +217,7 @@ export default function AccountPage() {
   const [newLineOtpVerified, setNewLineOtpVerified] = useState<boolean>(false);
   const [newLineTxId, setNewLineTxId] = useState<string>('');
   const [newLineReservedPool, setNewLineReservedPool] = useState<{ id: string; number: string; formatted: string }[]>([]);
-  const [newLineSelectedNumber, setNewLineSelectedNumber] = useState<string>('0488 912 340');
+  const [newLineSelectedNumber, setNewLineSelectedNumber] = useState<string>('0491 570 006');
   const [isLoadingPool, setIsLoadingPool] = useState<boolean>(false);
   const [isActivatingLine, setIsActivatingLine] = useState<boolean>(false);
   const [newLineSuccess, setNewLineSuccess] = useState<string | null>(null);
@@ -245,7 +247,7 @@ export default function AccountPage() {
   // Comprehensive data loader for live carrier sync
   const loadAccountData = (custNo: string) => {
     // 1. Fetch live unbilled usage
-    fetch(`/api/carrier/customers/${custNo}/usage`)
+    fetch(`${API_URL}/api/carrier/customers/${custNo}/usage`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && data.dataMeter) {
@@ -255,7 +257,7 @@ export default function AccountPage() {
       .catch((err) => console.warn('Usage fetch error:', err));
 
     // 2. Fetch live balance & auto-pay
-    fetch(`/api/carrier/customers/${custNo}/balance`)
+    fetch(`${API_URL}/api/carrier/customers/${custNo}/balance`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data) setBalance(data);
@@ -263,7 +265,7 @@ export default function AccountPage() {
       .catch((err) => console.warn('Balance fetch error:', err));
 
     // 3. Fetch active services
-    fetch(`/api/carrier/customers/${custNo}/services`)
+    fetch(`${API_URL}/api/carrier/customers/${custNo}/services`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && data.services && data.services.length > 0) {
@@ -280,7 +282,7 @@ export default function AccountPage() {
       .catch((err) => console.warn('Services fetch error:', err));
 
     // 4. Fetch ATO-compliant tax invoices (INT-08)
-    fetch(`/api/carrier/customers/${custNo}/invoices`)
+    fetch(`${API_URL}/api/carrier/customers/${custNo}/invoices`)
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
         if (Array.isArray(data)) setInvoices(data);
@@ -288,7 +290,7 @@ export default function AccountPage() {
       .catch((err) => console.warn('Invoices fetch error:', err));
 
     // 5. Fetch customer orders & mobile porting status (INT-10)
-    fetch(`/api/carrier/customers/${custNo}/orders`)
+    fetch(`${API_URL}/api/carrier/customers/${custNo}/orders`)
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
         if (Array.isArray(data)) setOrders(data);
@@ -308,7 +310,7 @@ export default function AccountPage() {
   const fetchReservePool = async () => {
     setIsLoadingPool(true);
     try {
-      const res = await fetch('/api/carrier/numbers/reserve?qty=5');
+      const res = await fetch(`${API_URL}/api/carrier/numbers/reserve?qty=5`);
       if (res.ok) {
         const data = await res.json();
         if (data.numbers && data.numbers.length > 0) {
@@ -335,7 +337,7 @@ export default function AccountPage() {
     setPlanChangeSuccess(null);
 
     try {
-      const res = await fetch(`/api/carrier/customers/${custNo}/change-plan`, {
+      const res = await fetch(`${API_URL}/api/carrier/customers/${custNo}/change-plan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -343,7 +345,7 @@ export default function AccountPage() {
           planName: targetPlan.name,
           monthlyFee: targetPlan.price,
           dataGb: targetPlan.dataGb,
-          msn: activeMobile || '0488912340',
+          msn: activeMobile || '0491570006',
         }),
       });
 
@@ -377,7 +379,7 @@ export default function AccountPage() {
     }
     const custNo = user?.custNo || '';
     try {
-      const res = await fetch('/api/carrier/otp/send', {
+      const res = await fetch(`${API_URL}/api/carrier/otp/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ custNo, destination: newLinePortNumber }),
@@ -397,7 +399,7 @@ export default function AccountPage() {
   // ACMA Pre-Port SMS 2FA Verification for Add Line
   const handleVerifyNewLineOtp = async () => {
     try {
-      const res = await fetch('/api/carrier/otp/verify', {
+      const res = await fetch(`${API_URL}/api/carrier/otp/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ transactionId: newLineTxId, code: newLineOtpCode }),
@@ -417,7 +419,7 @@ export default function AccountPage() {
   // In-portal Add Line Activation Handler
   const handleActivateNewLine = async () => {
     if (!user) return;
-    const custNo = user.custNo || 'CUST882104';
+    const custNo = user.custNo || 'CUST990001';
     const plan = PORTAL_PLANS.find((p) => p.id === newLinePlanId) || PORTAL_PLANS[1];
 
     if (newLineKeepNumber && !newLineOtpVerified) {
@@ -430,7 +432,7 @@ export default function AccountPage() {
     setNewLineSuccess(null);
 
     try {
-      const endpoint = newLineKeepNumber ? '/api/carrier/orders/activate-port' : '/api/carrier/orders/activate';
+      const endpoint = `${API_URL}${newLineKeepNumber ? '/api/carrier/orders/activate-port' : '/api/carrier/orders/activate'}`;
       const payload = newLineKeepNumber
         ? {
             custNo,
@@ -459,7 +461,7 @@ export default function AccountPage() {
         throw new Error(data.message || 'Carrier service activation failed.');
       }
 
-      setNewLineSuccess(`✓ Successfully added line ${data.msn}! eSIM profile provisioned.`);
+      setNewLineSuccess(`Successfully added line ${data.msn}. eSIM profile provisioned.`);
       loadAccountData(custNo);
 
       setTimeout(() => {
@@ -479,7 +481,7 @@ export default function AccountPage() {
     setSyncingOrderId(orderId);
     setSyncMessage(null);
     try {
-      const res = await fetch(`/api/carrier/orders/${orderId}/sync-port`, {
+      const res = await fetch(`${API_URL}/api/carrier/orders/${orderId}/sync-port`, {
         method: 'POST',
       });
       if (res.ok) {
@@ -487,7 +489,7 @@ export default function AccountPage() {
         setSyncMessage(data.message || 'Port synchronized successfully!');
         const custNo = user?.custNo || '';
         if (custNo) {
-          const ordersRes = await fetch(`/api/carrier/customers/${custNo}/orders`);
+          const ordersRes = await fetch(`${API_URL}/api/carrier/customers/${custNo}/orders`);
           if (ordersRes.ok) {
             const freshOrders = await ordersRes.json();
             setOrders(freshOrders);
@@ -510,7 +512,7 @@ export default function AccountPage() {
     setResubmitSuccess(null);
 
     try {
-      const res = await fetch(`/api/carrier/orders/${portOrder.orderId}/resubmit-port`, {
+      const res = await fetch(`${API_URL}/api/carrier/orders/${portOrder.orderId}/resubmit-port`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -541,7 +543,7 @@ export default function AccountPage() {
   // Simulate donor carrier rejection for testing edge cases
   const handleSimulateRejection = async (orderId: string) => {
     try {
-      await fetch(`/api/carrier/orders/${orderId}/simulate-rejection`, {
+      await fetch(`${API_URL}/api/carrier/orders/${orderId}/simulate-rejection`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -565,8 +567,8 @@ export default function AccountPage() {
 
     setIsLoadingEsim(true);
     try {
-      const custNo = user?.custNo || 'CUST882104';
-      const res = await fetch(`/api/carrier/qrcodes/${custNo}`);
+      const custNo = user?.custNo || 'CUST990001';
+      const res = await fetch(`${API_URL}/api/carrier/qrcodes/${custNo}`);
       if (res.ok) {
         const data = await res.json();
         setEsimDetails(data);
@@ -588,18 +590,18 @@ export default function AccountPage() {
 
   const handleEmailEsim = async () => {
     if (!user || !esimDetails) return;
-    const custNo = user.custNo || 'CUST882104';
+    const custNo = user.custNo || 'CUST990001';
     setIsSendingEmail(true);
     setEmailSentNotice(null);
     try {
-      const res = await fetch(`/api/carrier/customers/${custNo}/orders/${esimDetails.orderId}/send-esim-email`, {
+      const res = await fetch(`${API_URL}/api/carrier/customers/${custNo}/orders/${esimDetails.orderId}/send-esim-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: user.email }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setEmailSentNotice(`✓ QR code & LPA details emailed to ${user.email}`);
+        setEmailSentNotice(`QR code & LPA details emailed to ${user.email}`);
         setTimeout(() => setEmailSentNotice(null), 4000);
       } else {
         setEmailSentNotice('Could not dispatch email at this time.');
@@ -629,7 +631,7 @@ export default function AccountPage() {
   };
 
   const formatAccountId = (id?: string) => {
-    if (!id) return 'JM-AU-882104';
+    if (!id) return 'JM-AU-990001';
     const clean = id.replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase();
     return `JM-AU-${clean}`;
   };
@@ -1069,77 +1071,41 @@ export default function AccountPage() {
             {/* Handset Financing Card */}
             <div className={styles.card}>
               <h2 className={styles.cardTitle}>Device & Financing</h2>
-              {user.custNo === 'CUST882104' ? (
-                <>
-                  <div className={styles.detailsList}>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Device</span>
-                      <span className={styles.detailValue}>Samsung Galaxy S26 Ultra 512GB (Black)</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Instalment Term</span>
-                      <span className={styles.detailValue}>Month 1 of 24</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Monthly Instalment</span>
-                      <span className={styles.detailValue}>$74.96/mth</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Remaining Balance</span>
-                      <span className={styles.detailValue}>$1,724.29</span>
-                    </div>
+              <>
+                <div className={styles.detailsList}>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Device Status</span>
+                    <span className={styles.detailValue}>BYO Phone (SIM-Only · Unlocked)</span>
                   </div>
-                  <div style={{ marginTop: '16px' }}>
-                    <button
-                      type="button"
-                      className={styles.btnSecondaryUpgrade}
-                      onClick={() => {
-                        setPlanModalTab('device_calc');
-                        setIsPlanModalOpen(true);
-                      }}
-                      style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
-                    >
-                      <span>View Repayment Schedule</span>
-                    </button>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Financing Contract</span>
+                    <span className={styles.detailValue} style={{ color: '#49721d', fontWeight: 600 }}>
+                      No Active Device Debt ($0.00 / Contract-Free)
+                    </span>
                   </div>
-                </>
-              ) : (
-                <>
-                  <div className={styles.detailsList}>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Device Status</span>
-                      <span className={styles.detailValue}>BYO Phone (SIM-Only · Unlocked)</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Financing Contract</span>
-                      <span className={styles.detailValue} style={{ color: '#49721d', fontWeight: 600 }}>
-                        No Active Device Debt ($0.00 / Contract-Free)
-                      </span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Monthly Instalment</span>
-                      <span className={styles.detailValue}>$0.00/mth</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <span className={styles.detailLabel}>Device Upgrade</span>
-                      <span className={styles.detailValue}>Eligible for Flagship Handset Add-On</span>
-                    </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Monthly Instalment</span>
+                    <span className={styles.detailValue}>$0.00/mth</span>
                   </div>
-                  <div style={{ marginTop: '16px' }}>
-                    <button
-                      type="button"
-                      className={styles.btnSecondaryUpgrade}
-                      onClick={() => {
-                        setPlanModalTab('device_calc');
-                        setIsPlanModalOpen(true);
-                      }}
-                      style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
-                    >
-                      <span>Browse Handsets</span>
-                    </button>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Device Upgrade</span>
+                    <span className={styles.detailValue}>Eligible for Flagship Handset Add-On</span>
                   </div>
-                </>
-              )}
+                </div>
+                <div style={{ marginTop: '16px' }}>
+                  <button
+                    type="button"
+                    className={styles.btnSecondaryUpgrade}
+                    onClick={() => {
+                      setPlanModalTab('device_calc');
+                      setIsPlanModalOpen(true);
+                    }}
+                    style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
+                  >
+                    <span>Browse Handsets</span>
+                  </button>
+                </div>
+              </>
             </div>
           </div>
 
@@ -1215,7 +1181,7 @@ export default function AccountPage() {
                       <div className={styles.invoiceRight}>
                         <span className={styles.invoiceAmount}>${inv.amount.toFixed(2)}</span>
                         <a
-                          href={`/api/carrier/customers/${user.custNo || 'CUST882104'}/invoices/${inv.invoiceId}/pdf`}
+                          href={`${API_URL}/api/carrier/customers/${user.custNo || 'CUST990001'}/invoices/${inv.invoiceId}/pdf`}
                           download={`JustMobile-Tax-Invoice-${inv.invoiceId}.pdf`}
                           className={styles.downloadPdfBtn}
                           title="Download ATO-compliant PDF Tax Invoice"
@@ -1375,7 +1341,7 @@ export default function AccountPage() {
               <div>
                 <h2 className={styles.modalTitleLarge}>Plan & Service Management</h2>
                 <p className={styles.modalSubtitleMuted}>
-                  Direct carrier provisioning on Telstra Wholesale 5G · Connected to Cust #{user.custNo || 'CUST882104'}
+                  Direct carrier provisioning on Telstra Wholesale 5G · Connected to Cust #{user.custNo || 'CUST990001'}
                 </p>
               </div>
               <button
@@ -1516,7 +1482,7 @@ export default function AccountPage() {
                             </strong>
                           </div>
                           <div className={styles.portalNoticeText}>
-                            ℹ️ <strong>Billing & Quota Adjustment:</strong> Your data allowance will adjust immediately to {targetPlan.dataGb}GB upon confirmation. Next invoice on 28th will reflect ${targetPlan.price.toFixed(2)}.
+                            <strong>Billing & Quota Adjustment:</strong> Your data allowance will adjust immediately to {targetPlan.dataGb}GB upon confirmation. Next invoice on 28th will reflect ${targetPlan.price.toFixed(2)}.
                           </div>
                         </>
                       ) : (
@@ -1534,7 +1500,7 @@ export default function AccountPage() {
                             <strong style={{ color: '#142420' }}>${targetPlan.price.toFixed(2)} / month</strong>
                           </div>
                           <div className={styles.portalNoticeText}>
-                            ℹ️ <strong>Activation Quota:</strong> Your new service will be provisioned on Telstra Wholesale 5G with {targetPlan.dataGb}GB data allowance and zero lock-in contract.
+                            <strong>Activation Quota:</strong> Your new service will be provisioned on Telstra Wholesale 5G with {targetPlan.dataGb}GB data allowance and zero lock-in contract.
                           </div>
                         </>
                       )}
@@ -1798,7 +1764,7 @@ export default function AccountPage() {
                         className={styles.portalConfirmBtn}
                         style={{ marginTop: '16px' }}
                         onClick={() => {
-                          setCalcDeviceSuccess(`Handset order created for Cust #${user.custNo || 'CUST882104'}. Free express shipping confirmed to your registered address.`);
+                          setCalcDeviceSuccess(`Handset order created for Cust #${user.custNo || 'CUST990001'}. Free express shipping confirmed to your registered address.`);
                           setTimeout(() => setCalcDeviceSuccess(null), 5000);
                         }}
                       >

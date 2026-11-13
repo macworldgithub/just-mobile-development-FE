@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
+import { getApiUrl } from '@/config/api';
 import styles from './OrderFlowModal.module.css';
 import { Handset, MobilePlan, calculateRepayments } from '@/data/catalogue';
 
@@ -26,6 +27,7 @@ interface OrderFlowModalProps {
 
 export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhones }: OrderFlowModalProps) {
   const router = useRouter();
+  const API_URL = getApiUrl();
   const [step, setStep] = useState<number>(1);
   const [keepExistingNumber, setKeepExistingNumber] = useState<boolean>(true);
   const [portNumber, setPortNumber] = useState('');
@@ -37,7 +39,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
 
   // Reserved numbers pool from native backend
   const [reservedNumbers, setReservedNumbers] = useState<{ id: string; number: string; formatted: string }[]>([]);
-  const [selectedNumber, setSelectedNumber] = useState<string>('0488 912 340');
+  const [selectedNumber, setSelectedNumber] = useState<string>('0491 570 006');
   const [isLoadingNumbers, setIsLoadingNumbers] = useState<boolean>(false);
 
   // Auth state
@@ -77,7 +79,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
   const fetchReservedNumbers = async () => {
     setIsLoadingNumbers(true);
     try {
-      const res = await fetch('/api/carrier/numbers/reserve?qty=5');
+      const res = await fetch(`${API_URL}/api/carrier/numbers/reserve?qty=5`);
       if (res.ok) {
         const data = await res.json();
         if (data.numbers && data.numbers.length > 0) {
@@ -140,10 +142,10 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
   const handleSendOtp = async () => {
     if (portNumber.length >= 8) {
       try {
-        const res = await fetch('/api/carrier/otp/send', {
+        const res = await fetch(`${API_URL}/api/carrier/otp/send`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ custNo: 'CUST882104', destination: portNumber }),
+          body: JSON.stringify({ custNo: user?.custNo || 'CUST990001', destination: portNumber }),
         });
         const data = await res.json();
         if (res.ok && data.transactionId) {
@@ -164,7 +166,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
   const handleVerifyOtp = async () => {
     if (otpCode.length === 6) {
       try {
-        const res = await fetch('/api/carrier/otp/verify', {
+        const res = await fetch(`${API_URL}/api/carrier/otp/verify`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ transactionId: otpTransactionId || 'TX-DEV', code: otpCode }),
@@ -172,7 +174,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
         const data = await res.json();
         if (res.ok && data.verified) {
           setOtpVerified(true);
-          setOtpMessage('✓ Number verified for ACMA compliant transfer.');
+          setOtpMessage('Number verified for ACMA compliant transfer.');
           return;
         }
       } catch (err) {
@@ -190,7 +192,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
     setEmailNotice(null);
 
     try {
-      const endpoint = keepExistingNumber ? '/api/carrier/orders/activate-port' : '/api/carrier/orders/activate';
+      const endpoint = `${API_URL}${keepExistingNumber ? '/api/carrier/orders/activate-port' : '/api/carrier/orders/activate'}`;
       const activeCustNo = user?.custNo || '';
       const activeEmail = email || user?.email || '';
       const orderPayload = {
@@ -204,8 +206,8 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
         suburb: user?.suburb || 'Sydney',
         state: user?.state || 'NSW',
         postcode: user?.postcode || '2000',
-        firstName: name.split(' ')[0] || user?.name?.split(' ')[0] || 'Alexander',
-        lastName: name.split(' ').slice(1).join(' ') || user?.name?.split(' ').slice(1).join(' ') || 'Wright',
+        firstName: name.split(' ')[0] || user?.name?.split(' ')[0] || 'Jordan',
+        lastName: name.split(' ').slice(1).join(' ') || user?.name?.split(' ').slice(1).join(' ') || 'Miller',
         ...(keepExistingNumber ? { numType: 'prepaid', dob: dob || '1992-06-14' } : {}),
       };
 
@@ -220,11 +222,11 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
       setOrderId(createdOrderId);
 
       if (activateData?.emailSent) {
-        setEmailNotice(`✓ eSIM activation QR code dispatched to ${activateData.emailRecipient || activeEmail}`);
+        setEmailNotice(`eSIM activation QR code dispatched to ${activateData.emailRecipient || activeEmail}`);
       }
 
       // Fetch QR Code details
-      const qrRes = await fetch(`/api/carrier/qrcodes/${createdOrderId}`);
+      const qrRes = await fetch(`${API_URL}/api/carrier/qrcodes/${createdOrderId}`);
       if (qrRes.ok) {
         const qrData = await qrRes.json();
         setQrCodeData(qrData);
@@ -248,14 +250,14 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
     try {
       const activeCustNo = user?.custNo || '';
       const targetEmail = email || user?.email || '';
-      const res = await fetch(`/api/carrier/customers/${activeCustNo}/orders/${orderId}/send-esim-email`, {
+      const res = await fetch(`${API_URL}/api/carrier/customers/${activeCustNo}/orders/${orderId}/send-esim-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: targetEmail }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setEmailNotice(`✓ Fresh eSIM QR code dispatched to ${targetEmail}`);
+        setEmailNotice(`Fresh eSIM QR code dispatched to ${targetEmail}`);
       } else {
         setEmailNotice('Could not send email at this time.');
       }

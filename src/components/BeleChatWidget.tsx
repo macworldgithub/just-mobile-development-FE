@@ -5,6 +5,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import FormattedChatMessage from './FormattedChatMessage';
 import styles from './BeleChatWidget.module.css';
 import { CHATBOT_CONFIG } from '@/config/chatbotConfig';
+import { getApiUrl } from '@/config/api';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -59,7 +60,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
     setLoading(true);
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await fetch(`${getApiUrl()}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: newMessages }),

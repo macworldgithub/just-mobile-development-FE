@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './PlansSection.module.css';
 import { MOBILE_PLANS, MobilePlan } from '@/data/catalogue';
+import { getApiUrl } from '@/config/api';
 import CisModal from './CisModal';
 
 interface PlansSectionProps {
@@ -19,7 +20,7 @@ export default function PlansSection({ onSelectPlan, onExplorePhones, initialPla
 
   // Fetch plans from MongoDB API
   useEffect(() => {
-    fetch('/api/plans')
+    fetch(`${getApiUrl()}/api/plans`)
       .then((res) => res.json())
       .then((data) => {
         if (data.data && Array.isArray(data.data) && data.data.length > 0) {
@@ -165,7 +166,7 @@ export default function PlansSection({ onSelectPlan, onExplorePhones, initialPla
           <button
             type="button"
             onClick={() => {
-              setSelectedCisPlan('50gb');
+              setSelectedCisPlan('65gb');
               setCisOpen(true);
             }}
             style={{

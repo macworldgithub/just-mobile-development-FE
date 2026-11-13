@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { getApiUrl } from '@/config/api';
 import styles from './login.module.css';
 
 function LoginFormContent() {
@@ -44,12 +45,12 @@ function LoginFormContent() {
   const [forgotSuccess, setForgotSuccess] = useState('');
   const [maskedEmail, setMaskedEmail] = useState('');
 
-  // If already logged in, redirect
+  // If already logged in, redirect when visiting the matching portal
   useEffect(() => {
     if (user) {
       if (user.role === 'admin' && portal === 'admin') {
         router.push('/admin');
-      } else {
+      } else if (user.role !== 'admin' && portal === 'customer') {
         router.push('/account');
       }
     }
@@ -60,7 +61,6 @@ function LoginFormContent() {
     const p = searchParams.get('portal');
     if (p === 'admin') {
       setPortal('admin');
-      setEmail('admin@justmobile.com.au');
     }
   }, [searchParams]);
 
@@ -68,9 +68,6 @@ function LoginFormContent() {
     setPortal(newPortal);
     setErrorMsg('');
     setSuccessMsg('');
-    if (newPortal === 'admin') {
-      if (!email) setEmail('admin@justmobile.com.au');
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,13 +135,13 @@ function LoginFormContent() {
     setForgotSuccess('');
 
     if (!forgotIdentifier.trim()) {
-      setForgotError('Please enter your Customer Number (e.g. CUST882104) or registered email.');
+      setForgotError('Please enter your Customer Number (e.g. CUST990001) or registered email.');
       return;
     }
 
     setForgotLoading(true);
     try {
-      const res = await fetch('/api/auth/forgot-password', {
+      const res = await fetch(`${getApiUrl()}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ identifier: forgotIdentifier.trim() }),
@@ -187,7 +184,7 @@ function LoginFormContent() {
 
     setForgotLoading(true);
     try {
-      const res = await fetch('/api/auth/reset-password', {
+      const res = await fetch(`${getApiUrl()}/api/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -201,13 +198,19 @@ function LoginFormContent() {
 
       if (res.ok && data.success) {
         setShowForgotModal(false);
-        setSuccessMsg('✓ Password successfully reset! Please sign in with your new password.');
-        if (forgotIdentifier.toUpperCase().startsWith('CUST')) {
+        setSuccessMsg('Password or PIN successfully reset. Please sign in with your updated credentials.');
+        if (portal === 'customer' && !forgotIdentifier.includes('@')) {
           setCustNo(forgotIdentifier.trim().toUpperCase());
         } else {
           setEmail(forgotIdentifier.trim());
         }
-        setPassword(forgotNewPassword);
+        if (/^\d{4,6}$/.test(forgotNewPassword)) {
+          setAuthMethod('pin');
+          setPin(forgotNewPassword);
+        } else {
+          setAuthMethod('password');
+          setPassword(forgotNewPassword);
+        }
       } else {
         setForgotError(data.message || 'Failed to reset password. Code may be invalid or expired.');
       }
@@ -278,7 +281,7 @@ function LoginFormContent() {
               type="text"
               required
               autoFocus
-              placeholder="e.g. 512345 or CUST882104"
+              placeholder="e.g. 512345 or CUST990001"
               value={custNo}
               onChange={(e) => setCustNo(e.target.value)}
               className={styles.input}
@@ -484,7 +487,7 @@ function LoginFormContent() {
                   Reset Password or PIN
                 </h2>
                 <p style={{ fontSize: '13.5px', color: '#556253', margin: '0 0 18px 0', lineHeight: 1.5 }}>
-                  Enter your <strong>Customer Number</strong> (e.g. <code>512345</code> or <code>CUST882104</code>) or registered email address. We will dispatch a 6-digit verification code to your email.
+                  Enter your <strong>Customer Number</strong> (e.g. <code>512345</code> or <code>CUST990001</code>) or registered email address. We will dispatch a 6-digit verification code to your email.
                 </p>
 
                 {forgotError && <div className={styles.errorBanner} style={{ marginBottom: '14px' }}>{forgotError}</div>}
@@ -496,7 +499,7 @@ function LoginFormContent() {
                       type="text"
                       required
                       autoFocus
-                      placeholder="e.g. CUST882104 or you@email.com"
+                      placeholder="e.g. CUST990001 or you@email.com"
                       value={forgotIdentifier}
                       onChange={(e) => setForgotIdentifier(e.target.value)}
                       className={styles.input}

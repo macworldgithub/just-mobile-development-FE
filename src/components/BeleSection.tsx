@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react';
 import FormattedChatMessage from './FormattedChatMessage';
+import { getApiUrl } from '@/config/api';
 import styles from './BeleSection.module.css';
 
 interface Message {
@@ -39,7 +40,7 @@ export default function BeleSection() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await fetch(`${getApiUrl()}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: newMessages }),

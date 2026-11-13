@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './PhonesSection.module.css';
 import { HANDSETS, Handset, formatCurrency } from '@/data/catalogue';
+import { getApiUrl } from '@/config/api';
 
 interface PhonesSectionProps {
   onConfigurePhone: (phone: Handset, initialMode?: 'outright' | 'instalments' | 'phone_and_plan') => void;
@@ -16,7 +17,7 @@ export default function PhonesSection({ onConfigurePhone, initialPhones }: Phone
 
   // Fetch handsets from MongoDB API
   useEffect(() => {
-    fetch('/api/handsets')
+    fetch(`${getApiUrl()}/api/handsets`)
       .then((res) => res.json())
       .then((data) => {
         if (data.data && Array.isArray(data.data)) {

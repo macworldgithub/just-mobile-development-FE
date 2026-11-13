@@ -100,15 +100,17 @@ export default function AdminPage() {
   }, [token, API_URL]);
 
   const fetchSubscribers = useCallback(async () => {
+    if (!token) return;
     setLoadingSubscribers(true);
     try {
-      const res = await fetch(`${API_URL}/api/newsletter/subscribers`);
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await fetch(`${API_URL}/api/newsletter/subscribers`, { headers });
       const data = await res.json();
       if (res.ok && data.success) {
         setSubscribers(data.subscribers || []);
       }
 
-      const histRes = await fetch(`${API_URL}/api/newsletter/broadcasts`);
+      const histRes = await fetch(`${API_URL}/api/newsletter/broadcasts`, { headers });
       const histData = await histRes.json();
       if (histRes.ok && histData.success) {
         setBroadcastHistory(histData.history || []);
@@ -118,7 +120,7 @@ export default function AdminPage() {
     } finally {
       setLoadingSubscribers(false);
     }
-  }, [API_URL]);
+  }, [token, API_URL]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -193,11 +195,13 @@ export default function AdminPage() {
   };
 
   const handleDeleteSubscriber = async (email: string) => {
+    if (!token) return;
     if (!confirm(`Are you sure you want to remove ${email} from the subscriber list?`)) return;
 
     try {
       const res = await fetch(`${API_URL}/api/newsletter/subscribers/${encodeURIComponent(email)}`, {
         method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -334,7 +338,7 @@ export default function AdminPage() {
                           </td>
                           <td style={{ fontWeight: 600 }}>{c.name}</td>
                           <td>{c.email}</td>
-                          <td>{c.phone || '0488 912 340'}</td>
+                          <td>{c.phone || '—'}</td>
                           <td>
                             <span className={styles.planBadge}>{c.planName || 'Starter Mobile 5G'}</span>
                           </td>

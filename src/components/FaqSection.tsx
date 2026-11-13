@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { getApiUrl } from '@/config/api';
 import styles from './FaqSection.module.css';
 
 export interface FaqItem {
@@ -47,7 +48,7 @@ export default function FaqSection() {
 
   // Fetch live FAQs from Backend (MongoDB)
   useEffect(() => {
-    fetch('/api/faqs')
+    fetch(`${getApiUrl()}/api/faqs`)
       .then((res) => res.json())
       .then((data) => {
         if (data.data && Array.isArray(data.data) && data.data.length > 0) {

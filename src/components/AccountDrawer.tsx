@@ -2,6 +2,8 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
 import styles from './AccountDrawer.module.css';
 
 interface AccountDrawerProps {
@@ -15,6 +17,8 @@ export default function AccountDrawer({
   onClose,
   onOpenActivationQr,
 }: AccountDrawerProps) {
+  const { user } = useAuth();
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -35,8 +39,12 @@ export default function AccountDrawer({
         <div className={styles.drawerHeader}>
           <div className={styles.headerTitleWrap}>
             <span className={styles.authBadge}>SECURE CUSTOMER PORTAL</span>
-            <h2 className={styles.drawerTitle}>My JustMobile Account</h2>
-            <span className={styles.accountEmail}>alex.morgan@example.com.au</span>
+            <h2 className={styles.drawerTitle}>
+              {user ? `Hi, ${user.name}` : 'My JustMobile Account'}
+            </h2>
+            <span className={styles.accountEmail}>
+              {user ? user.email : 'Sign in to manage your mobile service'}
+            </span>
           </div>
           <button
             type="button"
@@ -50,79 +58,74 @@ export default function AccountDrawer({
 
         {/* Drawer Body */}
         <div className={styles.drawerBody}>
-          {/* Active Service Card */}
-          <div className={styles.card}>
-            <div className={styles.serviceHeader}>
-              <div className={styles.serviceStatusRow}>
-                <span className={styles.statusDot}></span>
-                <span className={styles.statusText}>Active Mobile Service</span>
+          {user ? (
+            <>
+              {/* Signed-In Account Summary Card */}
+              <div className={styles.card}>
+                <div className={styles.serviceHeader}>
+                  <div className={styles.serviceStatusRow}>
+                    <span className={styles.statusDot}></span>
+                    <span className={styles.statusText}>Authenticated Session</span>
+                  </div>
+                  <span className={styles.networkTag}>5G Telstra Wholesale</span>
+                </div>
+
+                <div className={styles.mobileNumberRow}>
+                  <strong className={styles.mobileNumber}>{user.phone || 'Mobile number pending'}</strong>
+                  <span className={styles.simBadge}>eSIM</span>
+                </div>
+
+                <div className={styles.planDetailsRow}>
+                  <span className={styles.planLabel}>Customer #:</span>
+                  <strong className={styles.planValue}>{user.custNo || 'Pending'}</strong>
+                </div>
+
+                <button
+                  type="button"
+                  className={styles.qrActionBtn}
+                  onClick={() => {
+                    onClose();
+                    onOpenActivationQr();
+                  }}
+                >
+                  <span>View & Redownload eSIM QR Code</span>
+                  <span>→</span>
+                </button>
               </div>
-              <span className={styles.networkTag}>5G Telstra Wholesale</span>
-            </div>
 
-            <div className={styles.mobileNumberRow}>
-              <strong className={styles.mobileNumber}>0488 912 340</strong>
-              <span className={styles.simBadge}>eSIM</span>
-            </div>
-
-            <div className={styles.planDetailsRow}>
-              <span className={styles.planLabel}>Plan:</span>
-              <strong className={styles.planValue}>JM 65GB Auto ($37.55/mth)</strong>
-            </div>
-
-            {/* Monthly Data Meter */}
-            <div className={styles.meterContainer}>
-              <div className={styles.meterHeader}>
-                <span>Current Monthly Cycle (Renews 28th)</span>
-                <strong>42.4 GB remaining of 50 GB</strong>
+              <div className={styles.card}>
+                <h3 className={styles.cardHeading}>Full Self-Service Portal</h3>
+                <p className={styles.deviceName}>
+                  View live data usage, invoices, plan upgrades, and porting status in your dashboard.
+                </p>
+                <Link
+                  href={user.role === 'admin' ? '/admin' : '/account'}
+                  className={styles.qrActionBtn}
+                  onClick={onClose}
+                >
+                  <span>{user.role === 'admin' ? 'Open Admin Portal' : 'Open Customer Portal'}</span>
+                  <span>→</span>
+                </Link>
               </div>
-              <div className={styles.progressBar}>
-                <div className={styles.progressFill} style={{ width: '84%' }}></div>
+            </>
+          ) : (
+            <div className={styles.card}>
+              <h3 className={styles.cardHeading}>Welcome to JustMobile</h3>
+              <p className={styles.deviceName}>
+                Sign in with your Customer Number and PIN or Password to access your mobile service, usage meter, eSIM QR code, and tax invoices.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '14px' }}>
+                <Link href="/login" className={styles.qrActionBtn} onClick={onClose}>
+                  <span>Sign In to Customer Portal</span>
+                  <span>→</span>
+                </Link>
+                <Link href="/signup" className={styles.qrActionBtn} onClick={onClose}>
+                  <span>Create New Account</span>
+                  <span>→</span>
+                </Link>
               </div>
             </div>
-
-            <button
-              type="button"
-              className={styles.qrActionBtn}
-              onClick={() => {
-                onClose();
-                onOpenActivationQr();
-              }}
-            >
-              <span>View & Redownload eSIM QR Code</span>
-              <span>→</span>
-            </button>
-          </div>
-
-          {/* Active Handset Instalment */}
-          <div className={styles.card}>
-            <div className={styles.handsetHeader}>
-              <h3 className={styles.cardHeading}>Device Financing</h3>
-              <span className={styles.termTag}>Month 1 of 24</span>
-            </div>
-            <p className={styles.deviceName}>Samsung Galaxy S26 Ultra 512GB (Black)</p>
-            <div className={styles.financeRow}>
-              <span>Monthly repayment:</span>
-              <strong>$74.96/mth</strong>
-            </div>
-            <div className={styles.financeRow}>
-              <span>Remaining balance:</span>
-              <strong>$1,724.29</strong>
-            </div>
-          </div>
-
-          {/* Billing & Payment */}
-          <div className={styles.card}>
-            <h3 className={styles.cardHeading}>Next Scheduled Payment</h3>
-            <div className={styles.billDueRow}>
-              <div>
-                <strong className={styles.billAmount}>$99.96</strong>
-                <span className={styles.billDate}>Due 28 Nov 2026</span>
-              </div>
-              <span className={styles.autoPayBadge}>Auto-Pay Active</span>
-            </div>
-            <span className={styles.cardUsed}>Charged to Mastercard ending in 4192</span>
-          </div>
+          )}
 
           {/* Security & ACMA Compliance Notice */}
           <div className={styles.securityBox}>
