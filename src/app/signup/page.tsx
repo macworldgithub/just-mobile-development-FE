@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import DobPicker from '@/components/DobPicker';
 import styles from './signup.module.css';
 
 export default function SignupPage() {
@@ -365,13 +366,12 @@ export default function SignupPage() {
                     <label className={styles.label} htmlFor="dob">
                       Date of Birth *
                     </label>
-                    <input
+                    <DobPicker
                       id="dob"
-                      type="date"
                       required
                       value={dob}
-                      onChange={(e) => setDob(e.target.value)}
-                      className={styles.input}
+                      onChange={setDob}
+                      showFormattedPreview
                     />
                     <span className={styles.fieldNote}>
                       Required under Australian telecommunications regulations (ACMA) for pre-activation identity verification.
@@ -423,6 +423,24 @@ export default function SignupPage() {
                       />
                       <span>I don&apos;t have an Australian mobile yet / I want a brand new 04XX number</span>
                     </label>
+                    {!needNewNumber && (
+                      <div
+                        style={{
+                          marginTop: '8px',
+                          background: '#f4faee',
+                          border: '1px solid #c6dfb9',
+                          borderRadius: '8px',
+                          padding: '10px 12px',
+                          fontSize: '12px',
+                          color: '#2d4a22',
+                          lineHeight: 1.45,
+                        }}
+                      >
+                        <strong>Keeping your current number?</strong> You will need your{' '}
+                        <strong>current provider&apos;s Account Number</strong> (from your latest bill for postpaid) or{' '}
+                        <strong>Date of Birth</strong> (for prepaid) when activating your transfer. Do not cancel your old service before porting completes.
+                      </div>
+                    )}
                   </div>
 
                   <div className={styles.field}>

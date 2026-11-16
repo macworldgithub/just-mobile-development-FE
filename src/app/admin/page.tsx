@@ -340,7 +340,7 @@ export default function AdminPage() {
                           <td>{c.email}</td>
                           <td>{c.phone || '—'}</td>
                           <td>
-                            <span className={styles.planBadge}>{c.planName || 'Starter Mobile 5G'}</span>
+                            <span className={styles.planBadge}>{c.planName || 'No Active Plan'}</span>
                           </td>
                           <td>
                             <span className={formatStatus(c.lineStatus) === 'Disconnected' ? styles.statusInactiveBadge : styles.statusActiveBadge}>

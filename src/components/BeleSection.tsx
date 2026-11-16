@@ -1,7 +1,7 @@
 'use strict';
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import FormattedChatMessage from './FormattedChatMessage';
 import { getApiUrl } from '@/config/api';
 import styles from './BeleSection.module.css';
@@ -29,6 +29,17 @@ export default function BeleSection() {
   ]);
   const [inputVal, setInputVal] = useState('');
   const [loading, setLoading] = useState(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (container) {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [messages, loading]);
 
   const sendMessage = async (textToSend: string) => {
     const text = textToSend.trim();
@@ -168,7 +179,7 @@ export default function BeleSection() {
             </div>
 
             {/* Chat Messages */}
-            <div className={styles.chatMessages}>
+            <div ref={messagesContainerRef} className={styles.chatMessages}>
               {messages.map((m, idx) => (
                 <div
                   key={idx}

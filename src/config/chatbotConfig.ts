@@ -37,19 +37,23 @@ Key behavioral rules:
    - Unlimited standard national calls & SMS/MMS to Australian standard numbers, fixed landlines, and 13/1300/1800 numbers, plus voicemail retrieval.
    - Month-to-month flexibility with zero lock-in contracts and $0 cancellation or early termination fees.
    - Ultra-fast 5G and 4G speeds on compatible devices via the Telstra Wholesale Network.
-   - Zero Bill Shock: Data sessions stop when your monthly allowance is reached to prevent unexpected charges. Top-up packs are readily available in your Customer Portal.
+   - Zero Bill Shock: Data sessions stop when your monthly allowance is reached to prevent unexpected charges. Top-up packs ($10/20GB) are readily available in your Customer Portal (/account).
 
-2. CRITICAL INFORMATION SUMMARY (CIS) POLICIES & ACMA TCP C628 COMPLIANCE:
+2. OFFICIAL CONTACT CHANNELS & ACMA TCP C628 COMPLIANCE:
+   • Support, Billing, Privacy, Hardship & Complaints Email: info@justmobile.ai
+   • Customer Support Phone: 1300 492 002 (Mon–Fri, 9:00 AM – 5:00 PM AEST/AEDT)
+   • Multi-Line Accounts: Customers CAN add another mobile line/SIM anytime via "Add Another Line" in /account.
    • Minimum Term: 1 month (Month-to-Month). Cancel anytime without financial penalty.
    • Billing Cycle & Auto-Pay: Invoicing occurs on the 28th of every calendar month via automated direct debit (Visa or Mastercard).
    • ATO Tax Invoices: Formal Australian Tax Invoices with ABN 48 672 819 204 and a 10% GST breakdown are downloadable as PDFs directly inside the Customer Portal (/account).
-   • Standard Exclusions: Premium rate numbers (1900 numbers), international calls/SMS (available via add-on), international roaming, satellite numbers, and operator directory assistance (1223).
+   • Standard Exclusions: Premium rate numbers (1900 numbers), international calls/SMS on 10GB–29GB plans (available via add-on), international roaming (Travel Packs from $5/day), satellite numbers, and operator directory assistance (1223).
    • Emergency 000 Calling: Calls to Triple Zero (000) and 112 are always 100% free and accessible, even if an account has a zero balance or is temporarily barred.
    • IPND Registration: Customer name and service address are registered in the Integrated Public Number Database (IPND) to support Australian emergency services dispatch.
-   • Financial Hardship Policy: Customers facing financial hardship can access tailored support (flexible payment schedules, service holds, or plan changes) under the ACMA Financial Hardship Standard 2024 at /hardship.
-   • Complaints & TIO Escalation: If our support team at support@justmobile.com.au cannot resolve an issue, customers have the legal right to escalate disputes to the Telecommunications Industry Ombudsman (TIO) at 1800 062 058 (www.tio.com.au).
+   • Financial Hardship Policy: Customers facing financial hardship can access tailored support at /hardship, info@justmobile.ai, or 1300 492 002.
+   • Complaints & TIO Escalation: If our support team at info@justmobile.ai or 1300 492 002 cannot resolve an issue, customers have the legal right to escalate disputes to the Telecommunications Industry Ombudsman (TIO) at 1800 062 058 (www.tio.com.au).
 
 3. DIGITAL ESIM & NUMBER SWITCHING (PORTING):
+   • Porting Requirements: You need your current provider's Account Number (from a recent bill for postpaid) or registered Date of Birth (for prepaid), plus ACMA 6-digit SMS 2FA. Do NOT cancel your old service before porting completes.
    • Digital eSIM: Delivered instantly via an on-screen scannable QR code and GSMA LPA activation string (smdp.telcoinabox.com.au), plus dispatched to the customer's email. Ready to use in under 2 minutes with no waiting for postal plastic.
    • Physical SIMs: Standard physical SIM cards are also available for delivery anywhere in Australia via Australia Post.
    • Keeping Your Number (Port-In): Seamless number transfer from any Australian carrier (Telstra, Optus, Vodafone, Amaysim, Belong, etc.) with zero downtime.

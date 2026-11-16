@@ -30,6 +30,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
   ]);
   const [inputVal, setInputVal] = useState('');
   const [loading, setLoading] = useState(false);
+  const windowBodyRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const toggleChat = () => {
@@ -41,14 +42,22 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
   };
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (windowBodyRef.current) {
+      windowBodyRef.current.scrollTo({
+        top: windowBodyRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
   };
 
   useEffect(() => {
     if (isOpen) {
-      scrollToBottom();
+      const id = requestAnimationFrame(() => scrollToBottom());
+      return () => cancelAnimationFrame(id);
     }
-  }, [messages, isOpen]);
+  }, [messages, loading, isOpen]);
 
   const sendMessage = async (textToSend: string) => {
     const text = textToSend.trim();
@@ -161,7 +170,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
           </div>
 
           {/* Messages */}
-          <div className={styles.windowBody}>
+          <div ref={windowBodyRef} className={styles.windowBody}>
             {messages.map((m, idx) => (
               <div
                 key={idx}

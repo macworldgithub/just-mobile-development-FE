@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { getApiUrl } from '@/config/api';
+import DobPicker from './DobPicker';
 import styles from './OrderFlowModal.module.css';
 import { Handset, MobilePlan, calculateRepayments } from '@/data/catalogue';
 
@@ -31,6 +32,9 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
   const [step, setStep] = useState<number>(1);
   const [keepExistingNumber, setKeepExistingNumber] = useState<boolean>(true);
   const [portNumber, setPortNumber] = useState('');
+  const [portNumType, setPortNumType] = useState<'prepaid' | 'postpaid'>('postpaid');
+  const [portDonorCarrier, setPortDonorCarrier] = useState('Telstra');
+  const [portArn, setPortArn] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [otpVerified, setOtpVerified] = useState(false);
@@ -208,7 +212,14 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
         postcode: user?.postcode || '2000',
         firstName: name.split(' ')[0] || user?.name?.split(' ')[0] || 'Jordan',
         lastName: name.split(' ').slice(1).join(' ') || user?.name?.split(' ').slice(1).join(' ') || 'Miller',
-        ...(keepExistingNumber ? { numType: 'prepaid', dob: dob || '1992-06-14' } : {}),
+        ...(keepExistingNumber
+          ? {
+              numType: portNumType,
+              donorCarrier: portDonorCarrier,
+              dob: dob || '1992-06-14',
+              ...(portNumType === 'postpaid' ? { arn: portArn } : {}),
+            }
+          : {}),
       };
 
       const activateRes = await fetch(endpoint, {
@@ -349,6 +360,9 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                       <div className={styles.publicOptionContent}>
                         <strong>Keep your current mobile number</strong>
                         <p>Transfer seamlessly from Telstra, Optus, Vodafone or any AU carrier with zero downtime.</p>
+                        <p style={{ marginTop: '6px', padding: '8px 10px', background: '#f4faee', border: '1px solid #c6dfb9', borderRadius: '8px', color: '#1e3a16', fontSize: '12.5px' }}>
+                          <strong>Important:</strong> You will need your <strong>current provider&apos;s Account Number</strong> (found on a recent bill for postpaid) or registered <strong>Date of Birth</strong> (for prepaid). Keep your old SIM active until transfer completes.
+                        </p>
                       </div>
                     </div>
                     <div className={styles.publicOptionItem}>
@@ -527,8 +541,53 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
               ) : (
                 <div className={styles.portBox}>
                   <span className={styles.acmaNote}>
-                    ACMA Mandatory Verification: An SMS code will be sent to confirm your right of use.
+                    ACMA Mandatory Verification: An SMS code will be sent to confirm your right of use. Do not cancel your existing service until porting completes.
                   </span>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className={`${styles.numberToggle} ${portNumType === 'postpaid' ? styles.toggleSelected : ''}`}
+                      style={{ flex: 1, padding: '8px 10px', fontSize: '12.5px' }}
+                      onClick={() => setPortNumType('postpaid')}
+                    >
+                      Postpaid (Account # on Bill)
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.numberToggle} ${portNumType === 'prepaid' ? styles.toggleSelected : ''}`}
+                      style={{ flex: 1, padding: '8px 10px', fontSize: '12.5px' }}
+                      onClick={() => setPortNumType('prepaid')}
+                    >
+                      Prepaid (Date of Birth)
+                    </button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: portNumType === 'postpaid' ? '1fr 1fr' : '1fr', gap: '8px', marginBottom: '10px' }}>
+                    <select
+                      value={portDonorCarrier}
+                      onChange={(e) => setPortDonorCarrier(e.target.value)}
+                      className={styles.textInput}
+                      aria-label="Current mobile provider"
+                    >
+                      <option value="Telstra">Current provider: Telstra</option>
+                      <option value="Optus">Current provider: Optus</option>
+                      <option value="Vodafone">Current provider: Vodafone</option>
+                      <option value="TPG">Current provider: TPG / iiNet</option>
+                      <option value="Amaysim">Current provider: Amaysim</option>
+                      <option value="Boost Mobile">Current provider: Boost Mobile</option>
+                      <option value="ALDI Mobile">Current provider: ALDI Mobile</option>
+                      <option value="Woolworths Mobile">Current provider: Everyday Mobile</option>
+                      <option value="Other">Current provider: Other</option>
+                    </select>
+                    {portNumType === 'postpaid' && (
+                      <input
+                        type="text"
+                        placeholder="Current Provider Account Number *"
+                        value={portArn}
+                        onChange={(e) => setPortArn(e.target.value)}
+                        className={styles.textInput}
+                      />
+                    )}
+                  </div>
                   <div className={styles.portInputRow}>
                     <input
                       type="tel"
@@ -594,14 +653,18 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                   className={styles.textInput}
                   required
                 />
-                <input
-                  type="text"
-                  placeholder="Date of Birth (DD/MM/YYYY)"
-                  value={dob}
-                  onChange={(e) => setDob(e.target.value)}
-                  className={styles.textInput}
-                  required
-                />
+                <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: '#394c36' }}>
+                    Date of Birth (DD / MM / YYYY) *
+                  </span>
+                  <DobPicker
+                    compact
+                    required
+                    value={dob}
+                    onChange={setDob}
+                    showFormattedPreview
+                  />
+                </div>
                 <input
                   type="text"
                   placeholder="Australian Residential Address"

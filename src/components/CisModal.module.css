@@ -30,6 +30,7 @@
   justify-content: space-between;
   align-items: flex-start;
   background: #FAFBF8;
+  flex-shrink: 0;
 }
 
 .badge {
@@ -69,6 +70,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   transition: background-color 0.15s ease;
 }
 
@@ -78,82 +80,142 @@
 
 .tabRow {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  padding: 12px 28px;
+  padding: 14px 28px;
   background: #f4f7f0;
   border-bottom: 1px solid #e2ebd8;
-  overflow-x: auto;
+  flex-shrink: 0;
 }
 
 .tabBtn {
-  padding: 8px 16px;
+  padding: 7px 12px;
   border-radius: 8px;
-  border: 1px solid transparent;
-  background: transparent;
-  font-size: 13.5px;
+  border: 1px solid #d0dec8;
+  background: #ffffff;
+  font-size: 12.5px;
   font-weight: 600;
-  color: #556253;
+  color: #2e3b2c;
   cursor: pointer;
   transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.tabBtn:hover {
+  border-color: #142420;
+  background: #f9fbf7;
 }
 
 .activeTab {
-  background: #ffffff;
-  color: #142420;
-  border-color: #d8e5d3;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  background: #142420;
+  color: #D5F879;
+  border-color: #142420;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(20, 36, 32, 0.14);
 }
 
+.content,
 .contentBody {
   padding: 24px 28px;
   overflow-y: auto;
+  flex: 1;
+  min-height: 0;
   font-size: 13.5px;
   color: #2e3b2c;
   line-height: 1.6;
 }
 
-.section {
-  margin-bottom: 22px;
-}
-
-.sectionHeader {
-  font-size: 15px;
-  font-weight: 700;
-  color: #142420;
-  margin-bottom: 8px;
+.planHeader {
   display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.cisGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
   gap: 12px;
-  margin-top: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e2ebd8;
 }
 
-.cisCell {
+.planName {
+  font-size: 20px;
+  font-weight: 800;
+  color: #142420;
+}
+
+.planPriceWrap {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.planPrice {
+  font-size: 24px;
+  font-weight: 800;
+  color: #142420;
+}
+
+.planPeriod {
+  font-size: 13px;
+  color: #556253;
+}
+
+.summaryTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 18px;
+  border: 1px solid #e2ebd8;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.summaryTable th,
+.summaryTable td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid #e2ebd8;
+  font-size: 13px;
+  vertical-align: top;
+}
+
+.summaryTable th {
+  width: 38%;
+  background: #f7faf3;
+  color: #142420;
+  font-weight: 700;
+}
+
+.summaryTable td {
+  color: #2e3b2c;
+  background: #ffffff;
+}
+
+.summaryTable tr:last-child th,
+.summaryTable tr:last-child td {
+  border-bottom: none;
+}
+
+.finePrint {
   background: #f7faf3;
   border: 1px solid #e2ebd8;
-  border-radius: 8px;
-  padding: 10px 14px;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 12px;
+  color: #4c5a49;
 }
 
-.cellLabel {
-  font-size: 11.5px;
-  color: #697866;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 2px;
-}
-
-.cellValue {
+.finePrint h4 {
+  margin: 0 0 6px 0;
+  font-size: 12.5px;
   font-weight: 700;
-  font-size: 14px;
   color: #142420;
 }
 
+.finePrint p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.footer,
 .footerBar {
   padding: 16px 28px;
   border-top: 1px solid #e2ebd8;
@@ -161,8 +223,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
+  gap: 12px;
 }
 
+.cisRef,
 .complianceText {
   font-size: 11.5px;
   color: #697866;
@@ -216,6 +281,7 @@
     white-space: nowrap;
   }
 
+  .content,
   .contentBody {
     padding: 18px 16px;
     font-size: 13px;
@@ -226,6 +292,7 @@
     gap: 8px;
   }
 
+  .footer,
   .footerBar {
     padding: 14px 18px;
     flex-direction: column;
@@ -233,6 +300,7 @@
     align-items: stretch;
   }
 
+  .cisRef,
   .complianceText {
     font-size: 11px;
     text-align: center;

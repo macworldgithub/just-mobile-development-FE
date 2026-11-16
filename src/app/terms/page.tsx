@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import CisTriggerLink from '@/components/CisTriggerLink';
 import styles from './terms.module.css';
 
 export const metadata = {
@@ -84,7 +85,7 @@ export default function TermsPage() {
               This Standard Form of Agreement (SFOA) sets out the terms under which <strong>JustMobile Pty Ltd</strong> (ABN 48 672 819 204) provides telecommunications goods and services to retail consumer customers across Australia.
             </p>
             <p className={styles.textParagraph}>
-              By completing an order, selecting a mobile plan, scanning an eSIM profile, or paying a monthly service invoice, you agree to be bound by these terms, our Critical Information Summaries (CIS), and the Telecommunications Consumer Protections Code (TCP Code C628).
+              By completing an order, selecting a mobile plan, scanning an eSIM profile, or paying a monthly service invoice, you agree to be bound by these terms, our <CisTriggerLink label="Critical Information Summaries (CIS)" />, and the Telecommunications Consumer Protections Code (TCP Code C628).
             </p>
           </section>
 
@@ -204,8 +205,12 @@ export default function TermsPage() {
 
             <div className={styles.contactGrid}>
               <div className={styles.contactItem}>
-                <div className={styles.contactLabel}>Customer Support</div>
-                <div className={styles.contactValue}>support@justmobile.com.au</div>
+                <div className={styles.contactLabel}>Customer Support Email</div>
+                <div className={styles.contactValue}>info@justmobile.ai</div>
+              </div>
+              <div className={styles.contactItem}>
+                <div className={styles.contactLabel}>Customer Support Phone</div>
+                <div className={styles.contactValue}>1300 492 002 (Mon–Fri, 9am–5pm AEST)</div>
               </div>
               <div className={styles.contactItem}>
                 <div className={styles.contactLabel}>Customer Portal</div>

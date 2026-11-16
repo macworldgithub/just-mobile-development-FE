@@ -18,6 +18,7 @@ interface PlanCisDetails {
   costPerGb: number;
   network: string;
   tier?: string;
+  internationalIncluded?: boolean;
 }
 
 const PLAN_DATA: Record<string, PlanCisDetails> = {
@@ -28,6 +29,7 @@ const PLAN_DATA: Record<string, PlanCisDetails> = {
     dataGb: 10,
     costPerGb: 2.05,
     network: '4G LTE',
+    internationalIncluded: false,
   },
   '15gb': {
     id: '15gb',
@@ -36,6 +38,7 @@ const PLAN_DATA: Record<string, PlanCisDetails> = {
     dataGb: 15,
     costPerGb: 1.64,
     network: '4G LTE',
+    internationalIncluded: false,
   },
   '29gb': {
     id: '29gb',
@@ -44,6 +47,7 @@ const PLAN_DATA: Record<string, PlanCisDetails> = {
     dataGb: 29,
     costPerGb: 0.98,
     network: '4G LTE',
+    internationalIncluded: false,
   },
   '65gb': {
     id: '65gb',
@@ -52,6 +56,7 @@ const PLAN_DATA: Record<string, PlanCisDetails> = {
     dataGb: 65,
     costPerGb: 0.58,
     network: '5G Ultra',
+    internationalIncluded: true,
   },
   '100gb': {
     id: '100gb',
@@ -60,6 +65,7 @@ const PLAN_DATA: Record<string, PlanCisDetails> = {
     dataGb: 100,
     costPerGb: 0.46,
     network: '5G Ultra',
+    internationalIncluded: true,
   },
   '120gb': {
     id: '120gb',
@@ -68,6 +74,7 @@ const PLAN_DATA: Record<string, PlanCisDetails> = {
     dataGb: 120,
     costPerGb: 0.46,
     network: '5G Ultra',
+    internationalIncluded: true,
   },
   '150gb': {
     id: '150gb',
@@ -76,6 +83,7 @@ const PLAN_DATA: Record<string, PlanCisDetails> = {
     dataGb: 150,
     costPerGb: 0.40,
     network: '5G Ultra',
+    internationalIncluded: true,
   },
   '180gb': {
     id: '180gb',
@@ -84,6 +92,7 @@ const PLAN_DATA: Record<string, PlanCisDetails> = {
     dataGb: 180,
     costPerGb: 0.37,
     network: '5G Ultra',
+    internationalIncluded: true,
   },
 };
 
@@ -170,29 +179,38 @@ export default function CisModal({ isOpen, onClose, defaultPlan = '65gb' }: CisM
                 <td>Unlimited standard MMS within Australia.</td>
               </tr>
               <tr>
+                <th>International Calls &amp; SMS</th>
+                <td>
+                  {plan.internationalIncluded
+                    ? 'Unlimited standard calls & SMS from Australia to 15 selected countries.'
+                    : 'Not included on this plan (available via optional international add-on).'}
+                </td>
+              </tr>
+              <tr>
                 <th>Network Coverage</th>
-                <td>Telstra Wholesale 4G & 5G Mobile Network reaching 98.8% of Australians.</td>
+                <td>Telstra Wholesale 4G &amp; 5G Mobile Network reaching 98.8% of Australians.</td>
               </tr>
               <tr>
                 <th>Emergency Service Access</th>
                 <td>Calls to Triple Zero (000) and 112 are always completely free of charge.</td>
               </tr>
               <tr>
-                <th>Billing Cycle & Auto-Pay</th>
+                <th>Billing Cycle &amp; Auto-Pay</th>
                 <td>Monthly direct debit occurs automatically on the 28th of every calendar month.</td>
               </tr>
             </tbody>
           </table>
 
           <div className={styles.finePrint}>
-            <h4>Additional Information & Statutory Rights</h4>
+            <h4>Additional Information &amp; Statutory Rights</h4>
             <p>
               This Critical Information Summary (CIS) covers the JustMobile SIM-only month-to-month plan.
               Data sessions terminate once your monthly allowance is exhausted to prevent bill shock.
               Top-up data packs are available inside your Customer Portal at /account.
+              For support or enquiries, call 1300 492 002 or email info@justmobile.ai.
               If you experience financial hardship, please review our Financial Hardship Policy at /hardship.
-              Complaints may be submitted directly at /complaints or escalated to the Telecommunications Industry
-              Ombudsman (TIO) at www.tio.com.au.
+              Complaints may be submitted to info@justmobile.ai or escalated to the Telecommunications Industry
+              Ombudsman (TIO) on 1800 062 058 or at www.tio.com.au.
             </p>
           </div>
         </div>

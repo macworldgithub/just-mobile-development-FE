@@ -173,8 +173,12 @@ export default function PrivacyPage() {
 
             <div className={styles.contactGrid}>
               <div className={styles.contactItem}>
-                <div className={styles.contactLabel}>Privacy Officer</div>
-                <div className={styles.contactValue}>privacy@justmobile.com.au</div>
+                <div className={styles.contactLabel}>Privacy &amp; Support Email</div>
+                <div className={styles.contactValue}>info@justmobile.ai</div>
+              </div>
+              <div className={styles.contactItem}>
+                <div className={styles.contactLabel}>Customer Care Phone</div>
+                <div className={styles.contactValue}>1300 492 002 (Mon–Fri, 9am–5pm AEST)</div>
               </div>
               <div className={styles.contactItem}>
                 <div className={styles.contactLabel}>Mailing Address</div>

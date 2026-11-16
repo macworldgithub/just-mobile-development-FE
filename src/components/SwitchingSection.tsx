@@ -30,7 +30,7 @@ export default function SwitchingSection() {
     {
       num: '03',
       title: 'Keep your number. Carry on.',
-      text: 'Complete the required checks and transfer your number. Stay connected until the switch is complete.',
+      text: 'Have your current provider Account Number (on a recent bill) or Prepaid DOB ready. Complete the SMS 2FA check and keep your old SIM active until transfer finishes.',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>

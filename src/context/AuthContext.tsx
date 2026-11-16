@@ -9,14 +9,20 @@ export interface User {
   name: string;
   firstName?: string;
   surname?: string;
+  preferredName?: string;
   email: string;
   phone?: string;
+  dob?: string;
   custNo?: string;
   role: 'customer' | 'admin';
   address?: string;
   suburb?: string;
   state?: string;
   postcode?: string;
+  postalAddress?: string;
+  commPreference?: 'email' | 'sms' | 'both';
+  marketingConsent?: boolean;
+  twoFactorEnabled?: boolean;
 }
 
 export interface SignupPayload {
@@ -48,8 +54,24 @@ interface AuthContextType {
     password?: string;
     pin?: string;
     code?: string;
+    twoFactorCode?: string;
     portal?: 'customer' | 'admin';
-  }) => Promise<{ success: boolean; message: string; user?: User }>;
+  }) => Promise<{
+    success: boolean;
+    message: string;
+    user?: User;
+    requiresTwoFactor?: boolean;
+    twoFactorMethod?: 'totp' | 'email';
+    preAuthToken?: string;
+    maskedEmail?: string;
+  }>;
+  verifyTwoFactorLogin: (
+    preAuthToken: string,
+    code: string,
+    method?: 'totp' | 'email',
+  ) => Promise<{ success: boolean; message: string; user?: User }>;
+  refreshUser: () => Promise<void>;
+  updateStoredUser: (updatedUser: User) => void;
   signup: (data: SignupPayload) => Promise<{ success: boolean; message: string; user?: User }>;
   sendVerification: (email: string, type?: 'signup' | 'login') => Promise<{ success: boolean; message: string }>;
   logout: () => void;
@@ -129,7 +151,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     custNo?: string;
     identifier?: string;
     password?: string;
+    pin?: string;
     code?: string;
+    twoFactorCode?: string;
     portal?: 'customer' | 'admin';
   }) => {
     try {
@@ -143,6 +167,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(result.message || 'Failed to log in.');
       }
 
+      if (result.requiresTwoFactor) {
+        return {
+          success: true,
+          requiresTwoFactor: true,
+          twoFactorMethod: result.twoFactorMethod,
+          preAuthToken: result.preAuthToken,
+          maskedEmail: result.maskedEmail,
+          message: result.message,
+        };
+      }
+
       setUser(result.user);
       setToken(result.token);
       localStorage.setItem('jm_auth_token', result.token);
@@ -151,6 +186,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: true, message: result.message, user: result.user };
     } catch (err: any) {
       return { success: false, message: err.message || 'Error logging in.' };
+    }
+  };
+
+  const verifyTwoFactorLogin = async (
+    preAuthToken: string,
+    code: string,
+    method?: 'totp' | 'email',
+  ) => {
+    try {
+      const res = await fetch(`${API_URL}/api/auth/login/verify-2fa`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preAuthToken, code, method }),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.message || 'Invalid 2FA verification code.');
+      }
+
+      setUser(result.user);
+      setToken(result.token);
+      localStorage.setItem('jm_auth_token', result.token);
+      localStorage.setItem('jm_auth_user', JSON.stringify(result.user));
+
+      return { success: true, message: result.message, user: result.user };
+    } catch (err: any) {
+      return { success: false, message: err.message || '2FA verification failed.' };
+    }
+  };
+
+  const refreshUser = async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_URL}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.user) {
+        setUser(data.user);
+        localStorage.setItem('jm_auth_user', JSON.stringify(data.user));
+      }
+    } catch {
+      // ignore silent refresh failure
+    }
+  };
+
+  const updateStoredUser = (updatedUser: User) => {
+    setUser(updatedUser);
+    try {
+      localStorage.setItem('jm_auth_user', JSON.stringify(updatedUser));
+    } catch {
+      // ignore storage error
     }
   };
 
@@ -168,6 +255,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         token,
         isLoading,
         login,
+        verifyTwoFactorLogin,
+        refreshUser,
+        updateStoredUser,
         signup,
         sendVerification,
         logout,

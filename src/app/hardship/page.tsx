@@ -117,7 +117,7 @@ export default function HardshipPage() {
               </div>
               <div className={styles.optionCard}>
                 <div className={styles.optionTitle}>Plan Downgrades without Fees</div>
-                <div className={styles.optionText}>Switching to a lower-cost plan (such as our $19/month 20GB plan) without any penalty or administrative charge.</div>
+                <div className={styles.optionText}>Switching to a lower-cost plan (such as our $20.54/month 10GB plan) without any penalty or administrative charge.</div>
               </div>
               <div className={styles.optionCard}>
                 <div className={styles.optionTitle}>Spend Management Caps</div>
@@ -160,8 +160,12 @@ export default function HardshipPage() {
 
             <div className={styles.contactGrid}>
               <div className={styles.contactItem}>
-                <div className={styles.contactLabel}>Hardship Email</div>
-                <div className={styles.contactValue}>hardship@justmobile.com.au</div>
+                <div className={styles.contactLabel}>Hardship &amp; Support Email</div>
+                <div className={styles.contactValue}>info@justmobile.ai</div>
+              </div>
+              <div className={styles.contactItem}>
+                <div className={styles.contactLabel}>Customer Care Phone</div>
+                <div className={styles.contactValue}>1300 492 002</div>
               </div>
               <div className={styles.contactItem}>
                 <div className={styles.contactLabel}>Customer Portal</div>

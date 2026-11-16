@@ -276,7 +276,7 @@ export const MOBILE_PLANS: MobilePlan[] = [
   },
   {
     id: 'plan-180gb',
-    planNo: 11144171,
+    planNo: 11156014,
     name: 'JM 180GB Auto',
     tier: '180GB',
     dataGb: 180,

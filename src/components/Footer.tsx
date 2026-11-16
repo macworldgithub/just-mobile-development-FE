@@ -79,11 +79,14 @@ export default function Footer({ onNavigateSection, onOpenCis }: FooterProps) {
               <a href="#bele" onClick={(e) => handleNav(e, 'bele')}>
                 Meet Bele AI
               </a>
+              <a href="tel:1300492002">
+                <span>1300 492 002</span>
+              </a>
               <a
-                href="mailto:support@justmobile.com.au"
+                href="mailto:info@justmobile.ai"
                 className={styles.contactBtn}
               >
-                <span>Contact us</span>
+                <span>Contact us (info@justmobile.ai)</span>
                 <span className={styles.arrowIcon}>↗</span>
               </a>
             </div>
@@ -128,7 +131,25 @@ export default function Footer({ onNavigateSection, onOpenCis }: FooterProps) {
         {/* Bottom Disclosures */}
         <div className={styles.footerDisclosure}>
           <p>
-            <b>Fair, transparent pricing.</b> All prices in AUD including GST. Handset outright purchases and flexible instalment terms are available on selected models. Handsets come with full Australian manufacturer warranty and express dispatch. Standard terms, Fair Use Policy, and Critical Information Summaries apply to all mobile services.
+            <b>Fair, transparent pricing.</b> All prices in AUD including GST. Handset outright purchases and flexible instalment terms are available on selected models. Handsets come with full Australian manufacturer warranty and express dispatch. Standard terms, Fair Use Policy, and{' '}
+            <button
+              type="button"
+              onClick={handleCisClick}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                color: '#d5f879',
+                textDecoration: 'underline',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                fontSize: 'inherit',
+                fontWeight: 600,
+              }}
+            >
+              Critical Information Summaries
+            </button>{' '}
+            apply to all mobile services.
           </p>
           <p>
             JustMobile mobile services are powered by the Telstra Wholesale Mobile

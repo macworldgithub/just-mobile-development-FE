@@ -14,7 +14,7 @@ function LoginFormContent() {
   const searchParams = useSearchParams();
   const initialPortal = searchParams.get('portal') === 'admin' ? 'admin' : 'customer';
 
-  const { login, user } = useAuth();
+  const { login, verifyTwoFactorLogin, user } = useAuth();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -32,6 +32,13 @@ function LoginFormContent() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  // Industry-standard 2FA challenge state for Customer Portal login
+  const [twoFactorPending, setTwoFactorPending] = useState(false);
+  const [twoFactorMethod, setTwoFactorMethod] = useState<'totp' | 'email'>('totp');
+  const [preAuthToken, setPreAuthToken] = useState('');
+  const [twoFactorMaskedEmail, setTwoFactorMaskedEmail] = useState('');
+  const [twoFactorCode, setTwoFactorCode] = useState('');
 
   // Self-Service Password Reset States (Hostinger SMTP)
   const [showForgotModal, setShowForgotModal] = useState(false);
@@ -66,6 +73,9 @@ function LoginFormContent() {
 
   const handlePortalChange = (newPortal: 'customer' | 'admin') => {
     setPortal(newPortal);
+    setTwoFactorPending(false);
+    setTwoFactorCode('');
+    setPreAuthToken('');
     setErrorMsg('');
     setSuccessMsg('');
   };
@@ -111,6 +121,16 @@ function LoginFormContent() {
       const res = await login(payload);
       setLoading(false);
 
+      if (res.success && res.requiresTwoFactor && res.preAuthToken) {
+        setTwoFactorPending(true);
+        setTwoFactorMethod(res.twoFactorMethod || 'email');
+        setPreAuthToken(res.preAuthToken);
+        setTwoFactorMaskedEmail(res.maskedEmail || '');
+        setTwoFactorCode('');
+        setSuccessMsg(res.message);
+        return;
+      }
+
       if (res.success) {
         setSuccessMsg(res.message);
         setTimeout(() => {
@@ -126,6 +146,55 @@ function LoginFormContent() {
     } catch (err: any) {
       setLoading(false);
       setErrorMsg(err.message || 'An unexpected error occurred.');
+    }
+  };
+
+  const handleVerifyTwoFactor = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    if (!twoFactorCode.trim()) {
+      setErrorMsg('Please enter your 6-digit verification code or backup code.');
+      return;
+    }
+
+    setLoading(true);
+    const res = await verifyTwoFactorLogin(preAuthToken, twoFactorCode.trim(), twoFactorMethod);
+    setLoading(false);
+
+    if (res.success) {
+      setSuccessMsg(res.message);
+      setTimeout(() => {
+        router.push('/account');
+      }, 450);
+    } else {
+      setErrorMsg(res.message);
+    }
+  };
+
+  const handleSendLoginEmailOtp = async () => {
+    if (!preAuthToken) return;
+    setLoading(true);
+    setErrorMsg('');
+    try {
+      const res = await fetch(`${getApiUrl()}/api/auth/login/send-email-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preAuthToken }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setTwoFactorMethod('email');
+        setTwoFactorMaskedEmail(data.maskedEmail || twoFactorMaskedEmail);
+        setSuccessMsg(data.message);
+      } else {
+        setErrorMsg(data.message || 'Could not dispatch email OTP.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Network error sending email verification code.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -268,7 +337,66 @@ function LoginFormContent() {
       {errorMsg && <div className={styles.errorBanner}>{errorMsg}</div>}
       {successMsg && <div className={styles.successBanner}>{successMsg}</div>}
 
-      {/* Login Form */}
+      {/* Login Form or 2FA Step */}
+      {twoFactorPending && portal === 'customer' ? (
+        <form onSubmit={handleVerifyTwoFactor} className={styles.form}>
+          <div style={{ background: '#f4faee', border: '1px solid #c6dfb9', borderRadius: '10px', padding: '12px 14px', fontSize: '13px', color: '#243a1a', lineHeight: 1.45 }}>
+            <strong>2-Factor Authentication Required (ACMA Compliance)</strong>
+            <div style={{ marginTop: '4px' }}>
+              {twoFactorMethod === 'totp'
+                ? 'Open your Authenticator App (Google Authenticator, Microsoft Authenticator, or Authy) and enter the 6-digit code, or a recovery backup code.'
+                : `Enter the 6-digit security code dispatched to ${twoFactorMaskedEmail || 'your registered email'}.`}
+            </div>
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="twoFactorCodeInput">
+              {twoFactorMethod === 'totp' ? 'Authenticator 6-Digit Code (or Backup Code)' : '6-Digit Email Verification Code'}
+            </label>
+            <input
+              id="twoFactorCodeInput"
+              type="text"
+              required
+              autoFocus
+              maxLength={14}
+              placeholder={twoFactorMethod === 'totp' ? '000000' : '6-digit code'}
+              value={twoFactorCode}
+              onChange={(e) => setTwoFactorCode(e.target.value)}
+              className={`${styles.input} ${styles.codeInput}`}
+            />
+          </div>
+
+          <button type="submit" disabled={loading} className={styles.submitBtn}>
+            <span>{loading ? 'Verifying 2FA...' : 'Verify & Sign In →'}</span>
+          </button>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
+            <button
+              type="button"
+              disabled={loading}
+              onClick={handleSendLoginEmailOtp}
+              className={styles.secondaryBtn}
+              style={{ width: '100%' }}
+            >
+              {twoFactorMethod === 'totp' ? 'Use Email Verification Code Instead' : 'Resend Email Code'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setTwoFactorPending(false);
+                setTwoFactorCode('');
+                setPreAuthToken('');
+                setErrorMsg('');
+                setSuccessMsg('');
+              }}
+              className={styles.textLink}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', padding: '4px' }}
+            >
+              ← Back to sign in
+            </button>
+          </div>
+        </form>
+      ) : (
       <form onSubmit={handleSubmit} className={styles.form}>
         {/* Customer Portal: Customer ID input */}
         {portal === 'customer' ? (
@@ -297,7 +425,7 @@ function LoginFormContent() {
               id="emailInput"
               type="email"
               required
-              placeholder="admin@justmobile.com.au"
+              placeholder="info@justmobile.ai"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={styles.input}
@@ -439,6 +567,7 @@ function LoginFormContent() {
           </span>
         </button>
       </form>
+      )}
 
       {/* Footer Links */}
       <div className={styles.footerLinks}>
