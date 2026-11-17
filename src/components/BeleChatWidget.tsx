@@ -32,6 +32,16 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
   const [loading, setLoading] = useState(false);
   const windowBodyRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const sessionIdRef = useRef<string>('');
+
+  useEffect(() => {
+    if (!sessionIdRef.current) {
+      sessionIdRef.current =
+        typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : `widget-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+  }, []);
 
   const toggleChat = () => {
     if (onToggle) {
@@ -72,7 +82,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
       const res = await fetch(`${getApiUrl()}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: newMessages, sessionId: sessionIdRef.current }),
       });
 
       const data = await res.json();

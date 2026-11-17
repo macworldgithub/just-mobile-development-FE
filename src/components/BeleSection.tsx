@@ -30,6 +30,16 @@ export default function BeleSection() {
   const [inputVal, setInputVal] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const sessionIdRef = useRef<string>('');
+
+  useEffect(() => {
+    if (!sessionIdRef.current) {
+      sessionIdRef.current =
+        typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+          ? crypto.randomUUID()
+          : `bele-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+  }, []);
 
   useEffect(() => {
     const container = messagesContainerRef.current;
@@ -54,7 +64,7 @@ export default function BeleSection() {
       const res = await fetch(`${getApiUrl()}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: newMessages }),
+        body: JSON.stringify({ messages: newMessages, sessionId: sessionIdRef.current }),
       });
 
       const data = await res.json();
