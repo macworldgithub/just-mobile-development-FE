@@ -184,13 +184,14 @@ export default function AccountPage() {
 
   const [portalTab, setPortalTab] = useState<'overview' | 'billing' | 'details'>('overview');
   const [topTwoFaMenuOpen, setTopTwoFaMenuOpen] = useState<boolean>(false);
+  const [twoFaModalOpen, setTwoFaModalOpen] = useState<boolean>(false);
 
-  const openSecuritySettings = () => {
+  const openTwoFaModal = (startSetup = false) => {
     setTopTwoFaMenuOpen(false);
-    setPortalTab('details');
-    setTimeout(() => {
-      document.getElementById('two-factor-settings')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 60);
+    setTwoFaModalOpen(true);
+    if (startSetup && !twoFaSetupData) {
+      handleStartTwoFaSetup();
+    }
   };
 
   useEffect(() => {
@@ -1185,10 +1186,7 @@ export default function AccountPage() {
                     type="button"
                     role="menuitem"
                     className={styles.topTwoFaMenuAction}
-                    onClick={() => {
-                      openSecuritySettings();
-                      handleStartTwoFaSetup();
-                    }}
+                    onClick={() => openTwoFaModal(true)}
                   >
                     <span>{twoFactorEnabled ? 'Reconfigure / Pair New Device' : 'Configure Authenticator App (QR)'}</span>
                     <span>→</span>
@@ -1198,9 +1196,9 @@ export default function AccountPage() {
                     type="button"
                     role="menuitem"
                     className={styles.topTwoFaMenuAction}
-                    onClick={openSecuritySettings}
+                    onClick={() => openTwoFaModal(false)}
                   >
-                    <span>{twoFactorEnabled ? 'Manage Backup Codes & Disable 2FA' : 'Open Security & 2FA Settings'}</span>
+                    <span>{twoFactorEnabled ? 'Manage Backup Codes & Disable 2FA' : 'Two-Factor Security Settings'}</span>
                     <span>→</span>
                   </button>
                 </div>
@@ -1232,16 +1230,6 @@ export default function AccountPage() {
             <p className={styles.greetingSub}>
               Customer ID: {user.custNo || formatAccountId(user.id)} · {hasActivePlan ? 'Connected to Telstra 5G Wholesale Network' : 'Account Ready · Ready to Activate Plan'}
             </p>
-          </div>
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              className={styles.accountBadge}
-              style={{ cursor: 'pointer' }}
-              onClick={openSecuritySettings}
-            >
-              {twoFactorEnabled ? '✓ Authenticator 2FA Active' : 'Email 2FA Active · Set Up App'}
-            </button>
           </div>
         </div>
 
@@ -1733,22 +1721,6 @@ export default function AccountPage() {
                       : 'Update in Change My Details'}
                   </span>
                 </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>2FA Protection</span>
-                  <span className={styles.detailValue} style={{ color: '#49721d' }}>
-                    {twoFactorEnabled ? '✓ Authenticator App Active' : '✓ Email OTP (Authenticator Optional)'}
-                  </span>
-                </div>
-              </div>
-              <div style={{ marginTop: '14px' }}>
-                <button
-                  type="button"
-                  className={styles.btnSecondaryUpgrade}
-                  style={{ width: '100%', padding: '10px 14px', fontSize: '13px' }}
-                  onClick={openSecuritySettings}
-                >
-                  {twoFactorEnabled ? 'Manage Two-Factor Security (2FA)' : 'Set Up Authenticator App (2FA)'}
-                </button>
               </div>
             </div>
 
@@ -1969,17 +1941,9 @@ export default function AccountPage() {
               <div>
                 <h2 className={styles.cardTitle} style={{ margin: '0 0 4px 0' }}>Change My Details</h2>
                 <p style={{ fontSize: '13.5px', color: '#556253', margin: 0 }}>
-                  Update your residential address, postal address, contact details, and preferences. Protected by mandatory 2FA verification.
+                  Update your residential address, postal address, contact details, and preferences. Protected by 2FA verification.
                 </p>
               </div>
-              <button
-                type="button"
-                className={styles.badgePortActive}
-                style={{ border: 'none', cursor: 'pointer' }}
-                onClick={openSecuritySettings}
-              >
-                {twoFactorEnabled ? '2FA: Authenticator App ↓' : '2FA: Email OTP · Configure App ↓'}
-              </button>
             </div>
 
             {detailSaveSuccess && <div className={styles.portalAlertSuccess}>{detailSaveSuccess}</div>}
@@ -2140,7 +2104,7 @@ export default function AccountPage() {
                 <p style={{ fontSize: '12.5px', color: '#4c5a49', margin: '0 0 10px 0' }}>
                   {twoFactorEnabled
                     ? 'Enter the 6-digit code from your Authenticator App (or request an Email code above).'
-                    : 'Click "Send 2FA Email Code" above, or pair an Authenticator App in the security section below.'}
+                    : 'Click "Send 2FA Email Code" above, or configure an Authenticator App from the 2FA menu at the top right.'}
                 </p>
                 {detailOtpNotice && (
                   <div style={{ fontSize: '12.5px', color: '#2d6622', fontWeight: 600, marginBottom: '8px' }}>
@@ -2167,9 +2131,24 @@ export default function AccountPage() {
               </button>
             </form>
           </div>
+          </>
+        )}
+      </main>
 
-          <div id="two-factor-settings" className={styles.card} style={{ marginTop: '20px', scrollMarginTop: '90px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '14px' }}>
+      {/* Top-Right Two-Factor Authentication (2FA) Configuration Modal */}
+      {twoFaModalOpen && (
+        <div className={styles.modalOverlay} onClick={() => setTwoFaModalOpen(false)}>
+          <div className={styles.modalContentLarge} style={{ maxWidth: '680px' }} onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className={styles.modalCloseBtn}
+              onClick={() => setTwoFaModalOpen(false)}
+              aria-label="Close modal"
+            >
+              ×
+            </button>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px', marginBottom: '14px', paddingRight: '28px' }}>
               <div>
                 <h2 className={styles.cardTitle} style={{ margin: '0 0 4px 0' }}>
                   Two-Factor Authentication (2FA)
@@ -2188,7 +2167,7 @@ export default function AccountPage() {
 
             {!twoFactorEnabled && !twoFaSetupData && (
               <div style={{ background: '#f9fbf8', border: '1px solid #dce4d8', borderRadius: '14px', padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-                <div style={{ maxWidth: '580px' }}>
+                <div style={{ maxWidth: '420px' }}>
                   <h3 style={{ fontSize: '15.5px', fontWeight: 700, color: '#142420', margin: '0 0 6px 0' }}>
                     Pair an Authenticator App
                   </h3>
@@ -2326,9 +2305,8 @@ export default function AccountPage() {
               </div>
             )}
           </div>
-          </>
-        )}
-      </main>
+        </div>
+      )}
 
       {/* eSIM Activation QR Code Modal */}
       {esimModalOpen && (
