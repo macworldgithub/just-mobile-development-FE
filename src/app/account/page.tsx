@@ -189,13 +189,20 @@ export default function AccountPage() {
   const openTwoFaModal = (startSetup = false) => {
     setTopTwoFaMenuOpen(false);
     setTwoFaError(null);
+    setTwoFaSuccess(null);
+    setTwoFaSwitchOtpNotice(null);
     setTwoFaModalOpen(true);
     if (startSetup) {
-      if (!twoFaSetupData) {
+      if (twoFactorEnabled) {
+        setTwoFaSetupData(null);
+        setTwoFaSwitchCurrentCode('');
+        setTwoFaSwitchPromptVisible(true);
+      } else if (!twoFaSetupData) {
         handleStartTwoFaSetup();
       }
     } else {
       setTwoFaSetupData(null);
+      setTwoFaSwitchPromptVisible(false);
     }
   };
 
@@ -286,6 +293,10 @@ export default function AccountPage() {
     otpauthUrl: string;
     qrCodeDataUrl: string;
   } | null>(null);
+  const [twoFaSwitchPromptVisible, setTwoFaSwitchPromptVisible] = useState<boolean>(false);
+  const [twoFaSwitchCurrentCode, setTwoFaSwitchCurrentCode] = useState<string>('');
+  const [twoFaSwitchOtpNotice, setTwoFaSwitchOtpNotice] = useState<string | null>(null);
+  const [isSendingSwitchOtp, setIsSendingSwitchOtp] = useState<boolean>(false);
   const [twoFaVerifyCode, setTwoFaVerifyCode] = useState<string>('');
   const [twoFaBackupCodes, setTwoFaBackupCodes] = useState<string[]>([]);
   const [twoFaDisableCode, setTwoFaDisableCode] = useState<string>('');
@@ -569,8 +580,35 @@ export default function AccountPage() {
   };
 
   // TOTP 2FA Setup / Enable / Disable Handlers (otplib + qrcode)
-  const handleStartTwoFaSetup = async () => {
+  const handleSendTwoFaSwitchEmailOtp = async () => {
     if (!token) return;
+    setIsSendingSwitchOtp(true);
+    setTwoFaError(null);
+    setTwoFaSwitchOtpNotice(null);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/2fa/send-action-code`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to send security verification code.');
+      }
+      setTwoFaSwitchOtpNotice(data.message || 'Security verification code sent to your registered email.');
+    } catch (err: any) {
+      setTwoFaError(err.message || 'Failed to send 2FA code.');
+    } finally {
+      setIsSendingSwitchOtp(false);
+    }
+  };
+
+  const handleStartTwoFaSetup = async (currentCode?: string) => {
+    if (!token) return;
+    if (twoFactorEnabled && !(currentCode || '').trim()) {
+      setTwoFaSwitchPromptVisible(true);
+      setTwoFaError('Enter your current 6-digit 2FA code (or recovery/email code) first before pairing a new device.');
+      return;
+    }
     setIsTwoFaLoading(true);
     setTwoFaError(null);
     setTwoFaSuccess(null);
@@ -578,7 +616,11 @@ export default function AccountPage() {
     try {
       const res = await fetch(`${API_URL}/api/auth/2fa/setup`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(currentCode ? { currentTwoFactorCode: currentCode.trim() } : {}),
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -589,6 +631,9 @@ export default function AccountPage() {
         otpauthUrl: data.otpauthUrl,
         qrCodeDataUrl: data.qrCodeDataUrl,
       });
+      setTwoFaSwitchPromptVisible(false);
+      setTwoFaSwitchCurrentCode('');
+      setTwoFaSwitchOtpNotice(null);
       setTwoFaVerifyCode('');
     } catch (err: any) {
       setTwoFaError(err.message || 'Could not generate Authenticator QR code.');
@@ -2208,7 +2253,7 @@ export default function AccountPage() {
                   type="button"
                   className={styles.btnPrimary}
                   disabled={isTwoFaLoading}
-                  onClick={handleStartTwoFaSetup}
+                  onClick={() => handleStartTwoFaSetup()}
                 >
                   {isTwoFaLoading ? 'Generating QR Code...' : 'Set Up Authenticator App'}
                 </button>
@@ -2307,16 +2352,74 @@ export default function AccountPage() {
                 <p style={{ fontSize: '13px', color: '#4c5a49', margin: '0 0 14px 0' }}>
                   Your account uses Authenticator codes when signing in and saving changes. You can pair a new device or switch back to Email OTP below.
                 </p>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '16px' }}>
-                  <button
-                    type="button"
-                    className={styles.btnSecondaryUpgrade}
-                    style={{ padding: '10px 16px', fontSize: '13px' }}
-                    onClick={handleStartTwoFaSetup}
+                {!twoFaSwitchPromptVisible ? (
+                  <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                    <button
+                      type="button"
+                      className={styles.btnSecondaryUpgrade}
+                      style={{ padding: '10px 16px', fontSize: '13px' }}
+                      onClick={() => {
+                        setTwoFaError(null);
+                        setTwoFaSwitchCurrentCode('');
+                        setTwoFaSwitchPromptVisible(true);
+                      }}
+                    >
+                      Switch / Pair New Device
+                    </button>
+                  </div>
+                ) : (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handleStartTwoFaSetup(twoFaSwitchCurrentCode);
+                    }}
+                    style={{ background: '#ffffff', border: '1px solid #d4dfd0', borderRadius: '12px', padding: '14px', marginBottom: '16px' }}
                   >
-                    Switch / Pair New Device
-                  </button>
-                </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
+                      <label className={styles.fieldLabel} style={{ margin: 0 }}>
+                        Verify current 2FA before pairing a new device
+                      </label>
+                      <button
+                        type="button"
+                        className={styles.btnSmallAction}
+                        disabled={isSendingSwitchOtp}
+                        onClick={handleSendTwoFaSwitchEmailOtp}
+                      >
+                        {isSendingSwitchOtp ? 'Sending...' : 'Lost phone? Send Email Code'}
+                      </button>
+                    </div>
+                    {twoFaSwitchOtpNotice && (
+                      <div style={{ fontSize: '12.5px', color: '#2d6622', fontWeight: 600, marginBottom: '8px' }}>
+                        {twoFaSwitchOtpNotice}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <input
+                        type="text"
+                        maxLength={14}
+                        required
+                        className={styles.fieldInput}
+                        style={{ maxWidth: '200px', fontFamily: 'monospace', letterSpacing: '2px' }}
+                        placeholder="Current 6-digit / backup code"
+                        value={twoFaSwitchCurrentCode}
+                        onChange={(e) => setTwoFaSwitchCurrentCode(e.target.value)}
+                      />
+                      <button type="submit" disabled={isTwoFaLoading} className={styles.btnPrimary}>
+                        {isTwoFaLoading ? 'Verifying...' : 'Verify & Generate New QR'}
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.btnSmallAction}
+                        onClick={() => {
+                          setTwoFaSwitchPromptVisible(false);
+                          setTwoFaError(null);
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
 
                 <form onSubmit={handleDisableTwoFa} style={{ borderTop: '1px solid #e2ebd8', paddingTop: '14px' }}>
                   <label className={styles.fieldLabel}>Switch back to Email Verification (disable Authenticator App)</label>
