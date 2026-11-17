@@ -183,13 +183,27 @@ export default function AccountPage() {
   const API_URL = getApiUrl();
 
   const [portalTab, setPortalTab] = useState<'overview' | 'billing' | 'details'>('overview');
+  const [topTwoFaMenuOpen, setTopTwoFaMenuOpen] = useState<boolean>(false);
 
   const openSecuritySettings = () => {
+    setTopTwoFaMenuOpen(false);
     setPortalTab('details');
     setTimeout(() => {
       document.getElementById('two-factor-settings')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 60);
   };
+
+  useEffect(() => {
+    if (!topTwoFaMenuOpen) return;
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target?.closest('[data-twofa-menu="true"]')) {
+        setTopTwoFaMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [topTwoFaMenuOpen]);
 
   const [usage, setUsage] = useState<CarrierUsage | null>(null);
   const [balance, setBalance] = useState<CarrierBalance | null>(null);
@@ -1142,6 +1156,57 @@ export default function AccountPage() {
             />
           </Link>
           <div className={styles.userMenu}>
+            <div className={styles.topTwoFaWrap} data-twofa-menu="true">
+              <button
+                type="button"
+                className={`${styles.topTwoFaBtn} ${twoFactorEnabled ? styles.topTwoFaBtnActive : ''}`}
+                aria-expanded={topTwoFaMenuOpen}
+                onClick={() => setTopTwoFaMenuOpen((prev) => !prev)}
+              >
+                <span className={styles.topTwoFaDot} />
+                <span>{twoFactorEnabled ? '2FA: App Active' : '2FA: Email Active'}</span>
+                <span style={{ opacity: 0.85, fontWeight: 600 }}>· Configure ▾</span>
+              </button>
+
+              {topTwoFaMenuOpen && (
+                <div className={styles.topTwoFaMenu} role="menu">
+                  <div className={styles.topTwoFaMenuHeader}>
+                    <div style={{ fontSize: '12px', fontWeight: 800, color: '#142420' }}>
+                      Two-Factor Security (2FA)
+                    </div>
+                    <div style={{ fontSize: '11.5px', color: '#556253', marginTop: '2px' }}>
+                      {twoFactorEnabled
+                        ? 'Authenticator App & Backup Codes enabled'
+                        : 'Email OTP active · Pair an Authenticator App'}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className={styles.topTwoFaMenuAction}
+                    onClick={() => {
+                      openSecuritySettings();
+                      handleStartTwoFaSetup();
+                    }}
+                  >
+                    <span>{twoFactorEnabled ? 'Reconfigure / Pair New Device' : 'Configure Authenticator App (QR)'}</span>
+                    <span>→</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className={styles.topTwoFaMenuAction}
+                    onClick={openSecuritySettings}
+                  >
+                    <span>{twoFactorEnabled ? 'Manage Backup Codes & Disable 2FA' : 'Open Security & 2FA Settings'}</span>
+                    <span>→</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
             <span className={styles.userName}>
               {user.name}
             </span>

@@ -234,10 +234,10 @@ export default function AdminPage() {
           <div className={styles.logoArea}>
             <Link href="/" aria-label="JustMobile Homepage">
               <Image
-                src="/brand/logos/justmobile-wordmark-white.svg"
+                src="/brand/logos/justmobile-wordmark-light.svg"
                 alt="JustMobile"
-                width={130}
-                height={30}
+                width={140}
+                height={31}
                 priority
               />
             </Link>
