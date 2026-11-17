@@ -86,7 +86,7 @@ export default function Footer({ onNavigateSection, onOpenCis }: FooterProps) {
                 href="mailto:info@justmobile.ai"
                 className={styles.contactBtn}
               >
-                <span>Contact us (info@justmobile.ai)</span>
+                <span>Contact us</span>
                 <span className={styles.arrowIcon}>↗</span>
               </a>
             </div>
