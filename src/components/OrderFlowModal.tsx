@@ -72,6 +72,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
   // Order state & QR details from native backend
   const [orderId, setOrderId] = useState('');
   const [currentOrderState, setCurrentOrderState] = useState<string>('draft');
+  const [orderError, setOrderError] = useState<string | null>(null);
   const [qrCodeData, setQrCodeData] = useState<{
     lpa: string;
     smdpAddress: string;
@@ -131,6 +132,8 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       setStep(1);
+      setOrderError(null);
+      setCurrentOrderState('draft');
       setOrderId(`JM-AU-${Math.floor(100000 + Math.random() * 900000)}`);
       // Pre-load numbers in background
       fetchReservedNumbers();
@@ -156,14 +159,16 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
           setOtpTransactionId(data.transactionId);
           setOtpSent(true);
           setOtpMessage(data.message || 'Security code dispatched via SMS.');
-          setTimeout(() => setOtpCode('829104'), 600);
+          if (String(data.transactionId).startsWith('TX-PORT-')) {
+            setTimeout(() => setOtpCode('829104'), 600);
+          }
           return;
         }
+        setOtpMessage(data?.message || 'We could not send your SMS security code right now. Please try again.');
       } catch (err) {
-        console.warn('Carrier OTP send fallback', err);
+        console.warn('Carrier OTP send error:', err);
+        setOtpMessage('Unable to send the security code right now. Please check your connection and try again.');
       }
-      setOtpSent(true);
-      setTimeout(() => setOtpCode('829104'), 800);
     }
   };
 
@@ -181,17 +186,17 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
           setOtpMessage('Number verified for ACMA compliant transfer.');
           return;
         }
+        setOtpMessage(data?.message || 'Verification failed. Please check the 6-digit code and try again.');
       } catch (err) {
-        console.warn('Carrier OTP verify fallback', err);
-      }
-      if (otpCode === '829104') {
-        setOtpVerified(true);
+        console.warn('Carrier OTP verify error:', err);
+        setOtpMessage('Unable to verify the security code right now. Please try again.');
       }
     }
   };
 
   const startAutomatedFulfillment = async () => {
     setStep(3);
+    setOrderError(null);
     setCurrentOrderState('quote_accepted');
     setEmailNotice(null);
 
@@ -229,6 +234,13 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
       });
 
       const activateData = await activateRes.json();
+      if (!activateRes.ok || !activateData?.success) {
+        throw new Error(
+          activateData?.message ||
+            'We could not complete your activation with our network provider right now, and nothing was saved. Please try again shortly.',
+        );
+      }
+
       const createdOrderId = activateData?.orderId || orderId;
       setOrderId(createdOrderId);
 
@@ -236,14 +248,20 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
         setEmailNotice(`eSIM activation QR code dispatched to ${activateData.emailRecipient || activeEmail}`);
       }
 
-      // Fetch QR Code details
+      // Fetch QR Code details only after Octane & DB order succeeded
       const qrRes = await fetch(`${API_URL}/api/carrier/qrcodes/${createdOrderId}`);
       if (qrRes.ok) {
         const qrData = await qrRes.json();
         setQrCodeData(qrData);
       }
-    } catch (e) {
-      console.warn('Order activation call:', e);
+    } catch (err: any) {
+      console.warn('Order activation failed cleanly (atomic rollback):', err);
+      setCurrentOrderState('failed');
+      setOrderError(
+        err?.message ||
+          'We could not complete your activation right now, and nothing was saved. Please check your details and try again.',
+      );
+      return;
     }
 
     setTimeout(() => setCurrentOrderState('prerequisites_satisfied'), 1200);
@@ -700,7 +718,54 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
         {step === 3 && (
           <div className={styles.stepContent}>
             <div className={styles.lifecycleCard}>
-              <div className={styles.workflowProgress}>
+              {currentOrderState === 'failed' && orderError ? (
+                <div
+                  style={{
+                    background: '#FEF3F2',
+                    border: '1px solid #FECDCA',
+                    borderRadius: '12px',
+                    padding: '20px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: '#B42318', marginBottom: '8px' }}>
+                    Activation Could Not Be Completed
+                  </div>
+                  <p style={{ fontSize: '13.5px', color: '#7A271A', margin: '0 0 16px 0', lineHeight: 1.5 }}>
+                    {orderError}
+                  </p>
+                  <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className={styles.primaryBtn}
+                      onClick={() => startAutomatedFulfillment()}
+                    >
+                      Try Again
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOrderError(null);
+                        setCurrentOrderState('draft');
+                        setStep(2);
+                      }}
+                      style={{
+                        background: '#ffffff',
+                        border: '1.5px solid #cbd8c7',
+                        borderRadius: '10px',
+                        padding: '10px 18px',
+                        fontSize: '13.5px',
+                        fontWeight: 600,
+                        color: '#142420',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Review Details
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.workflowProgress}>
                 {[
                   { key: 'quote_accepted', label: 'Quote Accepted & Signed' },
                   { key: 'prerequisites_satisfied', label: 'ACMA Identity Verified' },
@@ -737,7 +802,8 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                     </div>
                   );
                 })}
-              </div>
+                </div>
+              )}
 
               {/* eSIM QR Reveal when ready */}
               {currentOrderState === 'ready_to_use' && (

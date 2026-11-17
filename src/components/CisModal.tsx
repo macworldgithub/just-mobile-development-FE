@@ -183,7 +183,7 @@ export default function CisModal({ isOpen, onClose, defaultPlan = '65gb' }: CisM
                 <td>
                   {plan.internationalIncluded
                     ? 'Unlimited standard calls & SMS from Australia to 15 selected countries.'
-                    : 'Not included on this plan (available via optional international add-on).'}
+                    : 'Not included on this plan (included on 65GB+ plans).'}
                 </td>
               </tr>
               <tr>
@@ -206,7 +206,7 @@ export default function CisModal({ isOpen, onClose, defaultPlan = '65gb' }: CisM
             <p>
               This Critical Information Summary (CIS) covers the JustMobile SIM-only month-to-month plan.
               Data sessions terminate once your monthly allowance is exhausted to prevent bill shock.
-              Top-up data packs are available inside your Customer Portal at /account.
+              You can upgrade your plan anytime inside your Customer Portal at /account.
               For support or enquiries, call 1300 492 002 or email info@justmobile.ai.
               If you experience financial hardship, please review our Financial Hardship Policy at /hardship.
               Complaints may be submitted to info@justmobile.ai or escalated to the Telecommunications Industry

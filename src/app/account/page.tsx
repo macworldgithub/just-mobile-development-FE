@@ -202,6 +202,14 @@ export default function AccountPage() {
   const [copiedLpa, setCopiedLpa] = useState<boolean>(false);
   const [isSendingEmail, setIsSendingEmail] = useState<boolean>(false);
   const [emailSentNotice, setEmailSentNotice] = useState<string | null>(null);
+  const [showReplaceEsimForm, setShowReplaceEsimForm] = useState<boolean>(false);
+  const [replaceEsimReason, setReplaceEsimReason] = useState<string>('Accidentally removed eSIM / switched phone');
+  const [replaceEsimTwoFactorCode, setReplaceEsimTwoFactorCode] = useState<string>('');
+  const [isSendingEsimOtp, setIsSendingEsimOtp] = useState<boolean>(false);
+  const [esimOtpNotice, setEsimOtpNotice] = useState<string | null>(null);
+  const [isReplacingEsim, setIsReplacingEsim] = useState<boolean>(false);
+  const [replaceEsimError, setReplaceEsimError] = useState<string | null>(null);
+  const [replaceEsimSuccess, setReplaceEsimSuccess] = useState<string | null>(null);
 
   // Invoices, Payments, Bill Queries & Porting state
   const [invoices, setInvoices] = useState<InvoiceRecord[]>([]);
@@ -437,12 +445,16 @@ export default function AccountPage() {
   };
 
   // Send 2FA Email OTP for sensitive portal actions (when TOTP not used)
-  const handleSendActionOtp = async (target: 'details' | 'plan') => {
+  const handleSendActionOtp = async (target: 'details' | 'plan' | 'esim') => {
     if (!token) return;
     if (target === 'details') {
       setIsSendingDetailOtp(true);
       setDetailOtpNotice(null);
       setDetailSaveError(null);
+    } else if (target === 'esim') {
+      setIsSendingEsimOtp(true);
+      setEsimOtpNotice(null);
+      setReplaceEsimError(null);
     } else {
       setIsSendingPlanOtp(true);
       setPlanOtpNotice(null);
@@ -459,18 +471,23 @@ export default function AccountPage() {
       }
       if (target === 'details') {
         setDetailOtpNotice(data.message);
+      } else if (target === 'esim') {
+        setEsimOtpNotice(data.message);
       } else {
         setPlanOtpNotice(data.message);
       }
     } catch (err: any) {
       if (target === 'details') {
         setDetailSaveError(err.message || 'Failed to send 2FA code.');
+      } else if (target === 'esim') {
+        setReplaceEsimError(err.message || 'Failed to send 2FA code.');
       } else {
         setPlanChangeError(err.message || 'Failed to send 2FA code.');
       }
     } finally {
       setIsSendingDetailOtp(false);
       setIsSendingPlanOtp(false);
+      setIsSendingEsimOtp(false);
     }
   };
 
@@ -771,6 +788,7 @@ export default function AccountPage() {
       return;
     }
     const custNo = user?.custNo || '';
+    setNewLineError(null);
     try {
       const res = await fetch(`${API_URL}/api/carrier/otp/send`, {
         method: 'POST',
@@ -781,16 +799,20 @@ export default function AccountPage() {
       if (res.ok && data.transactionId) {
         setNewLineTxId(data.transactionId);
         setNewLineOtpSent(true);
-        setTimeout(() => setNewLineOtpCode('829104'), 600);
+        if (String(data.transactionId).startsWith('TX-PORT-')) {
+          setTimeout(() => setNewLineOtpCode('829104'), 600);
+        }
+        return;
       }
+      setNewLineError(data?.message || 'We could not send your SMS security code right now. Please try again.');
     } catch {
-      setNewLineOtpSent(true);
-      setTimeout(() => setNewLineOtpCode('829104'), 600);
+      setNewLineError('Unable to reach the server to send your verification code. Please try again.');
     }
   };
 
   // ACMA Pre-Port SMS 2FA Verification for Add Line
   const handleVerifyNewLineOtp = async () => {
+    setNewLineError(null);
     try {
       const res = await fetch(`${API_URL}/api/carrier/otp/verify`, {
         method: 'POST',
@@ -802,10 +824,10 @@ export default function AccountPage() {
         setNewLineOtpVerified(true);
         setNewLineError(null);
       } else {
-        setNewLineError('Invalid ACMA verification code. Please check SMS.');
+        setNewLineError(data?.message || 'Invalid verification code. Please check your SMS and try again.');
       }
     } catch {
-      setNewLineOtpVerified(true);
+      setNewLineError('Unable to verify the SMS code right now. Please try again.');
     }
   };
 
@@ -1005,6 +1027,61 @@ export default function AccountPage() {
       setEmailSentNotice('Network error while requesting email.');
     } finally {
       setIsSendingEmail(false);
+    }
+  };
+
+  // Issue a brand-new 2FA-verified replacement eSIM profile & QR code
+  const handleReplaceEsim = async () => {
+    if (!user || !token) return;
+    if (!replaceEsimTwoFactorCode.trim()) {
+      setReplaceEsimError(
+        twoFactorEnabled
+          ? 'Please enter the 6-digit code from your Authenticator App.'
+          : 'Please click "Send Email 2FA Code" and enter the 6-digit code sent to your email.',
+      );
+      return;
+    }
+    const custNo = user.custNo || 'CUST990001';
+    setIsReplacingEsim(true);
+    setReplaceEsimError(null);
+    setReplaceEsimSuccess(null);
+    try {
+      const res = await fetch(`${API_URL}/api/carrier/customers/${custNo}/esim/replace`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          msn: activeMobile || user.phone,
+          reason: replaceEsimReason,
+          email: user.email,
+          twoFactorCode: replaceEsimTwoFactorCode.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Could not issue replacement eSIM QR code.');
+      }
+      if (data.lpa && data.qrCodeDataUrl) {
+        setEsimDetails({
+          orderId: data.orderId,
+          lpa: data.lpa,
+          smdpAddress: data.smdpAddress,
+          activationCode: data.activationCode,
+          qrCodeDataUrl: data.qrCodeDataUrl,
+          instructions: data.instructions || esimDetails?.instructions || [],
+        });
+      }
+      setReplaceEsimTwoFactorCode('');
+      setEsimOtpNotice(null);
+      setReplaceEsimSuccess(
+        data.message || `New replacement eSIM QR code (${data.referenceNumber}) generated and emailed to ${user.email}.`,
+      );
+    } catch (err: any) {
+      setReplaceEsimError(err.message || 'Failed to issue replacement eSIM.');
+    } finally {
+      setIsReplacingEsim(false);
     }
   };
 
@@ -2296,6 +2373,149 @@ export default function AccountPage() {
                     {emailSentNotice}
                   </div>
                 )}
+
+                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #e2ebe0' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowReplaceEsimForm((prev) => !prev);
+                      setReplaceEsimError(null);
+                      setReplaceEsimSuccess(null);
+                    }}
+                    style={{
+                      width: '100%',
+                      background: '#ffffff',
+                      color: '#142420',
+                      border: '1.5px solid #cbd8c7',
+                      borderRadius: '8px',
+                      padding: '9px 12px',
+                      fontSize: '12.5px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {showReplaceEsimForm
+                      ? 'Hide Replacement eSIM Request'
+                      : 'Accidentally Removed eSIM or Switched Phone? Issue New Replacement QR'}
+                  </button>
+
+                  {showReplaceEsimForm && (
+                    <div
+                      style={{
+                        marginTop: '10px',
+                        padding: '12px',
+                        background: '#f7faf4',
+                        border: '1px solid #d4e3ce',
+                        borderRadius: '10px',
+                        textAlign: 'left',
+                      }}
+                    >
+                      <div style={{ fontSize: '12.5px', fontWeight: 700, color: '#142420', marginBottom: '6px' }}>
+                        Request Replacement eSIM QR Code (2FA Protected)
+                      </div>
+                      <label style={{ display: 'block', fontSize: '12px', color: '#4c5a49', marginBottom: '4px' }}>
+                        Reason for replacement
+                      </label>
+                      <select
+                        value={replaceEsimReason}
+                        onChange={(e) => setReplaceEsimReason(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '8px 10px',
+                          borderRadius: '8px',
+                          border: '1px solid #cbd8c7',
+                          fontSize: '12.5px',
+                          marginBottom: '8px',
+                          background: '#ffffff',
+                        }}
+                      >
+                        <option value="Accidentally removed eSIM / switched phone">
+                          Accidentally removed eSIM / switched phone
+                        </option>
+                        <option value="eSIM failed to activate / reset profile">
+                          eSIM failed to activate / reset profile
+                        </option>
+                        <option value="Lost or damaged device">
+                          Lost or damaged device
+                        </option>
+                      </select>
+
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={8}
+                          placeholder={twoFactorEnabled ? '6-digit Authenticator code' : '6-digit Email 2FA code'}
+                          value={replaceEsimTwoFactorCode}
+                          onChange={(e) => setReplaceEsimTwoFactorCode(e.target.value)}
+                          style={{
+                            flex: 1,
+                            padding: '8px 10px',
+                            borderRadius: '8px',
+                            border: '1px solid #cbd8c7',
+                            fontSize: '12.5px',
+                            background: '#ffffff',
+                          }}
+                        />
+                        {!twoFactorEnabled && (
+                          <button
+                            type="button"
+                            onClick={() => handleSendActionOtp('esim')}
+                            disabled={isSendingEsimOtp}
+                            style={{
+                              padding: '8px 10px',
+                              borderRadius: '8px',
+                              border: '1px solid #142420',
+                              background: '#ffffff',
+                              color: '#142420',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {isSendingEsimOtp ? 'Sending...' : 'Send Email 2FA Code'}
+                          </button>
+                        )}
+                      </div>
+
+                      {esimOtpNotice && (
+                        <div style={{ fontSize: '12px', color: '#2e7d32', marginBottom: '6px', fontWeight: 600 }}>
+                          {esimOtpNotice}
+                        </div>
+                      )}
+                      {replaceEsimError && (
+                        <div style={{ fontSize: '12px', color: '#b42318', marginBottom: '6px', fontWeight: 600 }}>
+                          {replaceEsimError}
+                        </div>
+                      )}
+                      {replaceEsimSuccess && (
+                        <div style={{ fontSize: '12px', color: '#2e7d32', marginBottom: '6px', fontWeight: 600 }}>
+                          {replaceEsimSuccess}
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={handleReplaceEsim}
+                        disabled={isReplacingEsim}
+                        style={{
+                          width: '100%',
+                          background: '#D5F879',
+                          color: '#142420',
+                          border: '1.5px solid #142420',
+                          borderRadius: '8px',
+                          padding: '9px 12px',
+                          fontSize: '12.5px',
+                          fontWeight: 800,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {isReplacingEsim ? 'Issuing Replacement eSIM...' : 'Verify & Issue Replacement eSIM QR'}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

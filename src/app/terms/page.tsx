@@ -120,7 +120,7 @@ export default function TermsPage() {
               <strong>Included Standard Features:</strong> Every JustMobile plan includes unlimited standard national calls, SMS, and MMS to standard Australian mobile and fixed landline numbers (including 13, 1300, and 1800 numbers), plus voicemail deposits and retrieval.
             </p>
             <p className={styles.textParagraph}>
-              <strong>Excluded Services:</strong> Unless explicitly purchased through an authorized optional add-on pack, your service plan excludes:
+              <strong>Excluded Services:</strong> Unless included on your selected plan tier, your service plan excludes:
             </p>
             <ul className={styles.bulletList}>
               <li>Calls and texts to international destinations.</li>
@@ -139,7 +139,7 @@ export default function TermsPage() {
             <ul className={styles.bulletList}>
               <li><strong>Monthly Cycle:</strong> Data allowances reset automatically on the 28th of each calendar billing month. Monthly data allowances do not accumulate or roll over between billing cycles.</li>
               <li><strong>Zero Bill Shock Policy:</strong> To protect you from unexpected excess data charges, your mobile data session automatically pauses once your monthly plan allowance is reached.</li>
-              <li><strong>Top-Up Data Packs:</strong> If you exhaust your monthly quota before the cycle ends, you may purchase immediate data top-ups anytime directly via your Customer Portal (/account).</li>
+              <li><strong>Plan Changes:</strong> If you need more monthly data, you can switch to a higher JM Auto plan anytime directly via your Customer Portal (/account).</li>
             </ul>
           </section>
 
