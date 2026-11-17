@@ -188,9 +188,14 @@ export default function AccountPage() {
 
   const openTwoFaModal = (startSetup = false) => {
     setTopTwoFaMenuOpen(false);
+    setTwoFaError(null);
     setTwoFaModalOpen(true);
-    if (startSetup && !twoFaSetupData) {
-      handleStartTwoFaSetup();
+    if (startSetup) {
+      if (!twoFaSetupData) {
+        handleStartTwoFaSetup();
+      }
+    } else {
+      setTwoFaSetupData(null);
     }
   };
 
@@ -1182,25 +1187,49 @@ export default function AccountPage() {
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className={styles.topTwoFaMenuAction}
-                    onClick={() => openTwoFaModal(true)}
-                  >
-                    <span>{twoFactorEnabled ? 'Reconfigure / Pair New Device' : 'Configure Authenticator App (QR)'}</span>
-                    <span>→</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    role="menuitem"
-                    className={styles.topTwoFaMenuAction}
-                    onClick={() => openTwoFaModal(false)}
-                  >
-                    <span>{twoFactorEnabled ? 'Manage Backup Codes & Disable 2FA' : 'Two-Factor Security Settings'}</span>
-                    <span>→</span>
-                  </button>
+                  {twoFactorEnabled ? (
+                    <>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className={styles.topTwoFaMenuAction}
+                        onClick={() => openTwoFaModal(false)}
+                      >
+                        <span>Manage 2FA Settings (Active)</span>
+                        <span>→</span>
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className={styles.topTwoFaMenuAction}
+                        onClick={() => openTwoFaModal(true)}
+                      >
+                        <span>Switch / Pair New Device</span>
+                        <span>→</span>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className={styles.topTwoFaMenuAction}
+                        onClick={() => openTwoFaModal(true)}
+                      >
+                        <span>Configure Authenticator App (QR)</span>
+                        <span>→</span>
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className={styles.topTwoFaMenuAction}
+                        onClick={() => openTwoFaModal(false)}
+                      >
+                        <span>Two-Factor Security Settings</span>
+                        <span>→</span>
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -2138,7 +2167,7 @@ export default function AccountPage() {
       {/* Top-Right Two-Factor Authentication (2FA) Configuration Modal */}
       {twoFaModalOpen && (
         <div className={styles.modalOverlay} onClick={() => setTwoFaModalOpen(false)}>
-          <div className={styles.modalContentLarge} style={{ maxWidth: '680px' }} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.planModalWide} style={{ maxWidth: '680px' }} onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
               className={styles.modalCloseBtn}
@@ -2204,17 +2233,23 @@ export default function AccountPage() {
 
                 <div>
                   <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#142420', margin: '0 0 8px 0' }}>
-                    1. Scan QR Code or Enter Setup Key
+                    {twoFactorEnabled ? 'Switch / Pair a New Authenticator Device' : '1. Scan QR Code or Enter Setup Key'}
                   </h3>
                   <p style={{ fontSize: '13px', color: '#4c5a49', margin: '0 0 10px 0' }}>
-                    Scan this code in your Authenticator app, or enter this manual setup key:
+                    {twoFactorEnabled
+                      ? '2FA is already active on your account. Scan this new QR on your new device, or click Cancel to keep your current authenticator unchanged:'
+                      : 'Scan this code in your Authenticator app, or enter this manual setup key:'}
                   </p>
                   <div className={styles.lpaCodeBox} style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1px' }}>
                     {twoFaSetupData.secret}
                   </div>
 
                   <form onSubmit={handleEnableTwoFa} style={{ marginTop: '14px' }}>
-                    <label className={styles.fieldLabel}>2. Enter the 6-digit code from your app to activate</label>
+                    <label className={styles.fieldLabel}>
+                      {twoFactorEnabled
+                        ? 'Enter the 6-digit code from the new device to switch'
+                        : '2. Enter the 6-digit code from your app to activate'}
+                    </label>
                     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
                       <input
                         type="text"
@@ -2227,7 +2262,11 @@ export default function AccountPage() {
                         onChange={(e) => setTwoFaVerifyCode(e.target.value.replace(/\D/g, ''))}
                       />
                       <button type="submit" className={styles.btnPrimary} disabled={isTwoFaLoading}>
-                        {isTwoFaLoading ? 'Verifying...' : 'Verify & Enable 2FA'}
+                        {isTwoFaLoading
+                          ? 'Verifying...'
+                          : twoFactorEnabled
+                            ? 'Verify & Switch Device'
+                            : 'Verify & Enable 2FA'}
                       </button>
                       <button
                         type="button"
@@ -2275,7 +2314,7 @@ export default function AccountPage() {
                     style={{ padding: '10px 16px', fontSize: '13px' }}
                     onClick={handleStartTwoFaSetup}
                   >
-                    Reconfigure / Pair New Device
+                    Switch / Pair New Device
                   </button>
                 </div>
 
