@@ -92,9 +92,20 @@ body {
   padding-right: env(safe-area-inset-right, 0px);
 }
 
-img, svg, video, iframe {
+img, svg, video {
   max-width: 100%;
   height: auto;
+}
+
+iframe {
+  max-width: 100%;
+}
+
+[data-quickstream-api="creditCardContainer"] iframe {
+  width: 100% !important;
+  height: 390px !important;
+  display: block;
+  border: none;
 }
 
 button, a, input, select, textarea {

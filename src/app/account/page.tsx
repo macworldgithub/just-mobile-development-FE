@@ -3473,7 +3473,11 @@ export default function AccountPage() {
           ===================================================================== */}
       {payNowOpen && (
         <div className={styles.modalOverlay} onClick={() => setPayNowOpen(false)} role="dialog" aria-modal="true">
-          <div className={styles.modalContent} style={{ textAlign: 'left', maxWidth: '520px' }} onClick={(e) => e.stopPropagation()}>
+          <div
+            className={styles.modalContent}
+            style={{ textAlign: 'left', maxWidth: '580px', maxHeight: '92vh', overflowY: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <button type="button" className={styles.modalCloseBtn} onClick={() => setPayNowOpen(false)} aria-label="Close">
               ✕
             </button>

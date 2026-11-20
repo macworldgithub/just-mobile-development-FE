@@ -81,12 +81,14 @@ export default function QuickstreamPaymentCard({
           },
           iframe: {
             width: '100%',
-            height: '350px',
+            height: '390px',
             scrolling: 'no',
             style: {
+              width: '100%',
+              height: '390px',
               border: 'none',
               background: '#ffffff',
-              borderRadius: '12px',
+              display: 'block',
             },
           },
           fieldStyles: {
@@ -332,11 +334,11 @@ export default function QuickstreamPaymentCard({
             id="creditCardContainer"
             data-quickstream-api="creditCardContainer"
             style={{
-              minHeight: '350px',
+              minHeight: '390px',
+              padding: '10px 12px 4px',
               background: '#ffffff',
               border: '1px solid #dce4d8',
               borderRadius: '12px',
-              overflow: 'hidden',
               marginBottom: '14px',
             }}
           />
