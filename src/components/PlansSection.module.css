@@ -76,9 +76,26 @@
   gap: 20px;
 }
 
+.plansGridSeven {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: stretch;
+  gap: 20px;
+}
+
+.plansGridSeven .planCard {
+  flex: 0 0 calc((100% - 60px) / 4);
+  max-width: calc((100% - 60px) / 4);
+}
+
 @media (max-width: 1240px) {
   .plansGrid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .plansGridSeven .planCard {
+    flex: 0 0 calc((100% - 20px) / 2);
+    max-width: calc((100% - 20px) / 2);
   }
 }
 
@@ -362,6 +379,15 @@
     gap: 18px;
     max-width: 520px;
     margin: 0 auto;
+  }
+  .plansGridSeven {
+    max-width: 520px;
+    margin: 0 auto;
+    gap: 18px;
+  }
+  .plansGridSeven .planCard {
+    flex: 0 0 100%;
+    max-width: 100%;
   }
   .plansBottom {
     flex-direction: column;

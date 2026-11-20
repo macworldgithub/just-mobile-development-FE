@@ -56,7 +56,7 @@ export default function PlansSection({ onSelectPlan, onExplorePhones, initialPla
         </div>
 
         {/* Plans Grid */}
-        <div className={styles.plansGrid}>
+        <div className={`${styles.plansGrid} ${plans.length === 7 ? styles.plansGridSeven : ''}`}>
           {plans.map((plan) => {
             const isPopular = plan.popular;
             return (
