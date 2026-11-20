@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { getApiUrl } from '@/config/api';
 import DobPicker from './DobPicker';
+import QuickstreamPaymentCard from './QuickstreamPaymentCard';
 import styles from './OrderFlowModal.module.css';
 import { Handset, MobilePlan, calculateRepayments } from '@/data/catalogue';
 
@@ -80,6 +81,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
     qrCodeDataUrl: string;
   } | null>(null);
   const [copiedLpa, setCopiedLpa] = useState(false);
+  const [showPaymentStep, setShowPaymentStep] = useState(false);
 
   const fetchReservedNumbers = async () => {
     setIsLoadingNumbers(true);
@@ -132,6 +134,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       setStep(1);
+      setShowPaymentStep(false);
       setOrderError(null);
       setCurrentOrderState('draft');
       setOrderId(`JM-AU-${Math.floor(100000 + Math.random() * 900000)}`);
@@ -501,9 +504,41 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
           </div>
         )}
 
-        {/* Step 2: Number & ACMA Identity */}
+        {/* Step 2: Number, ACMA Identity & QuickStream Payment */}
         {step === 2 && (
           <div className={styles.stepContent}>
+            {orderError && (
+              <div
+                style={{
+                  background: '#FEF3F2',
+                  border: '1px solid #FECDCA',
+                  color: '#B42318',
+                  borderRadius: '10px',
+                  padding: '10px 12px',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                }}
+              >
+                {orderError}
+              </div>
+            )}
+
+            {showPaymentStep ? (
+              <QuickstreamPaymentCard
+                custNo={user?.custNo || ''}
+                planName={config.plan?.name}
+                planPrice={config.plan?.pricePerMonth}
+                submitLabel="Register Card & Activate Order →"
+                onCancel={() => setShowPaymentStep(false)}
+                onPaymentComplete={(success) => {
+                  if (success) {
+                    setShowPaymentStep(false);
+                    startAutomatedFulfillment();
+                  }
+                }}
+              />
+            ) : (
+              <>
             {/* Number choice */}
             <div className={styles.formSection}>
               <label className={styles.sectionLabel}>01 Mobile Number Selection</label>
@@ -698,19 +733,48 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
               <button
                 type="button"
                 className={styles.backBtn}
-                onClick={() => setStep(1)}
+                onClick={() => {
+                  setOrderError(null);
+                  setStep(1);
+                }}
               >
                 ← Back
               </button>
               <button
                 type="button"
                 className={styles.primaryNextBtn}
-                onClick={startAutomatedFulfillment}
+                onClick={() => {
+                  if (!user?.custNo) {
+                    handleProceedToSignup();
+                    return;
+                  }
+                  if (keepExistingNumber) {
+                    if (!portNumber.trim()) {
+                      setOrderError('Please enter your existing mobile number to transfer.');
+                      return;
+                    }
+                    if (portNumType === 'postpaid' && !portArn.trim()) {
+                      setOrderError('Please enter your current provider Account Number.');
+                      return;
+                    }
+                    if (!otpVerified) {
+                      setOrderError('Please complete ACMA SMS verification before proceeding to payment.');
+                      return;
+                    }
+                  }
+                  if (!name.trim() || !email.trim() || !dob.trim() || !address.trim()) {
+                    setOrderError('Please fill in your full name, email, date of birth, and address.');
+                    return;
+                  }
+                  setOrderError(null);
+                  setShowPaymentStep(true);
+                }}
               >
-                <span>Submit & Authorise Zero-Touch Order</span>
-                <span>→</span>
+                <span>Continue to Payment & Activation →</span>
               </button>
             </div>
+              </>
+            )}
           </div>
         )}
 

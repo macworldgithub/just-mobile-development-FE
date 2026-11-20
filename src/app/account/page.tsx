@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { getApiUrl } from '@/config/api';
 import DobPicker from '@/components/DobPicker';
+import QuickstreamPaymentCard from '@/components/QuickstreamPaymentCard';
 import styles from './account.module.css';
 
 interface CarrierUsage {
@@ -244,16 +245,12 @@ export default function AccountPage() {
   const [billQueries, setBillQueries] = useState<any[]>([]);
   const [syncingOrderId, setSyncingOrderId] = useState<string | null>(null);
   const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState<string | null>(null);
+  const [confirmCancelOrderId, setConfirmCancelOrderId] = useState<string | null>(null);
+  const [cancelPortError, setCancelPortError] = useState<string | null>(null);
 
-  // Pay Now Modal State
+  // Payment Method (QuickStream -> Octane) Modal State
   const [payNowOpen, setPayNowOpen] = useState<boolean>(false);
-  const [payAmount, setPayAmount] = useState<string>('37.55');
-  const [payInvoiceId, setPayInvoiceId] = useState<string>('');
-  const [payCardName, setPayCardName] = useState<string>('');
-  const [payCardNumber, setPayCardNumber] = useState<string>('');
-  const [payCardExpiry, setPayCardExpiry] = useState<string>('');
-  const [payCardCvc, setPayCardCvc] = useState<string>('');
-  const [isPaying, setIsPaying] = useState<boolean>(false);
   const [paySuccess, setPaySuccess] = useState<string | null>(null);
   const [payError, setPayError] = useState<string | null>(null);
 
@@ -331,6 +328,8 @@ export default function AccountPage() {
   const [newLineSelectedNumber, setNewLineSelectedNumber] = useState<string>('0491 570 006');
   const [isLoadingPool, setIsLoadingPool] = useState<boolean>(false);
   const [isActivatingLine, setIsActivatingLine] = useState<boolean>(false);
+  const [showNewLinePaymentStep, setShowNewLinePaymentStep] = useState<boolean>(false);
+  const [newLinePaymentSaved, setNewLinePaymentSaved] = useState<boolean>(false);
   const [newLineSuccess, setNewLineSuccess] = useState<string | null>(null);
   const [newLineError, setNewLineError] = useState<string | null>(null);
 
@@ -432,7 +431,31 @@ export default function AccountPage() {
     setDetailCommPref((user.commPreference as any) || 'email');
     setDetailMarketing(Boolean(user.marketingConsent));
     setTwoFactorEnabled(Boolean(user.twoFactorEnabled));
-    setPayCardName(user.name || '');
+
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = sessionStorage.getItem('justmobile_selected_order');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && (parsed.planName || parsed.planTier)) {
+            const matchedPlan = PORTAL_PLANS.find(
+              (p) =>
+                (parsed.planName && p.name.toLowerCase() === String(parsed.planName).toLowerCase()) ||
+                (parsed.planTier && p.tier.toLowerCase() === String(parsed.planTier).toLowerCase()),
+            );
+            if (matchedPlan) {
+              setSelectedPlanId(matchedPlan.id);
+              setNewLinePlanId(matchedPlan.id);
+            }
+          }
+          if (typeof parsed?.keepExistingNumber === 'boolean') {
+            setNewLineKeepNumber(parsed.keepExistingNumber);
+          }
+        }
+      } catch {
+        // Ignore storage parse error
+      }
+    }
   }, [user]);
 
   useEffect(() => {
@@ -449,12 +472,6 @@ export default function AccountPage() {
       .catch(() => {});
     refreshUser();
   }, [token]);
-
-  useEffect(() => {
-    if (balance?.nextInvoiceAmount) {
-      setPayAmount(balance.nextInvoiceAmount.toFixed(2));
-    }
-  }, [balance]);
 
   // Fetch reserve pool numbers for Add Line tab
   const fetchReservePool = async () => {
@@ -705,52 +722,6 @@ export default function AccountPage() {
     }
   };
 
-  // Pay Now Submission Handler
-  const handlePayNowSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-    const custNo = user.custNo || 'CUST990001';
-    const numericAmount = parseFloat(payAmount);
-    if (isNaN(numericAmount) || numericAmount <= 0) {
-      setPayError('Please enter a valid AUD payment amount.');
-      return;
-    }
-    const cleanDigits = payCardNumber.replace(/\D/g, '');
-    if (cleanDigits.length < 12) {
-      setPayError('Please enter a valid 13-16 digit card number.');
-      return;
-    }
-
-    setIsPaying(true);
-    setPayError(null);
-    setPaySuccess(null);
-    try {
-      const res = await fetch(`${API_URL}/api/carrier/customers/${custNo}/pay-now`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: numericAmount,
-          invoiceId: payInvoiceId || undefined,
-          cardName: payCardName.trim() || user.name,
-          cardLast4: cleanDigits.slice(-4),
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || 'Payment could not be processed.');
-      }
-      setPaySuccess(data.message);
-      setPayCardNumber('');
-      setPayCardExpiry('');
-      setPayCardCvc('');
-      loadAccountData(custNo);
-    } catch (err: any) {
-      setPayError(err.message || 'Payment failed.');
-    } finally {
-      setIsPaying(false);
-    }
-  };
-
   // Bill Query Submission Handler
   const handleSubmitBillQuery = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -896,7 +867,34 @@ export default function AccountPage() {
     }
   };
 
-  // In-portal Add Line Activation Handler
+  // Validate New Line / Porting details before showing QuickStream payment card
+  const handleProceedToNewLinePayment = () => {
+    setNewLineError(null);
+    if (newLineKeepNumber) {
+      if (!newLinePortNumber.trim() || newLinePortNumber.replace(/\D/g, '').length < 8) {
+        setNewLineError('Please enter the mobile number you want to transfer.');
+        return;
+      }
+      if (newLineNumType === 'postpaid' && !newLineArn.trim()) {
+        setNewLineError('Please enter your current provider Account Number.');
+        return;
+      }
+      if (newLineNumType === 'prepaid' && !newLineDob.trim()) {
+        setNewLineError('Please enter the Date of Birth registered on your prepaid service.');
+        return;
+      }
+      if (!newLineOtpVerified) {
+        setNewLineError('Please verify your mobile number with the ACMA SMS code before continuing.');
+        return;
+      }
+    } else if (!newLineSelectedNumber) {
+      setNewLineError('Please select an available 04XX mobile number.');
+      return;
+    }
+    setShowNewLinePaymentStep(true);
+  };
+
+  // In-portal Add Line Activation Handler (runs after QuickStream -> Octane payment-method completes)
   const handleActivateNewLine = async () => {
     if (!user) return;
     const custNo = user.custNo || 'CUST990001';
@@ -913,23 +911,30 @@ export default function AccountPage() {
 
     try {
       const endpoint = `${API_URL}${newLineKeepNumber ? '/api/carrier/orders/activate-port' : '/api/carrier/orders/activate'}`;
+      const sharedFields = {
+        custNo,
+        planNo: plan.planNo ? String(plan.planNo) : undefined,
+        planName: plan.name,
+        pricePerMonth: plan.price,
+        email: user.email,
+        firstName: user.firstName || user.name?.split(' ')[0],
+        lastName: user.surname || user.name?.split(' ').slice(1).join(' '),
+        address: user.address,
+        suburb: user.suburb,
+        state: user.state,
+        postcode: user.postcode,
+      };
       const payload = newLineKeepNumber
         ? {
-            custNo,
+            ...sharedFields,
             msn: newLinePortNumber,
-            planName: plan.name,
-            pricePerMonth: plan.price,
             numType: newLineNumType,
             donorCarrier: newLineDonorCarrier,
             ...(newLineNumType === 'postpaid' ? { arn: newLineArn } : { dob: newLineDob }),
-            email: user.email,
           }
         : {
-            custNo,
+            ...sharedFields,
             msn: newLineSelectedNumber,
-            planName: plan.name,
-            pricePerMonth: plan.price,
-            email: user.email,
           };
 
       const res = await fetch(endpoint, {
@@ -943,6 +948,16 @@ export default function AccountPage() {
         throw new Error(data.message || 'Carrier service activation failed.');
       }
 
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.removeItem('justmobile_selected_order');
+        } catch {
+          // ignore storage error
+        }
+      }
+
+      setShowNewLinePaymentStep(false);
+      setNewLinePaymentSaved(false);
       setNewLineSuccess(`Successfully added line ${data.msn}. eSIM profile provisioned.`);
       loadAccountData(custNo);
 
@@ -982,6 +997,38 @@ export default function AccountPage() {
       console.warn('Sync port error:', err);
     } finally {
       setSyncingOrderId(null);
+    }
+  };
+
+  // Cancel pending/in-flight mobile port order via Octane orderCancel (NNA-084)
+  const handleCancelPort = async (orderId: string) => {
+    if (!user?.custNo) return;
+    const custNo = user.custNo;
+    setCancellingOrderId(orderId);
+    setCancelPortError(null);
+    try {
+      const res = await fetch(
+        `${API_URL}/api/carrier/customers/${encodeURIComponent(custNo)}/orders/${encodeURIComponent(orderId)}/cancel-port`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ reason: 'Customer cancelled pending number transfer from portal' }),
+        },
+      );
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.message || 'Unable to cancel the number transfer right now.');
+      }
+      setConfirmCancelOrderId(null);
+      setSyncMessage(data.message || `Transfer #${orderId} cancelled.`);
+      loadAccountData(custNo);
+    } catch (err: any) {
+      setCancelPortError(err?.message || 'Unable to cancel the number transfer right now.');
+    } finally {
+      setCancellingOrderId(null);
     }
   };
 
@@ -1151,7 +1198,7 @@ export default function AccountPage() {
   };
 
   // In-flight or completed mobile number porting order (INT-10)
-  const portOrder = orders.find((o) => o.orderType === 'PORT_IN');
+  const portOrder = orders.find((o) => o.orderType === 'PORT_IN' && o.status !== 'CANCELLED');
 
   useEffect(() => {
     if (portOrder) {
@@ -1325,7 +1372,7 @@ export default function AccountPage() {
             className={`${styles.accountMainTabBtn} ${portalTab === 'billing' ? styles.accountMainTabActive : ''}`}
             onClick={() => setPortalTab('billing')}
           >
-            <span>Billing &amp; Pay Now</span>
+            <span>Billing &amp; Payment Method</span>
           </button>
           <button
             type="button"
@@ -1363,9 +1410,14 @@ export default function AccountPage() {
                       {syncMessage}
                     </div>
                   )}
+                  {cancelPortError && (
+                    <div style={{ marginTop: '8px', color: '#b42318', fontWeight: 600 }}>
+                      {cancelPortError}
+                    </div>
+                  )}
                 </div>
                 <div className={styles.portActions}>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                     <button
                       type="button"
                       className={styles.syncPortBtn}
@@ -1374,6 +1426,43 @@ export default function AccountPage() {
                     >
                       {syncingOrderId === portOrder.orderId ? 'Checking Carrier Release...' : 'Check Port Status'}
                     </button>
+                    {confirmCancelOrderId === portOrder.orderId ? (
+                      <>
+                        <button
+                          type="button"
+                          className={styles.syncPortBtn}
+                          onClick={() => handleCancelPort(portOrder.orderId)}
+                          disabled={cancellingOrderId === portOrder.orderId}
+                          style={{ background: '#b42318', borderColor: '#b42318', color: '#ffffff', fontSize: '12px' }}
+                        >
+                          {cancellingOrderId === portOrder.orderId ? 'Cancelling...' : 'Confirm Cancel'}
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.syncPortBtn}
+                          onClick={() => {
+                            setConfirmCancelOrderId(null);
+                            setCancelPortError(null);
+                          }}
+                          disabled={cancellingOrderId === portOrder.orderId}
+                          style={{ fontSize: '12px' }}
+                        >
+                          Keep Transfer
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        type="button"
+                        className={styles.syncPortBtn}
+                        onClick={() => {
+                          setCancelPortError(null);
+                          setConfirmCancelOrderId(portOrder.orderId);
+                        }}
+                        style={{ background: '#ffffff', borderColor: '#fda29b', color: '#b42318', fontSize: '12px' }}
+                      >
+                        Cancel Transfer
+                      </button>
+                    )}
                     <button
                       type="button"
                       className={styles.syncPortBtn}
@@ -1595,6 +1684,8 @@ export default function AccountPage() {
                     className={styles.btnAddLineBtn}
                     onClick={() => {
                       setPlanModalTab('add_line');
+                      setShowNewLinePaymentStep(false);
+                      setNewLinePaymentSaved(false);
                       setIsPlanModalOpen(true);
                       if (newLineReservedPool.length === 0) fetchReservePool();
                     }}
@@ -1687,8 +1778,11 @@ export default function AccountPage() {
                     type="button"
                     className={styles.btnPrimary}
                     onClick={() => {
-                      setPlanModalTab('switch_plan');
+                      setPlanModalTab('add_line');
+                      setShowNewLinePaymentStep(false);
+                      setNewLinePaymentSaved(false);
                       setIsPlanModalOpen(true);
+                      if (newLineReservedPool.length === 0) fetchReservePool();
                     }}
                     style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                   >
@@ -1806,14 +1900,12 @@ export default function AccountPage() {
                   className={styles.btnPrimary}
                   style={{ padding: '8px 14px', fontSize: '13px' }}
                   onClick={() => {
-                    setPayInvoiceId(invoices[0]?.invoiceId || '');
-                    setPayAmount((balance?.nextInvoiceAmount || invoices[0]?.amount || 37.55).toFixed(2));
                     setPaySuccess(null);
                     setPayError(null);
                     setPayNowOpen(true);
                   }}
                 >
-                  Pay Now
+                  {balance?.autoPayStatus === 'Inactive' ? 'Set Up Card' : 'Update Card'}
                 </button>
               </div>
               <p style={{ fontSize: '13.5px', color: '#556253', margin: '0 0 12px 0' }}>
@@ -1897,7 +1989,7 @@ export default function AccountPage() {
             <div className={styles.card}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '18px' }}>
                 <div>
-                  <h2 className={styles.cardTitle} style={{ margin: '0 0 4px 0' }}>Account Balance &amp; Pay Now</h2>
+                  <h2 className={styles.cardTitle} style={{ margin: '0 0 4px 0' }}>Account Balance &amp; Direct Debit</h2>
                   <p style={{ fontSize: '13.5px', color: '#556253', margin: 0 }}>
                     Current balance: <strong>{balance?.formattedBalance || '$0.00'}</strong> · Next scheduled billing: <strong>{balance?.nextInvoiceDate || '28th of month'}</strong>
                   </p>
@@ -1906,14 +1998,12 @@ export default function AccountPage() {
                   type="button"
                   className={styles.btnPrimary}
                   onClick={() => {
-                    setPayInvoiceId(invoices[0]?.invoiceId || '');
-                    setPayAmount((balance?.nextInvoiceAmount || invoices[0]?.amount || 37.55).toFixed(2));
                     setPaySuccess(null);
                     setPayError(null);
                     setPayNowOpen(true);
                   }}
                 >
-                  Pay Now →
+                  {balance?.autoPayStatus === 'Inactive' ? 'Set Up Payment Card →' : 'Update Payment Card →'}
                 </button>
               </div>
               <div className={styles.bankedNotice}>
@@ -1956,14 +2046,12 @@ export default function AccountPage() {
                           type="button"
                           className={styles.btnSmallAction}
                           onClick={() => {
-                            setPayInvoiceId(inv.invoiceId);
-                            setPayAmount(inv.amount.toFixed(2));
                             setPaySuccess(null);
                             setPayError(null);
                             setPayNowOpen(true);
                           }}
                         >
-                          Pay Now
+                          Update Card
                         </button>
                         <a
                           href={`${API_URL}/api/carrier/customers/${user.custNo || 'CUST990001'}/invoices/${inv.invoiceId}/pdf`}
@@ -2726,7 +2814,16 @@ export default function AccountPage() {
           IN-PORTAL PLAN MANAGEMENT MODAL (SWITCH PLAN, ADD LINE, DEVICE CALC)
           ===================================================================== */}
       {isPlanModalOpen && (
-        <div className={styles.modalOverlay} onClick={() => setIsPlanModalOpen(false)} role="dialog" aria-modal="true">
+        <div
+          className={styles.modalOverlay}
+          onClick={() => {
+            setIsPlanModalOpen(false);
+            setShowNewLinePaymentStep(false);
+            setNewLinePaymentSaved(false);
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
           <div className={styles.planModalWide} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeaderRow}>
               <div>
@@ -2738,7 +2835,11 @@ export default function AccountPage() {
               <button
                 type="button"
                 className={styles.modalCloseBtn}
-                onClick={() => setIsPlanModalOpen(false)}
+                onClick={() => {
+                  setIsPlanModalOpen(false);
+                  setShowNewLinePaymentStep(false);
+                  setNewLinePaymentSaved(false);
+                }}
                 aria-label="Close modal"
               >
                 ✕
@@ -2750,7 +2851,11 @@ export default function AccountPage() {
               <button
                 type="button"
                 className={`${styles.portalTabBtn} ${planModalTab === 'switch_plan' ? styles.portalTabBtnActive : ''}`}
-                onClick={() => setPlanModalTab('switch_plan')}
+                onClick={() => {
+                  setPlanModalTab('switch_plan');
+                  setShowNewLinePaymentStep(false);
+                  setNewLinePaymentSaved(false);
+                }}
               >
                 {hasActivePlan ? 'Switch / Upgrade Plan' : 'Choose Mobile Plan'}
               </button>
@@ -2759,15 +2864,21 @@ export default function AccountPage() {
                 className={`${styles.portalTabBtn} ${planModalTab === 'add_line' ? styles.portalTabBtnActive : ''}`}
                 onClick={() => {
                   setPlanModalTab('add_line');
+                  setShowNewLinePaymentStep(false);
+                  setNewLinePaymentSaved(false);
                   if (newLineReservedPool.length === 0) fetchReservePool();
                 }}
               >
-                Add Another Line / SIM
+                {hasActivePlan ? 'Add Another Line / SIM' : 'Activate New Line / SIM'}
               </button>
               <button
                 type="button"
                 className={`${styles.portalTabBtn} ${planModalTab === 'device_calc' ? styles.portalTabBtnActive : ''}`}
-                onClick={() => setPlanModalTab('device_calc')}
+                onClick={() => {
+                  setPlanModalTab('device_calc');
+                  setShowNewLinePaymentStep(false);
+                  setNewLinePaymentSaved(false);
+                }}
               >
                 Device & Financing
               </button>
@@ -2896,51 +3007,70 @@ export default function AccountPage() {
                         </>
                       )}
 
-                      {/* 2FA Gate for Plan Change */}
-                      <div className={styles.twoFaGateBox}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' }}>
-                          <strong style={{ fontSize: '13px', color: '#142420' }}>
-                            2FA Confirmation Required for Plan Changes
-                          </strong>
+                      {/* 2FA Gate for Plan Change (active services only) */}
+                      {hasActivePlan ? (
+                        <>
+                          <div className={styles.twoFaGateBox}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' }}>
+                              <strong style={{ fontSize: '13px', color: '#142420' }}>
+                                2FA Confirmation Required for Plan Changes
+                              </strong>
+                              <button
+                                type="button"
+                                className={styles.btnSmallAction}
+                                disabled={isSendingPlanOtp}
+                                onClick={() => handleSendActionOtp('plan')}
+                              >
+                                {isSendingPlanOtp ? 'Sending...' : twoFactorEnabled ? 'Use Email OTP' : 'Send 2FA Email Code'}
+                              </button>
+                            </div>
+                            {planOtpNotice && (
+                              <div style={{ fontSize: '12px', color: '#2d6622', fontWeight: 600, marginBottom: '6px' }}>
+                                {planOtpNotice}
+                              </div>
+                            )}
+                            <input
+                              type="text"
+                              maxLength={14}
+                              className={styles.fieldInput}
+                              style={{ maxWidth: '220px', fontFamily: 'monospace', letterSpacing: '3px', fontWeight: 700 }}
+                              placeholder={twoFactorEnabled ? 'Authenticator 6-digit code' : '6-digit Email 2FA code'}
+                              value={planTwoFactorCode}
+                              onChange={(e) => setPlanTwoFactorCode(e.target.value)}
+                            />
+                          </div>
+
+                          <div style={{ marginTop: '16px' }}>
+                            <button
+                              type="button"
+                              className={styles.portalConfirmBtn}
+                              disabled={isChangingPlan || isSamePlan}
+                              onClick={handleConfirmPlanChange}
+                            >
+                              {isChangingPlan
+                                ? 'Activating Plan via Carrier...'
+                                : isSamePlan
+                                  ? 'Selected Plan is Your Current Plan'
+                                  : `Verify 2FA & Switch to ${targetPlan.name} ($${targetPlan.price.toFixed(2)}/mth)`}
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ marginTop: '16px' }}>
                           <button
                             type="button"
-                            className={styles.btnSmallAction}
-                            disabled={isSendingPlanOtp}
-                            onClick={() => handleSendActionOtp('plan')}
+                            className={styles.portalConfirmBtn}
+                            onClick={() => {
+                              setNewLinePlanId(targetPlan.id);
+                              setPlanModalTab('add_line');
+                              setShowNewLinePaymentStep(false);
+                              if (newLineReservedPool.length === 0) fetchReservePool();
+                            }}
                           >
-                            {isSendingPlanOtp ? 'Sending...' : twoFactorEnabled ? 'Use Email OTP' : 'Send 2FA Email Code'}
+                            {`Continue to Number Selection & Card Setup (${targetPlan.name}) →`}
                           </button>
                         </div>
-                        {planOtpNotice && (
-                          <div style={{ fontSize: '12px', color: '#2d6622', fontWeight: 600, marginBottom: '6px' }}>
-                            {planOtpNotice}
-                          </div>
-                        )}
-                        <input
-                          type="text"
-                          maxLength={14}
-                          className={styles.fieldInput}
-                          style={{ maxWidth: '220px', fontFamily: 'monospace', letterSpacing: '3px', fontWeight: 700 }}
-                          placeholder={twoFactorEnabled ? 'Authenticator 6-digit code' : '6-digit Email 2FA code'}
-                          value={planTwoFactorCode}
-                          onChange={(e) => setPlanTwoFactorCode(e.target.value)}
-                        />
-                      </div>
-
-                      <div style={{ marginTop: '16px' }}>
-                        <button
-                          type="button"
-                          className={styles.portalConfirmBtn}
-                          disabled={isChangingPlan || (hasActivePlan && isSamePlan)}
-                          onClick={handleConfirmPlanChange}
-                        >
-                          {isChangingPlan
-                            ? 'Activating Plan via Carrier...'
-                            : hasActivePlan
-                            ? (isSamePlan ? 'Selected Plan is Your Current Plan' : `Verify 2FA & Switch to ${targetPlan.name} ($${targetPlan.price.toFixed(2)}/mth)`)
-                            : `Verify 2FA & Activate ${targetPlan.name} ($${targetPlan.price.toFixed(2)}/mth)`}
-                        </button>
-                      </div>
+                      )}
                     </div>
                   );
                 })()}
@@ -2961,8 +3091,80 @@ export default function AccountPage() {
                   </div>
                 )}
 
+                {showNewLinePaymentStep ? (() => {
+                  const selectedNewPlan =
+                    PORTAL_PLANS.find((p) => p.id === newLinePlanId) || PORTAL_PLANS[1];
+                  return (
+                    <div>
+                      <div style={{ marginBottom: '12px', fontSize: '13px', color: '#4c5a49' }}>
+                        Step 2 of 2: Register your card via Westpac QuickStream so Octane can bill{' '}
+                        <strong>{selectedNewPlan.name}</strong> (${selectedNewPlan.price.toFixed(2)}/mth) automatically before activating your eSIM.
+                      </div>
+                      {isActivatingLine ? (
+                        <div className={styles.portalAlertSuccess}>
+                          Card registered with Octane. Activating your carrier eSIM service now...
+                        </div>
+                      ) : newLinePaymentSaved ? (
+                        <div
+                          style={{
+                            background: '#f4faee',
+                            border: '1.5px solid #a3dc8f',
+                            borderRadius: '14px',
+                            padding: '18px',
+                          }}
+                        >
+                          <div style={{ fontSize: '14px', fontWeight: 700, color: '#245012', marginBottom: '6px' }}>
+                            ✓ Payment card already saved with Octane
+                          </div>
+                          <p style={{ fontSize: '13px', color: '#4c5a49', margin: '0 0 14px 0', lineHeight: 1.5 }}>
+                            Your card has been registered for Direct Debit. Review your number/porting details or retry eSIM activation below without re-entering your card.
+                          </p>
+                          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                            <button
+                              type="button"
+                              className={styles.btnSecondaryUpgrade}
+                              style={{ padding: '10px 16px', fontSize: '13.5px' }}
+                              onClick={() => setShowNewLinePaymentStep(false)}
+                            >
+                              ← Edit Number / Porting Details
+                            </button>
+                            <button
+                              type="button"
+                              className={styles.portalConfirmBtn}
+                              style={{ flex: 1, marginTop: 0 }}
+                              onClick={() => handleActivateNewLine()}
+                            >
+                              Retry eSIM Activation →
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <QuickstreamPaymentCard
+                          custNo={user.custNo || ''}
+                          planName={selectedNewPlan.name}
+                          planPrice={selectedNewPlan.price}
+                          submitLabel={
+                            newLineKeepNumber
+                              ? `Save Card & Submit Port-in Order (${newLinePortNumber})`
+                              : `Save Card & Activate eSIM Line (${newLineSelectedNumber})`
+                          }
+                          onCancel={() => setShowNewLinePaymentStep(false)}
+                          onPaymentComplete={(success) => {
+                            if (success) {
+                              setNewLinePaymentSaved(true);
+                              handleActivateNewLine();
+                            }
+                          }}
+                        />
+                      )}
+                    </div>
+                  );
+                })() : (
+                  <>
                 <p style={{ fontSize: '13.5px', color: '#4c5a49', marginBottom: '14px' }}>
-                  Add a second mobile line or family member to your account. Choose between keeping an existing number or picking a fresh 04XX number from our wholesale pool.
+                  {hasActivePlan
+                    ? 'Add a second mobile line or family member to your account. Choose between keeping an existing number or picking a fresh 04XX number from our wholesale pool.'
+                    : 'Choose your JustMobile plan and pick a new 04XX number or transfer your existing Australian mobile number.'}
                 </p>
 
                 {/* Plan Selector for New Line */}
@@ -3178,15 +3380,15 @@ export default function AccountPage() {
                 <button
                   type="button"
                   className={styles.portalConfirmBtn}
-                  disabled={isActivatingLine || (newLineKeepNumber && !newLineOtpVerified)}
-                  onClick={handleActivateNewLine}
+                  disabled={isActivatingLine}
+                  onClick={handleProceedToNewLinePayment}
                 >
-                  {isActivatingLine
-                    ? 'Activating Carrier eSIM Line...'
-                    : newLineKeepNumber
-                    ? `Submit Port-in Order for ${newLinePortNumber || 'Number'}`
-                    : `Activate New Line (${newLineSelectedNumber})`}
+                  {newLineKeepNumber
+                    ? `Continue to Secure Card Setup (${newLinePortNumber || 'Port Number'}) →`
+                    : `Continue to Secure Card Setup (${newLineSelectedNumber}) →`}
                 </button>
+                  </>
+                )}
               </div>
             )}
 
@@ -3267,113 +3469,37 @@ export default function AccountPage() {
       )}
 
       {/* =====================================================================
-          PAY NOW MODAL
+          QUICKSTREAM PAYMENT METHOD MODAL (OCTANE DIRECT DEBIT)
           ===================================================================== */}
       {payNowOpen && (
         <div className={styles.modalOverlay} onClick={() => setPayNowOpen(false)} role="dialog" aria-modal="true">
-          <div className={styles.modalContent} style={{ textAlign: 'left', maxWidth: '460px' }} onClick={(e) => e.stopPropagation()}>
+          <div className={styles.modalContent} style={{ textAlign: 'left', maxWidth: '520px' }} onClick={(e) => e.stopPropagation()}>
             <button type="button" className={styles.modalCloseBtn} onClick={() => setPayNowOpen(false)} aria-label="Close">
               ✕
             </button>
-            <h2 className={styles.cardTitle} style={{ marginBottom: '6px' }}>Make a Payment (Pay Now)</h2>
+            <h2 className={styles.cardTitle} style={{ marginBottom: '6px' }}>Payment Method (Octane Direct Debit)</h2>
             <p style={{ fontSize: '13px', color: '#556253', margin: '0 0 16px 0' }}>
-              Pay an invoice or top up your JustMobile account balance securely (Cust #{user.custNo || '—'}).
+              Register or update your Visa / Mastercard via Westpac QuickStream for automated Octane billing (Cust #{user.custNo || '—'}).
             </p>
 
             {paySuccess && <div className={styles.portalAlertSuccess}>{paySuccess}</div>}
             {payError && <div className={styles.portalAlertError}>{payError}</div>}
 
-            <form onSubmit={handlePayNowSubmit}>
-              {invoices.length > 0 && (
-                <div className={styles.formRow}>
-                  <label className={styles.fieldLabel}>Select Invoice (Optional)</label>
-                  <select
-                    className={styles.fieldInput}
-                    value={payInvoiceId}
-                    onChange={(e) => {
-                      const chosen = invoices.find((i) => i.invoiceId === e.target.value);
-                      setPayInvoiceId(e.target.value);
-                      if (chosen) setPayAmount(chosen.amount.toFixed(2));
-                    }}
-                  >
-                    <option value="">General Account Payment</option>
-                    {invoices.map((inv) => (
-                      <option key={inv.invoiceId} value={inv.invoiceId}>
-                        {inv.invoiceId} (${inv.amount.toFixed(2)} — {inv.status})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div className={styles.formRow}>
-                <label className={styles.fieldLabel}>Payment Amount (AUD $)</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="1"
-                  required
-                  className={styles.fieldInput}
-                  value={payAmount}
-                  onChange={(e) => setPayAmount(e.target.value)}
-                />
-              </div>
-
-              <div className={styles.formRow}>
-                <label className={styles.fieldLabel}>Cardholder Name</label>
-                <input
-                  type="text"
-                  required
-                  className={styles.fieldInput}
-                  value={payCardName}
-                  onChange={(e) => setPayCardName(e.target.value)}
-                />
-              </div>
-
-              <div className={styles.formRow}>
-                <label className={styles.fieldLabel}>Card Number (Visa / Mastercard)</label>
-                <input
-                  type="text"
-                  required
-                  maxLength={19}
-                  placeholder="4532 •••• •••• ••••"
-                  className={styles.fieldInput}
-                  value={payCardNumber}
-                  onChange={(e) => setPayCardNumber(e.target.value)}
-                />
-              </div>
-
-              <div className={styles.formGridTwo}>
-                <div>
-                  <label className={styles.fieldLabel}>Expiry (MM/YY)</label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={5}
-                    placeholder="08/28"
-                    className={styles.fieldInput}
-                    value={payCardExpiry}
-                    onChange={(e) => setPayCardExpiry(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className={styles.fieldLabel}>CVV / CVC</label>
-                  <input
-                    type="password"
-                    required
-                    maxLength={4}
-                    placeholder="•••"
-                    className={styles.fieldInput}
-                    value={payCardCvc}
-                    onChange={(e) => setPayCardCvc(e.target.value.replace(/\D/g, ''))}
-                  />
-                </div>
-              </div>
-
-              <button type="submit" className={styles.portalConfirmBtn} disabled={isPaying}>
-                {isPaying ? 'Processing Payment...' : `Pay $${Number(payAmount || 0).toFixed(2)} AUD Now`}
-              </button>
-            </form>
+            <QuickstreamPaymentCard
+              custNo={user.custNo || ''}
+              planName={activePlanName || 'JustMobile Direct Debit (Billing Cycle 28th)'}
+              planPrice={balance?.nextInvoiceAmount || undefined}
+              submitLabel="Register Card for Octane Auto-Pay"
+              onCancel={() => setPayNowOpen(false)}
+              onPaymentComplete={(success, msg) => {
+                if (success) {
+                  setPaySuccess(msg || 'Payment method registered with Octane.');
+                  if (user.custNo) {
+                    loadAccountData(user.custNo);
+                  }
+                }
+              }}
+            />
           </div>
         </div>
       )}
