@@ -104,38 +104,29 @@ interface PortalPlanOption {
 
 const PORTAL_PLANS: PortalPlanOption[] = [
   {
-    id: 'plan-10gb',
-    planNo: 11144153,
-    name: 'JM 10GB Auto',
-    tier: '10GB',
-    price: 20.54,
-    dataGb: 10,
-    network: '4G',
-  },
-  {
     id: 'plan-15gb',
     planNo: 11144154,
     name: 'JM 15GB Auto',
     tier: '15GB',
-    price: 24.60,
+    price: 31,
     dataGb: 15,
     network: '4G',
   },
   {
-    id: 'plan-29gb',
-    planNo: 11144155,
-    name: 'JM 29GB Auto',
-    tier: '29GB',
-    price: 28.53,
-    dataGb: 29,
-    network: '4G',
+    id: 'plan-45gb',
+    planNo: 11144156,
+    name: 'JM 45GB Auto',
+    tier: '45GB',
+    price: 36,
+    dataGb: 45,
+    network: '5G',
   },
   {
     id: 'plan-65gb',
     planNo: 11144157,
     name: 'JM 65GB Auto',
     tier: '65GB',
-    price: 37.55,
+    price: 40,
     dataGb: 65,
     network: '5G',
     popular: true,
@@ -145,7 +136,7 @@ const PORTAL_PLANS: PortalPlanOption[] = [
     planNo: 11144168,
     name: 'JM 100GB Auto',
     tier: '100GB',
-    price: 46.40,
+    price: 48,
     dataGb: 100,
     network: '5G',
   },
@@ -154,7 +145,7 @@ const PORTAL_PLANS: PortalPlanOption[] = [
     planNo: 11144169,
     name: 'JM 120GB Auto',
     tier: '120GB',
-    price: 54.86,
+    price: 57,
     dataGb: 120,
     network: '5G',
   },
@@ -163,7 +154,7 @@ const PORTAL_PLANS: PortalPlanOption[] = [
     planNo: 11144170,
     name: 'JM 150GB Auto',
     tier: '150GB',
-    price: 59.89,
+    price: 62,
     dataGb: 150,
     network: '5G',
   },
@@ -172,7 +163,7 @@ const PORTAL_PLANS: PortalPlanOption[] = [
     planNo: 11156014,
     name: 'JM 180GB Auto',
     tier: '180GB',
-    price: 67.00,
+    price: 67,
     dataGb: 180,
     network: '5G',
   },
@@ -1675,7 +1666,7 @@ export default function AccountPage() {
                 </div>
 
                 <h2 className={styles.cardTitle}>
-                  {activePlanName} (${(PORTAL_PLANS.find(p => p.name === activePlanName || (activePlanName && activePlanName.includes(p.tier)))?.price ?? 37.55).toFixed(2)}/mth)
+                  {activePlanName} (${(PORTAL_PLANS.find(p => p.name === activePlanName || (activePlanName && activePlanName.includes(p.tier)))?.price ?? 40).toFixed(2)}/mth)
                 </h2>
 
                 {/* Monthly data meter synced with live carrier usage */}
@@ -1781,7 +1772,7 @@ export default function AccountPage() {
                       1. Choose Your Plan
                     </div>
                     <div style={{ fontSize: '12px', color: '#687765' }}>
-                      Plans start from $20.54/mth with zero lock-in contracts and zero bill shock.
+                      Plans start from $31/mth with zero lock-in contracts and zero bill shock.
                     </div>
                   </div>
                   <div>
@@ -1942,7 +1933,7 @@ export default function AccountPage() {
                 Next invoice due:{' '}
                 <strong>
                   {hasActivePlan
-                    ? `${balance?.nextInvoiceDate || '28 Nov 2026'} ($${balance?.nextInvoiceAmount?.toFixed(2) || '37.55'})`
+                    ? `${balance?.nextInvoiceDate || '28 Nov 2026'} ($${balance?.nextInvoiceAmount?.toFixed(2) || '40.00'})`
                     : 'No upcoming invoice (no active plan)'}
                 </strong>
               </p>

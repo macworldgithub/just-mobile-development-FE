@@ -22,73 +22,64 @@ interface PlanCisDetails {
 }
 
 const PLAN_DATA: Record<string, PlanCisDetails> = {
-  '10gb': {
-    id: '10gb',
-    name: 'JM 10GB Auto',
-    monthlyFee: 20.54,
-    dataGb: 10,
-    costPerGb: 2.05,
-    network: '4G LTE',
-    internationalIncluded: false,
-  },
   '15gb': {
     id: '15gb',
     name: 'JM 15GB Auto',
-    monthlyFee: 24.60,
+    monthlyFee: 31,
     dataGb: 15,
-    costPerGb: 1.64,
+    costPerGb: 2.07,
     network: '4G LTE',
     internationalIncluded: false,
   },
-  '29gb': {
-    id: '29gb',
-    name: 'JM 29GB Auto',
-    monthlyFee: 28.53,
-    dataGb: 29,
-    costPerGb: 0.98,
-    network: '4G LTE',
-    internationalIncluded: false,
+  '45gb': {
+    id: '45gb',
+    name: 'JM 45GB Auto',
+    monthlyFee: 36,
+    dataGb: 45,
+    costPerGb: 0.80,
+    network: '5G Ultra',
+    internationalIncluded: true,
   },
   '65gb': {
     id: '65gb',
     name: 'JM 65GB Auto',
-    monthlyFee: 37.55,
+    monthlyFee: 40,
     dataGb: 65,
-    costPerGb: 0.58,
+    costPerGb: 0.62,
     network: '5G Ultra',
     internationalIncluded: true,
   },
   '100gb': {
     id: '100gb',
     name: 'JM 100GB Auto',
-    monthlyFee: 46.40,
+    monthlyFee: 48,
     dataGb: 100,
-    costPerGb: 0.46,
+    costPerGb: 0.48,
     network: '5G Ultra',
     internationalIncluded: true,
   },
   '120gb': {
     id: '120gb',
     name: 'JM 120GB Auto',
-    monthlyFee: 54.86,
+    monthlyFee: 57,
     dataGb: 120,
-    costPerGb: 0.46,
+    costPerGb: 0.48,
     network: '5G Ultra',
     internationalIncluded: true,
   },
   '150gb': {
     id: '150gb',
     name: 'JM 150GB Auto',
-    monthlyFee: 59.89,
+    monthlyFee: 62,
     dataGb: 150,
-    costPerGb: 0.40,
+    costPerGb: 0.41,
     network: '5G Ultra',
     internationalIncluded: true,
   },
   '180gb': {
     id: '180gb',
     name: 'JM 180GB Auto',
-    monthlyFee: 67.00,
+    monthlyFee: 67,
     dataGb: 180,
     costPerGb: 0.37,
     network: '5G Ultra',
@@ -183,7 +174,7 @@ export default function CisModal({ isOpen, onClose, defaultPlan = '65gb' }: CisM
                 <td>
                   {plan.internationalIncluded
                     ? 'Unlimited standard calls & SMS from Australia to 15 selected countries.'
-                    : 'Not included on this plan (included on 65GB+ plans).'}
+                    : 'Not included on this plan (included on 45GB+ plans).'}
                 </td>
               </tr>
               <tr>

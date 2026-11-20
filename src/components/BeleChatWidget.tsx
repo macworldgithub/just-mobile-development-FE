@@ -196,7 +196,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
           {
             role: 'assistant',
             content:
-              "I'm here to help! Our plans start from $20.54/mth (10GB) up to $67.00/mth (180GB) on the Telstra Wholesale Network.",
+              "I'm here to help! Our plans start from $31/mth (15GB) up to $67/mth (180GB) on the Telstra Wholesale Network.",
           },
         ]);
       }

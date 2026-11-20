@@ -212,7 +212,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
         msn: keepExistingNumber ? portNumber : selectedNumber.replace(/\s+/g, ''),
         planNo: config?.plan?.planNo ? String(config.plan.planNo) : '11144157',
         planName: config?.plan?.name || 'JM 65GB Auto',
-        pricePerMonth: config?.plan?.pricePerMonth || 37.55,
+        pricePerMonth: config?.plan?.pricePerMonth || 40,
         email: activeEmail,
         address: address || user?.address || 'Unit 4, 182 George Street',
         suburb: user?.suburb || 'Sydney',

@@ -68,10 +68,10 @@ export default function AdminPage() {
 
   // Broadcast Draft Box State
   const [broadcastSubject, setBroadcastSubject] = useState(
-    'Exclusive 5G Offer: 65GB for $37.55/mo on Telstra Wholesale'
+    'Exclusive 5G Offer: 65GB for $40/mo on Telstra Wholesale'
   );
   const [broadcastMessage, setBroadcastMessage] = useState(
-    `G'day,\n\nReady for Australia's straightforward mobile challenger? Switch today and get our flagship 65GB 5G Auto Plan for just $37.55/month with Zero Bill Shock and full Telstra Wholesale coverage.\n\nKeep your current number with zero downtime or pick a brand new 04XX mobile.\n\nClaim your eSIM instantly online: https://justmobile.com.au`
+    `G'day,\n\nReady for Australia's straightforward mobile challenger? Switch today and get our flagship 65GB 5G Auto Plan for just $40/month with Zero Bill Shock and full Telstra Wholesale coverage.\n\nKeep your current number with zero downtime or pick a brand new 04XX mobile.\n\nClaim your eSIM instantly online: https://justmobile.com.au`
   );
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
   const [broadcastAlert, setBroadcastAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -135,9 +135,9 @@ export default function AdminPage() {
 
   const handleApplyTemplate = (type: 'deal' | 'network' | 'esim') => {
     if (type === 'deal') {
-      setBroadcastSubject('Special Offer: 65GB 5G Plan for $37.55 on Telstra Wholesale');
+      setBroadcastSubject('Special Offer: 65GB 5G Plan for $40 on Telstra Wholesale');
       setBroadcastMessage(
-        `G'day,\n\nReady for Australia's straightforward mobile challenger? Switch today and get our flagship 65GB 5G Auto Plan for just $37.55/month with Zero Bill Shock and full Telstra Wholesale coverage.\n\nKeep your current number with zero downtime or pick a brand new 04XX mobile.\n\nClaim your eSIM instantly online: https://justmobile.com.au`
+        `G'day,\n\nReady for Australia's straightforward mobile challenger? Switch today and get our flagship 65GB 5G Auto Plan for just $40/month with Zero Bill Shock and full Telstra Wholesale coverage.\n\nKeep your current number with zero downtime or pick a brand new 04XX mobile.\n\nClaim your eSIM instantly online: https://justmobile.com.au`
       );
     } else if (type === 'network') {
       setBroadcastSubject('Network Update: High-Speed 5G Coverage Across Australia');
@@ -417,7 +417,7 @@ export default function AdminPage() {
                       required
                       value={broadcastSubject}
                       onChange={(e) => setBroadcastSubject(e.target.value)}
-                      placeholder="e.g. Exclusive Weekend Offer: 65GB for $37.55"
+                      placeholder="e.g. Exclusive Weekend Offer: 65GB for $40"
                       className={styles.adminInput}
                     />
                   </div>

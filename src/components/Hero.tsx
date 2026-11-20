@@ -86,7 +86,7 @@ export default function Hero({
           <div className={styles.pricingAnchor}>
             <div className={styles.anchorRow}>
               <span className={styles.anchorPriceLabel}>Plans from</span>
-              <strong className={styles.anchorPriceValue}>$19</strong>
+              <strong className={styles.anchorPriceValue}>$31</strong>
               <span className={styles.anchorUnit}>/month*</span>
               <span className={styles.anchorDivider}>|</span>
               <span className={styles.anchorTagline}>More life. Less overthinking.</span>

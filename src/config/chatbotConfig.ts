@@ -24,14 +24,13 @@ Key behavioral rules:
 --- JUSTMOBILE KNOWLEDGE BASE & RATE CARDS ---
 
 1. FINALIZED MOBILE PLANS (SIM-Only, Month-to-Month, No Lock-in Contracts):
-   • JM 10GB Auto: $20.54/month (4G LTE) - Everyday essentials, maps, messaging, and light browsing.
-   • JM 15GB Auto: $24.60/month (4G LTE) - Casual social media and email on the go.
-   • JM 29GB Auto: $28.53/month (4G LTE) - Daily commute music, navigation, and web browsing.
-   • JM 65GB Auto (Our Sweet Spot / Most Popular): $37.55/month (5G Ultra) - Video streaming and active everyday use + international calls to 15 countries.
-   • JM 100GB Auto: $46.40/month (5G Ultra) - Heavy streaming, hotspotting, and downloads + international calls.
-   • JM 120GB Auto: $54.86/month (5G Ultra) - Remote work, high data usage, and travel.
-   • JM 150GB Auto: $59.89/month (5G Ultra) - Heavy media, gaming, and pro creators.
-   • JM 180GB Auto: $67.00/month (5G Ultra) - Maximum uncapped 5G data package.
+   • JM 15GB Auto: $31/month (4G LTE) - Everyday essentials, social media, and browsing.
+   • JM 45GB Auto: $36/month (5G Ultra) - Fast everyday 5G data + international calls to 15 countries.
+   • JM 65GB Auto (Our Sweet Spot / Most Popular): $40/month (5G Ultra) - Video streaming and active everyday use + international calls to 15 countries.
+   • JM 100GB Auto: $48/month (5G Ultra) - Heavy streaming, hotspotting, and downloads + international calls.
+   • JM 120GB Auto: $57/month (5G Ultra) - Remote work, high data usage, and travel.
+   • JM 150GB Auto: $62/month (5G Ultra) - Heavy media, gaming, and pro creators.
+   • JM 180GB Auto: $67/month (5G Ultra) - Maximum uncapped 5G data package.
 
    All plans include:
    - Unlimited standard national calls & SMS/MMS to Australian standard numbers, fixed landlines, and 13/1300/1800 numbers, plus voicemail retrieval.
@@ -46,7 +45,7 @@ Key behavioral rules:
    • Minimum Term: 1 month (Month-to-Month). Cancel anytime without financial penalty.
    • Billing Cycle & Auto-Pay: Invoicing occurs on the 28th of every calendar month via automated direct debit (Visa or Mastercard).
    • ATO Tax Invoices: Formal Australian Tax Invoices with ABN 48 672 819 204 and a 10% GST breakdown are downloadable as PDFs directly inside the Customer Portal (/account).
-   • Standard Exclusions: Premium rate numbers (1900 numbers), international calls/SMS on 10GB–29GB plans (included on 65GB+ plans), international roaming outside Australia, satellite numbers, and operator directory assistance (1223).
+   • Standard Exclusions: Premium rate numbers (1900 numbers), international calls/SMS on 15GB plan (included on 45GB+ plans), international roaming outside Australia, satellite numbers, and operator directory assistance (1223).
    • Emergency 000 Calling: Calls to Triple Zero (000) and 112 are always 100% free and accessible, even if an account has a zero balance or is temporarily barred.
    • IPND Registration: Customer name and service address are registered in the Integrated Public Number Database (IPND) to support Australian emergency services dispatch.
    • Financial Hardship Policy: Customers facing financial hardship can access tailored support at /hardship, info@justmobile.ai, or 1300 492 002.

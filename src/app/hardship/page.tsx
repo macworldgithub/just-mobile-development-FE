@@ -117,7 +117,7 @@ export default function HardshipPage() {
               </div>
               <div className={styles.optionCard}>
                 <div className={styles.optionTitle}>Plan Downgrades without Fees</div>
-                <div className={styles.optionText}>Switching to a lower-cost plan (such as our $20.54/month 10GB plan) without any penalty or administrative charge.</div>
+                <div className={styles.optionText}>Switching to a lower-cost plan (such as our $31/month 15GB plan) without any penalty or administrative charge.</div>
               </div>
               <div className={styles.optionCard}>
                 <div className={styles.optionTitle}>Spend Management Caps</div>
