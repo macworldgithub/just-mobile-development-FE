@@ -48,7 +48,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
   const [isLoadingNumbers, setIsLoadingNumbers] = useState<boolean>(false);
 
   // Auth state
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   // Customer info
   const [name, setName] = useState('');
@@ -232,7 +232,10 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
 
       const activateRes = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify(orderPayload),
       });
 

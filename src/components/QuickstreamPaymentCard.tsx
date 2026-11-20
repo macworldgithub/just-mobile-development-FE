@@ -23,6 +23,7 @@ declare global {
 
 export interface QuickstreamPaymentCardProps {
   custNo: string;
+  authToken?: string;
   planName?: string;
   planPrice?: number;
   submitLabel?: string;
@@ -40,6 +41,7 @@ const QUICKSTREAM_SUPPLIER_BUSINESS_CODE =
 
 export default function QuickstreamPaymentCard({
   custNo,
+  authToken,
   planName,
   planPrice,
   submitLabel,
@@ -48,7 +50,8 @@ export default function QuickstreamPaymentCard({
 }: QuickstreamPaymentCardProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const trustedFrameRef = useRef<any>(null);
-  const { token: authToken } = useAuth();
+  const { token: contextAuthToken } = useAuth();
+  const effectiveToken = authToken || contextAuthToken;
 
   const [frameReady, setFrameReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -213,7 +216,7 @@ export default function QuickstreamPaymentCard({
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+              ...(effectiveToken ? { Authorization: `Bearer ${effectiveToken}` } : {}),
             },
             body: JSON.stringify({ paymentTokenId: token }),
           },
