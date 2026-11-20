@@ -35,18 +35,28 @@ function parseInline(text: string): React.ReactNode[] {
     } else if (token.startsWith('[') && token.includes('](') && token.endsWith(')')) {
       const parts = token.slice(1, -1).split('](');
       const label = parts[0];
-      const href = parts[1];
-      nodes.push(
-        <a
-          key={`a-${match.index}`}
-          href={href}
-          target={href.startsWith('http') ? '_blank' : undefined}
-          rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
-          className={styles.chatLink}
-        >
-          {label}
-        </a>,
-      );
+      const href = (parts[1] || '').trim();
+      const isSafeHref =
+        href.startsWith('/') ||
+        href.startsWith('https://') ||
+        href.startsWith('http://') ||
+        href.startsWith('mailto:') ||
+        href.startsWith('tel:');
+      if (isSafeHref) {
+        nodes.push(
+          <a
+            key={`a-${match.index}`}
+            href={href}
+            target={href.startsWith('http') ? '_blank' : undefined}
+            rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+            className={styles.chatLink}
+          >
+            {label}
+          </a>,
+        );
+      } else {
+        nodes.push(label);
+      }
     } else if (token.startsWith('http')) {
       nodes.push(
         <a

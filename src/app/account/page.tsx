@@ -256,6 +256,7 @@ export default function AccountPage() {
 
   // View / Query Bill Modal State
   const [viewingInvoice, setViewingInvoice] = useState<InvoiceRecord | null>(null);
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
   const [queryInvoice, setQueryInvoice] = useState<InvoiceRecord | null>(null);
   const [queryCategory, setQueryCategory] = useState<string>('Unfamiliar Charge');
   const [queryMessage, setQueryMessage] = useState<string>('');
@@ -349,9 +350,13 @@ export default function AccountPage() {
   }, [user, isLoading, router]);
 
   // Comprehensive data loader for live carrier sync
-  const loadAccountData = (custNo: string) => {
+  const loadAccountData = (custNo: string, authToken?: string | null) => {
+    const activeToken = authToken ?? token;
+    if (!activeToken || !custNo) return;
+    const authHeaders = { Authorization: `Bearer ${activeToken}` };
+
     // 1. Fetch live unbilled usage
-    fetch(`${API_URL}/api/carrier/customers/${custNo}/usage`)
+    fetch(`${API_URL}/api/carrier/customers/${custNo}/usage`, { headers: authHeaders })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && data.dataMeter) {
@@ -361,7 +366,7 @@ export default function AccountPage() {
       .catch((err) => console.warn('Usage fetch error:', err));
 
     // 2. Fetch live balance & auto-pay
-    fetch(`${API_URL}/api/carrier/customers/${custNo}/balance`)
+    fetch(`${API_URL}/api/carrier/customers/${custNo}/balance`, { headers: authHeaders })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data) setBalance(data);
@@ -369,7 +374,7 @@ export default function AccountPage() {
       .catch((err) => console.warn('Balance fetch error:', err));
 
     // 3. Fetch active services
-    fetch(`${API_URL}/api/carrier/customers/${custNo}/services`)
+    fetch(`${API_URL}/api/carrier/customers/${custNo}/services`, { headers: authHeaders })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data && data.services && data.services.length > 0) {
@@ -386,7 +391,7 @@ export default function AccountPage() {
       .catch((err) => console.warn('Services fetch error:', err));
 
     // 4. Fetch ATO-compliant tax invoices (INT-08)
-    fetch(`${API_URL}/api/carrier/customers/${custNo}/invoices`)
+    fetch(`${API_URL}/api/carrier/customers/${custNo}/invoices`, { headers: authHeaders })
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
         if (Array.isArray(data)) setInvoices(data);
@@ -394,7 +399,7 @@ export default function AccountPage() {
       .catch((err) => console.warn('Invoices fetch error:', err));
 
     // 5. Fetch customer orders & mobile porting status (INT-10)
-    fetch(`${API_URL}/api/carrier/customers/${custNo}/orders`)
+    fetch(`${API_URL}/api/carrier/customers/${custNo}/orders`, { headers: authHeaders })
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
         if (Array.isArray(data)) setOrders(data);
@@ -402,7 +407,7 @@ export default function AccountPage() {
       .catch((err) => console.warn('Orders fetch error:', err));
 
     // 6. Fetch customer bill queries
-    fetch(`${API_URL}/api/carrier/customers/${custNo}/bill-queries`)
+    fetch(`${API_URL}/api/carrier/customers/${custNo}/bill-queries`, { headers: authHeaders })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (data?.success && Array.isArray(data.queries)) {
@@ -413,11 +418,14 @@ export default function AccountPage() {
   };
 
   useEffect(() => {
-    if (!user) return;
-    const custNo = user.custNo || '';
-    if (custNo) {
-      loadAccountData(custNo);
+    const custNo = user?.custNo || '';
+    if (custNo && token) {
+      loadAccountData(custNo, token);
     }
+  }, [user?.custNo, token]);
+
+  useEffect(() => {
+    if (!user) return;
     setDetailFirstName(user.firstName || user.name?.split(' ')[0] || '');
     setDetailSurname(user.surname || user.name?.split(' ').slice(1).join(' ') || '');
     setDetailPreferredName(user.preferredName || '');
@@ -734,7 +742,10 @@ export default function AccountPage() {
     try {
       const res = await fetch(`${API_URL}/api/carrier/customers/${custNo}/bill-query`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           invoiceId: queryInvoice.invoiceId,
           category: queryCategory,
@@ -976,20 +987,55 @@ export default function AccountPage() {
     }
   };
 
+  // Authenticated ATO Tax Invoice PDF download
+  const handleDownloadInvoicePdf = async (invoiceId: string) => {
+    const custNo = user?.custNo || '';
+    if (!custNo || !token || downloadingInvoiceId === invoiceId) return;
+    setDownloadingInvoiceId(invoiceId);
+    try {
+      const res = await fetch(
+        `${API_URL}/api/carrier/customers/${encodeURIComponent(custNo)}/invoices/${encodeURIComponent(invoiceId)}/pdf`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      if (!res.ok) {
+        throw new Error('Unable to download tax invoice PDF.');
+      }
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `JustMobile-Tax-Invoice-${invoiceId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    } catch (err) {
+      console.warn('Invoice PDF download error:', err);
+    } finally {
+      setDownloadingInvoiceId(null);
+    }
+  };
+
   // Manual sync for mobile port status
   const handleSyncPort = async (orderId: string) => {
     setSyncingOrderId(orderId);
     setSyncMessage(null);
     try {
+      const authHeaders = token ? { Authorization: `Bearer ${token}` } : undefined;
       const res = await fetch(`${API_URL}/api/carrier/orders/${orderId}/sync-port`, {
         method: 'POST',
+        headers: authHeaders,
       });
       if (res.ok) {
         const data = await res.json();
         setSyncMessage(data.message || 'Port synchronized successfully!');
         const custNo = user?.custNo || '';
         if (custNo) {
-          const ordersRes = await fetch(`${API_URL}/api/carrier/customers/${custNo}/orders`);
+          const ordersRes = await fetch(`${API_URL}/api/carrier/customers/${custNo}/orders`, {
+            headers: authHeaders,
+          });
           if (ordersRes.ok) {
             const freshOrders = await ordersRes.json();
             setOrders(freshOrders);
@@ -1046,7 +1092,10 @@ export default function AccountPage() {
     try {
       const res = await fetch(`${API_URL}/api/carrier/orders/${portOrder.orderId}/resubmit-port`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({
           numType: resubmitNumType,
           dob: resubmitNumType === 'prepaid' ? resubmitDob : undefined,
@@ -1072,35 +1121,18 @@ export default function AccountPage() {
     }
   };
 
-  // Simulate donor carrier rejection for testing edge cases
-  const handleSimulateRejection = async (orderId: string) => {
-    try {
-      await fetch(`${API_URL}/api/carrier/orders/${orderId}/simulate-rejection`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reason: 'Date of Birth does not match donor carrier records (Optus). Please verify the birthdate on your account.',
-          donor: 'Optus',
-        }),
-      });
-      const custNo = user?.custNo || '';
-      if (custNo) {
-        loadAccountData(custNo);
-      }
-    } catch (err) {
-      console.warn('Simulation error:', err);
-    }
-  };
-
   // Load eSIM QR code details on demand
   const handleOpenEsimModal = async () => {
     setEsimModalOpen(true);
-    if (esimDetails) return;
+    if (esimDetails || !token) return;
 
     setIsLoadingEsim(true);
     try {
-      const custNo = user?.custNo || 'CUST990001';
-      const res = await fetch(`${API_URL}/api/carrier/qrcodes/${custNo}`);
+      const custNo = user?.custNo || '';
+      if (!custNo) return;
+      const res = await fetch(`${API_URL}/api/carrier/qrcodes/${custNo}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (res.ok) {
         const data = await res.json();
         setEsimDetails(data);
@@ -1121,14 +1153,18 @@ export default function AccountPage() {
   };
 
   const handleEmailEsim = async () => {
-    if (!user || !esimDetails) return;
-    const custNo = user.custNo || 'CUST990001';
+    if (!user || !esimDetails || !token) return;
+    const custNo = user.custNo || '';
+    if (!custNo) return;
     setIsSendingEmail(true);
     setEmailSentNotice(null);
     try {
       const res = await fetch(`${API_URL}/api/carrier/customers/${custNo}/orders/${esimDetails.orderId}/send-esim-email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ email: user.email }),
       });
       const data = await res.json();
@@ -1466,15 +1502,6 @@ export default function AccountPage() {
                         Cancel Transfer
                       </button>
                     )}
-                    <button
-                      type="button"
-                      className={styles.syncPortBtn}
-                      onClick={() => handleSimulateRejection(portOrder.orderId)}
-                      style={{ background: '#fff1f2', borderColor: '#fecdd3', color: '#be123c', fontSize: '12px' }}
-                      title="Test helper: simulate what happens when Optus/Vodafone rejects transfer"
-                    >
-                      Simulate Rejection
-                    </button>
                   </div>
                   <span style={{ fontSize: '12px', color: '#718096' }}>
                     Order ID: {portOrder.orderId}
@@ -1964,14 +1991,15 @@ export default function AccountPage() {
                         >
                           Query Bill
                         </button>
-                        <a
-                          href={`${API_URL}/api/carrier/customers/${user.custNo || 'CUST990001'}/invoices/${inv.invoiceId}/pdf`}
-                          download={`JustMobile-Tax-Invoice-${inv.invoiceId}.pdf`}
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadInvoicePdf(inv.invoiceId)}
+                          disabled={downloadingInvoiceId === inv.invoiceId}
                           className={styles.downloadPdfBtn}
                           title="Download ATO-compliant PDF Tax Invoice"
                         >
-                          <span>PDF</span>
-                        </a>
+                          <span>{downloadingInvoiceId === inv.invoiceId ? 'Downloading...' : 'PDF'}</span>
+                        </button>
                       </div>
                     </div>
                   ))
@@ -2056,13 +2084,14 @@ export default function AccountPage() {
                         >
                           Update Card
                         </button>
-                        <a
-                          href={`${API_URL}/api/carrier/customers/${user.custNo || 'CUST990001'}/invoices/${inv.invoiceId}/pdf`}
-                          download={`JustMobile-Tax-Invoice-${inv.invoiceId}.pdf`}
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadInvoicePdf(inv.invoiceId)}
+                          disabled={downloadingInvoiceId === inv.invoiceId}
                           className={styles.downloadPdfBtn}
                         >
-                          Download PDF
-                        </a>
+                          {downloadingInvoiceId === inv.invoiceId ? 'Downloading...' : 'Download PDF'}
+                        </button>
                       </div>
                     </div>
                   ))
@@ -3567,14 +3596,15 @@ export default function AccountPage() {
               >
                 Query This Bill
               </button>
-              <a
-                href={`${API_URL}/api/carrier/customers/${user.custNo || 'CUST990001'}/invoices/${viewingInvoice.invoiceId}/pdf`}
-                download={`JustMobile-Tax-Invoice-${viewingInvoice.invoiceId}.pdf`}
+              <button
+                type="button"
+                onClick={() => handleDownloadInvoicePdf(viewingInvoice.invoiceId)}
+                disabled={downloadingInvoiceId === viewingInvoice.invoiceId}
                 className={styles.btnSecondaryUpgrade}
-                style={{ flex: 1, textAlign: 'center', textDecoration: 'none' }}
+                style={{ flex: 1, textAlign: 'center' }}
               >
-                Download PDF
-              </a>
+                {downloadingInvoiceId === viewingInvoice.invoiceId ? 'Downloading...' : 'Download PDF'}
+              </button>
             </div>
           </div>
         </div>

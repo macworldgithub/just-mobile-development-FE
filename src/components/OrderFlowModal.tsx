@@ -255,7 +255,9 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
       }
 
       // Fetch QR Code details only after Octane & DB order succeeded
-      const qrRes = await fetch(`${API_URL}/api/carrier/qrcodes/${createdOrderId}`);
+      const qrRes = await fetch(`${API_URL}/api/carrier/qrcodes/${createdOrderId}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
       if (qrRes.ok) {
         const qrData = await qrRes.json();
         setQrCodeData(qrData);
@@ -287,7 +289,10 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
       const targetEmail = email || user?.email || '';
       const res = await fetch(`${API_URL}/api/carrier/customers/${activeCustNo}/orders/${orderId}/send-esim-email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ email: targetEmail }),
       });
       const data = await res.json();

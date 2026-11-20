@@ -49,7 +49,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
     {
       role: 'assistant',
       content:
-        "Hi there! I'm Bele, your JustMobile assistant. I can help you register, pick a plan & 04XX number (or port yours), pay securely, or manage an existing account right here — or you can log into /account anytime.",
+        "Hi there! I'm Bele, your JustMobile assistant. I can help you sign up, choose a plan & mobile number (or bring your existing number), set up payment securely, or manage your account right here — or you can visit [My Account](/account) anytime.",
     },
   ]);
   const [inputVal, setInputVal] = useState('');
@@ -119,7 +119,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
       if (!res.ok || !activateData?.success) {
         throw new Error(
           activateData?.message ||
-            'Could not complete carrier activation right now. Your card is saved — please retry or check /account.',
+            'Could not complete carrier activation right now. Your card is saved — please retry or check your My Account portal.',
         );
       }
 
@@ -128,6 +128,11 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
       if (createdOrderId) {
         const qrRes = await fetch(
           `${getApiUrl()}/api/carrier/qrcodes/${encodeURIComponent(createdOrderId)}`,
+          {
+            headers: action.authToken
+              ? { Authorization: `Bearer ${action.authToken}` }
+              : undefined,
+          },
         ).catch(() => null);
         if (qrRes && qrRes.ok) {
           qrData = await qrRes.json().catch(() => null);
@@ -153,8 +158,8 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
           role: 'assistant',
           content:
             action.purpose === 'port_order'
-              ? `Awesome news! Your card is registered with Octane and your mobile number transfer order (#${createdOrderId}) for **${activatedMsn}** on **${action.planName}** has been submitted. Your eSIM card is shown below (and you can also sign into /account anytime to track your port).`
-              : `Awesome news! Your card is registered with Octane and your **${action.planName}** eSIM (#${createdOrderId}) for **${activatedMsn}** is active! Your eSIM QR code is shown below, and you can also view or manage it anytime in /account.`,
+              ? `Awesome news! Your card is registered with Octane and your mobile number transfer order (#${createdOrderId}) for **${activatedMsn}** on **${action.planName}** has been submitted. Your eSIM card is shown below (and you can also visit [My Account](/account) anytime to track your transfer).`
+              : `Awesome news! Your card is registered with Octane and your **${action.planName}** eSIM (#${createdOrderId}) for **${activatedMsn}** is active! Your eSIM QR code is shown below, and you can also view or manage it anytime in [My Account](/account).`,
         },
       ]);
     } catch (err: any) {
@@ -416,7 +421,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
                           ...prev,
                           {
                             role: 'assistant',
-                            content: `${msg || '✓ Your card has been registered with Octane for automated Direct Debit billing.'} You can also view or manage your billing anytime in /account.`,
+                            content: `${msg || '✓ Your card has been registered with Octane for automated Direct Debit billing.'} You can also view or manage your billing anytime in [My Account](/account).`,
                           },
                         ]);
                       } else {
@@ -493,7 +498,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
                       textDecoration: 'none',
                     }}
                   >
-                    Open /account Portal →
+                    Open My Account →
                   </Link>
                   <button
                     type="button"
