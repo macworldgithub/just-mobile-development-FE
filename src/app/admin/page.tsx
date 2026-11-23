@@ -87,6 +87,11 @@ export default function AdminPage() {
   const [stats, setStats] = useState<any>(null);
   const [customers, setCustomers] = useState<CustomerRecord[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [deletingCustomerId, setDeletingCustomerId] = useState<string | null>(null);
+  const [customerActionAlert, setCustomerActionAlert] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   // Support & Complaints State
   const [supportCases, setSupportCases] = useState<SupportCaseRecord[]>([]);
@@ -118,14 +123,15 @@ export default function AdminPage() {
 
   const API_URL = getApiUrl();
 
-  const fetchAdminData = useCallback(async () => {
+  const fetchAdminData = useCallback(async (forceRefresh = false) => {
     if (!token) return;
     setLoadingData(true);
     try {
-      const res = await fetch(`${API_URL}/api/auth/admin/stats`, {
+      const res = await fetch(`${API_URL}/api/auth/admin/stats${forceRefresh ? '?refresh=1' : ''}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        cache: 'no-store',
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -288,6 +294,48 @@ export default function AdminPage() {
     }
   };
 
+  const handleDeleteCustomer = async (c: CustomerRecord) => {
+    if (!token) return;
+    const targetId = c.custNo && c.custNo !== '—' ? c.custNo : c.id;
+    if (
+      !confirm(
+        `Delete ${c.name} (${c.email} / ${targetId})?\n\nThis will mark the customer Disconnected in the carrier system (if linked) and permanently remove the account from the admin panel.`,
+      )
+    ) {
+      return;
+    }
+
+    setDeletingCustomerId(c.id);
+    setCustomerActionAlert(null);
+    try {
+      const res = await fetch(`${API_URL}/api/carrier/customers/${encodeURIComponent(targetId)}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setCustomers((prev) => prev.filter((item) => item.id !== c.id));
+        setCustomerActionAlert({
+          type: 'success',
+          message: data.message || `Deleted ${c.name} (${targetId}).`,
+        });
+        await fetchAdminData(true);
+      } else {
+        setCustomerActionAlert({
+          type: 'error',
+          message: data.message || 'Failed to delete customer account.',
+        });
+      }
+    } catch {
+      setCustomerActionAlert({
+        type: 'error',
+        message: 'Network error communicating with backend while deleting customer.',
+      });
+    } finally {
+      setDeletingCustomerId(null);
+    }
+  };
+
   const handleDeleteSubscriber = async (email: string) => {
     if (!token) return;
     if (!confirm(`Are you sure you want to remove ${email} from the subscriber list?`)) return;
@@ -408,10 +456,19 @@ export default function AdminPage() {
             <div className={styles.tableCard}>
               <div className={styles.tableHeader}>
                 <h2 className={styles.tableTitle}>Registered Customers & Subscribers</h2>
-                <button type="button" onClick={fetchAdminData} className={styles.refreshBtn}>
+                <button type="button" onClick={() => fetchAdminData(true)} className={styles.refreshBtn}>
                   {loadingData ? 'Refreshing...' : 'Refresh Data'}
                 </button>
               </div>
+
+              {customerActionAlert && (
+                <div
+                  className={customerActionAlert.type === 'success' ? styles.alertSuccess : styles.alertError}
+                  style={{ margin: '14px 24px 0' }}
+                >
+                  {customerActionAlert.message}
+                </div>
+              )}
 
               <div className={styles.tableWrapper}>
                 <table className={styles.table}>
@@ -425,12 +482,13 @@ export default function AdminPage() {
                       <th>Network Status</th>
                       <th>Created At</th>
                       <th>Last Login</th>
+                      <th style={{ textAlign: 'right' }}>Action</th>
                     </tr>
                   </thead>
                   <tbody>
                     {customers.length === 0 ? (
                       <tr>
-                        <td colSpan={8} style={{ textAlign: 'center', padding: '32px', color: '#7e968a' }}>
+                        <td colSpan={9} style={{ textAlign: 'center', padding: '32px', color: '#7e968a' }}>
                           {loadingData ? 'Loading subscribers...' : 'No customer records found.'}
                         </td>
                       </tr>
@@ -453,6 +511,16 @@ export default function AdminPage() {
                           </td>
                           <td>{new Date(c.createdAt).toLocaleDateString('en-AU')}</td>
                           <td>{c.lastLoginAt ? new Date(c.lastLoginAt).toLocaleTimeString('en-AU') : 'Never'}</td>
+                          <td style={{ textAlign: 'right' }}>
+                            <button
+                              type="button"
+                              className={styles.deleteSubscriberBtn}
+                              disabled={deletingCustomerId === c.id}
+                              onClick={() => handleDeleteCustomer(c)}
+                            >
+                              {deletingCustomerId === c.id ? 'Deleting...' : 'Delete'}
+                            </button>
+                          </td>
                         </tr>
                       ))
                     )}
