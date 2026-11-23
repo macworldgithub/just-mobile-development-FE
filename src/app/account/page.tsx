@@ -3126,12 +3126,12 @@ export default function AccountPage() {
                   return (
                     <div>
                       <div style={{ marginBottom: '12px', fontSize: '13px', color: '#4c5a49' }}>
-                        Step 2 of 2: Register your card via Westpac QuickStream so Octane can bill{' '}
-                        <strong>{selectedNewPlan.name}</strong> (${selectedNewPlan.price.toFixed(2)}/mth) automatically before activating your eSIM.
+                        Step 2 of 2: Enter your card in Westpac QuickStream&apos;s encrypted frame for automatic monthly billing (28th) on{' '}
+                        <strong>{selectedNewPlan.name}</strong> (${selectedNewPlan.price.toFixed(2)}/mth) before activating your eSIM.
                       </div>
                       {isActivatingLine ? (
                         <div className={styles.portalAlertSuccess}>
-                          Card registered with Octane. Activating your carrier eSIM service now...
+                          Card saved securely. Activating your carrier eSIM service now...
                         </div>
                       ) : newLinePaymentSaved ? (
                         <div
@@ -3143,7 +3143,7 @@ export default function AccountPage() {
                           }}
                         >
                           <div style={{ fontSize: '14px', fontWeight: 700, color: '#245012', marginBottom: '6px' }}>
-                            ✓ Payment card already saved with Octane
+                            ✓ Payment card already saved
                           </div>
                           <p style={{ fontSize: '13px', color: '#4c5a49', margin: '0 0 14px 0', lineHeight: 1.5 }}>
                             Your card has been registered for Direct Debit. Review your number/porting details or retry eSIM activation below without re-entering your card.
@@ -3510,9 +3510,9 @@ export default function AccountPage() {
             <button type="button" className={styles.modalCloseBtn} onClick={() => setPayNowOpen(false)} aria-label="Close">
               ✕
             </button>
-            <h2 className={styles.cardTitle} style={{ marginBottom: '6px' }}>Payment Method (Octane Direct Debit)</h2>
+            <h2 className={styles.cardTitle} style={{ marginBottom: '6px' }}>Payment Method (Direct Debit)</h2>
             <p style={{ fontSize: '13px', color: '#556253', margin: '0 0 16px 0' }}>
-              Register or update your Visa / Mastercard via Westpac QuickStream for automated Octane billing (Cust #{user.custNo || '—'}).
+              Enter or update your Visa / Mastercard inside Westpac QuickStream&apos;s encrypted frame for automatic monthly billing (28th) (Cust #{user.custNo || '—'}).
             </p>
 
             {paySuccess && <div className={styles.portalAlertSuccess}>{paySuccess}</div>}
@@ -3522,11 +3522,11 @@ export default function AccountPage() {
               custNo={user.custNo || ''}
               planName={activePlanName || 'JustMobile Direct Debit (Billing Cycle 28th)'}
               planPrice={balance?.nextInvoiceAmount || undefined}
-              submitLabel="Register Card for Octane Auto-Pay"
+              submitLabel="Save Card for Auto-Pay"
               onCancel={() => setPayNowOpen(false)}
               onPaymentComplete={(success, msg) => {
                 if (success) {
-                  setPaySuccess(msg || 'Payment method registered with Octane.');
+                  setPaySuccess(msg || 'Payment method saved securely for automatic monthly billing.');
                   if (user.custNo) {
                     loadAccountData(user.custNo);
                   }

@@ -160,8 +160,8 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
           role: 'assistant',
           content:
             action.purpose === 'port_order'
-              ? `Awesome news! Your card is registered with Octane and your mobile number transfer order (#${createdOrderId}) for **${activatedMsn}** on **${action.planName}** has been submitted. Your eSIM card is shown below (and you can also visit [My Account](/account) anytime to track your transfer).`
-              : `Awesome news! Your card is registered with Octane and your **${action.planName}** eSIM (#${createdOrderId}) for **${activatedMsn}** is active! Your eSIM QR code is shown below, and you can also view or manage it anytime in [My Account](/account).`,
+              ? `Awesome news! Your card is saved for automatic monthly billing and your mobile number transfer order (#${createdOrderId}) for **${activatedMsn}** on **${action.planName}** has been submitted. Your eSIM card is shown below (and you can also visit [My Account](/account) anytime to track your transfer).`
+              : `Awesome news! Your card is saved for automatic monthly billing and your **${action.planName}** eSIM (#${createdOrderId}) for **${activatedMsn}** is active! Your eSIM QR code is shown below, and you can also view or manage it anytime in [My Account](/account).`,
         },
       ]);
     } catch (err: any) {
@@ -348,7 +348,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
                       textAlign: 'center',
                     }}
                   >
-                    ✓ Card saved with Octane. Provisioning your eSIM now...
+                    ✓ Card saved securely. Provisioning your eSIM now...
                   </div>
                 ) : chatCardSaved ? (
                   <div
@@ -360,7 +360,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
                     }}
                   >
                     <div style={{ fontSize: '13px', fontWeight: 700, color: '#245012', marginBottom: '6px' }}>
-                      ✓ Card already saved with Octane
+                      ✓ Payment card already saved
                     </div>
                     {chatActivationError && (
                       <div style={{ fontSize: '12.5px', color: '#B42318', marginBottom: '10px', lineHeight: 1.45 }}>
@@ -414,7 +414,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
                     planPrice={activeUiAction.planPrice}
                     submitLabel={
                       activeUiAction.purpose === 'update_card'
-                        ? 'Register Card for Octane Auto-Pay'
+                        ? 'Save Card for Auto-Pay'
                         : 'Save Card & Activate eSIM →'
                     }
                     onCancel={() => setActiveUiAction(null)}
@@ -426,7 +426,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
                           ...prev,
                           {
                             role: 'assistant',
-                            content: `${msg || '✓ Your card has been registered with Octane for automated Direct Debit billing.'} You can also view or manage your billing anytime in [My Account](/account).`,
+                            content: `${msg || '✓ Your card has been saved via Westpac QuickStream for automatic monthly billing (28th cycle).'} You can also view or manage your billing anytime in [My Account](/account).`,
                           },
                         ]);
                       } else {

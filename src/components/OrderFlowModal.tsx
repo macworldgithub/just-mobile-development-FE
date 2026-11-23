@@ -874,7 +874,7 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                 {[
                   { key: 'quote_accepted', label: 'Quote Accepted & Signed' },
                   { key: 'prerequisites_satisfied', label: 'ACMA Identity Verified' },
-                  { key: 'octane_customer_linked', label: 'Octane Customer Linked' },
+                  { key: 'octane_customer_linked', label: 'Customer Profile Linked' },
                   { key: 'number_reserved', label: '04XX MSISDN Reserved' },
                   { key: 'order_submitted', label: 'Mobile Order Submitted' },
                   { key: 'service_confirmed', label: 'Network Service Active' },

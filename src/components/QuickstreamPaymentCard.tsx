@@ -225,14 +225,14 @@ export default function QuickstreamPaymentCard({
         const resData = await res.json().catch(() => ({}));
         if (!res.ok || !resData?.success) {
           throw new Error(
-            resData?.message || 'We could not register your payment method with Octane.',
+            resData?.message || 'We could not register your payment method right now. Please try again.',
           );
         }
 
         setPaymentStatus('succeeded');
         onPaymentComplete(
           true,
-          resData?.message || 'Payment method registered with Octane successfully.',
+          resData?.message || 'Payment method saved securely for automatic monthly billing.',
         );
       } catch (err: any) {
         setErrorMsg(
@@ -277,7 +277,7 @@ export default function QuickstreamPaymentCard({
               marginBottom: '2px',
             }}
           >
-            Westpac QuickStream · Octane Direct Debit
+            Westpac QuickStream · Direct Debit
           </div>
           <div style={{ fontSize: '15px', fontWeight: 700, color: '#142420' }}>
             {planName || 'JustMobile Direct Debit Setup'}
@@ -294,8 +294,7 @@ export default function QuickstreamPaymentCard({
       </div>
 
       <p style={{ fontSize: '12.5px', color: '#4c5a49', margin: '0 0 12px 0', lineHeight: 1.5 }}>
-        Your card details are collected directly inside Westpac QuickStream&apos;s encrypted frame and
-        registered on Octane for automatic monthly billing (28th cycle). JustMobile never stores raw card numbers.
+        Your card details are collected directly inside Westpac QuickStream&apos;s encrypted frame for automatic monthly billing (28th cycle). JustMobile never stores raw card numbers.
       </p>
 
       {errorMsg && (
@@ -328,7 +327,7 @@ export default function QuickstreamPaymentCard({
             textAlign: 'center',
           }}
         >
-          ✓ Card securely registered with Octane for automated billing.
+          ✓ Card securely saved via Westpac QuickStream for automatic monthly billing (28th cycle).
         </div>
       ) : (
         <form onSubmit={handleSubmit}>
@@ -384,7 +383,7 @@ export default function QuickstreamPaymentCard({
               {!frameReady
                 ? 'Loading Secure Card Form...'
                 : submitting
-                  ? 'Registering Card with Octane...'
+                  ? 'Saving Card Securely...'
                   : submitLabel || 'Save Card & Continue →'}
             </button>
           </div>
