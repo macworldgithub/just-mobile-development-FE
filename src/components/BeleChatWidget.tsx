@@ -8,6 +8,7 @@ import QuickstreamPaymentCard from './QuickstreamPaymentCard';
 import styles from './BeleChatWidget.module.css';
 import { CHATBOT_CONFIG } from '@/config/chatbotConfig';
 import { getApiUrl } from '@/config/api';
+import { useAuth } from '@/context/AuthContext';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -42,6 +43,7 @@ interface BeleChatWidgetProps {
 }
 
 export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: BeleChatWidgetProps) {
+  const { token } = useAuth();
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
 
@@ -183,7 +185,10 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
     try {
       const res = await fetch(`${getApiUrl()}/api/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ messages: newMessages, sessionId: sessionIdRef.current }),
       });
 

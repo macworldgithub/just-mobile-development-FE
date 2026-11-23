@@ -6,6 +6,7 @@ import Link from 'next/link';
 import FormattedChatMessage from './FormattedChatMessage';
 import QuickstreamPaymentCard from './QuickstreamPaymentCard';
 import { getApiUrl } from '@/config/api';
+import { useAuth } from '@/context/AuthContext';
 import styles from './BeleSection.module.css';
 
 interface Message {
@@ -44,6 +45,7 @@ const QUICK_PROMPTS = [
 ];
 
 export default function BeleSection() {
+  const { token } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -165,7 +167,10 @@ export default function BeleSection() {
     try {
       const res = await fetch(`${getApiUrl()}/api/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ messages: newMessages, sessionId: sessionIdRef.current }),
       });
 
