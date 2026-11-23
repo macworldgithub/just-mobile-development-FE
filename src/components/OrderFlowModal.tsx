@@ -150,12 +150,19 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
   const isPlanOnly = Boolean(config.plan && !config.handset);
 
   const handleSendOtp = async () => {
+    if (!token || !user?.custNo) {
+      setOtpMessage('Please sign in to verify your mobile number for transfer.');
+      return;
+    }
     if (portNumber.length >= 8) {
       try {
         const res = await fetch(`${API_URL}/api/carrier/otp/send`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ custNo: user?.custNo || 'CUST990001', destination: portNumber }),
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ custNo: user.custNo, destination: portNumber }),
         });
         const data = await res.json();
         if (res.ok && data.transactionId) {
@@ -180,7 +187,10 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
       try {
         const res = await fetch(`${API_URL}/api/carrier/otp/verify`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
           body: JSON.stringify({ transactionId: otpTransactionId || 'TX-DEV', code: otpCode }),
         });
         const data = await res.json();
@@ -688,6 +698,29 @@ export default function OrderFlowModal({ isOpen, onClose, config, onExplorePhone
                   {otpVerified && (
                     <div className={styles.verifiedSuccess}>
                       ✓ Number verified for ACMA compliant transfer.
+                    </div>
+                  )}
+
+                  {otpMessage && !otpVerified && (
+                    <div
+                      style={{
+                        marginTop: '8px',
+                        padding: '8px 10px',
+                        borderRadius: '8px',
+                        fontSize: '12.5px',
+                        fontWeight: 600,
+                        background: /please sign in|fail|unable|could not|invalid|too many/i.test(otpMessage)
+                          ? '#FEF3F2'
+                          : '#f4faee',
+                        border: /please sign in|fail|unable|could not|invalid|too many/i.test(otpMessage)
+                          ? '1px solid #FECDCA'
+                          : '1px solid #c6dfb9',
+                        color: /please sign in|fail|unable|could not|invalid|too many/i.test(otpMessage)
+                          ? '#B42318'
+                          : '#245012',
+                      }}
+                    >
+                      {otpMessage}
                     </div>
                   )}
                 </div>

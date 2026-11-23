@@ -830,7 +830,10 @@ export default function AccountPage() {
     try {
       const res = await fetch(`${API_URL}/api/carrier/otp/send`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ custNo, destination: newLinePortNumber }),
       });
       const data = await res.json();
@@ -854,7 +857,10 @@ export default function AccountPage() {
     try {
       const res = await fetch(`${API_URL}/api/carrier/otp/verify`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ transactionId: newLineTxId, code: newLineOtpCode }),
       });
       const data = await res.json();

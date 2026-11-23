@@ -40,6 +40,33 @@ interface BroadcastHistoryItem {
   sentAt: string;
 }
 
+interface SupportCaseRecord {
+  id: string;
+  collection: 'complaints' | 'support_tickets' | 'bill_queries';
+  referenceNumber: string;
+  caseType: string;
+  custNo?: string | null;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  summary: string;
+  desiredOutcome?: string | null;
+  invoiceId?: string | null;
+  category?: string | null;
+  urgent: boolean;
+  status: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED';
+  adminNote?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface SupportCaseCounts {
+  total: number;
+  open: number;
+  inProgress: number;
+  resolved: number;
+  urgentOpen: number;
+}
+
 const formatStatus = (s?: string) => {
   if (!s) return 'Active';
   const upper = s.trim().toUpperCase();
@@ -54,12 +81,25 @@ export default function AdminPage() {
   const router = useRouter();
   const { user, token, logout, isLoading } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'subscribers' | 'marketing'>('subscribers');
+  const [activeTab, setActiveTab] = useState<'subscribers' | 'marketing' | 'support'>('subscribers');
 
   // Customer Registry State
   const [stats, setStats] = useState<any>(null);
   const [customers, setCustomers] = useState<CustomerRecord[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+
+  // Support & Complaints State
+  const [supportCases, setSupportCases] = useState<SupportCaseRecord[]>([]);
+  const [supportCounts, setSupportCounts] = useState<SupportCaseCounts>({
+    total: 0,
+    open: 0,
+    inProgress: 0,
+    resolved: 0,
+    urgentOpen: 0,
+  });
+  const [loadingSupportCases, setLoadingSupportCases] = useState(false);
+  const [supportFilter, setSupportFilter] = useState<'ALL' | 'OPEN' | 'IN_PROGRESS' | 'RESOLVED'>('ALL');
+  const [updatingCaseRef, setUpdatingCaseRef] = useState<string | null>(null);
 
   // Marketing & Newsletter Subscribers State
   const [subscribers, setSubscribers] = useState<SubscriberRecord[]>([]);
@@ -122,6 +162,27 @@ export default function AdminPage() {
     }
   }, [token, API_URL]);
 
+  const fetchSupportCases = useCallback(async () => {
+    if (!token) return;
+    setLoadingSupportCases(true);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/admin/support-cases`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSupportCases(data.cases || []);
+        if (data.counts) {
+          setSupportCounts(data.counts);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch support cases:', err);
+    } finally {
+      setLoadingSupportCases(false);
+    }
+  }, [token, API_URL]);
+
   useEffect(() => {
     if (!isLoading) {
       if (!user || user.role !== 'admin') {
@@ -129,9 +190,42 @@ export default function AdminPage() {
       } else {
         fetchAdminData();
         fetchSubscribers();
+        fetchSupportCases();
       }
     }
-  }, [user, isLoading, router, fetchAdminData, fetchSubscribers]);
+  }, [user, isLoading, router, fetchAdminData, fetchSubscribers, fetchSupportCases]);
+
+  const handleUpdateSupportCaseStatus = async (
+    c: SupportCaseRecord,
+    nextStatus: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED',
+  ) => {
+    if (!token) return;
+    setUpdatingCaseRef(c.referenceNumber);
+    try {
+      const res = await fetch(`${API_URL}/api/auth/admin/support-cases/status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          collection: c.collection,
+          referenceNumber: c.referenceNumber,
+          status: nextStatus,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        await fetchSupportCases();
+      } else {
+        alert(data.message || 'Failed to update case status.');
+      }
+    } catch {
+      alert('Network error updating support case status.');
+    } finally {
+      setUpdatingCaseRef(null);
+    }
+  };
 
   const handleApplyTemplate = (type: 'deal' | 'network' | 'esim') => {
     if (type === 'deal') {
@@ -280,6 +374,16 @@ export default function AdminPage() {
           >
             <span>Marketing Leads & Email Broadcast</span>
             {subscribers.length > 0 && <span className={styles.tabBadge}>{subscribers.length}</span>}
+          </button>
+          <button
+            type="button"
+            className={`${styles.tabBtn} ${activeTab === 'support' ? styles.tabBtnActive : ''}`}
+            onClick={() => setActiveTab('support')}
+          >
+            <span>Support & Complaints</span>
+            {supportCounts.open + supportCounts.inProgress > 0 && (
+              <span className={styles.tabBadge}>{supportCounts.open + supportCounts.inProgress}</span>
+            )}
           </button>
         </div>
 
@@ -558,6 +662,168 @@ export default function AdminPage() {
                 </div>
               </div>
             )}
+          </>
+        )}
+
+        {/* TAB 3: SUPPORT & COMPLAINTS */}
+        {activeTab === 'support' && (
+          <>
+            <div className={styles.supportStatsGrid}>
+              <div className={styles.statCard}>
+                <span className={styles.statLabel}>Open / Active Cases</span>
+                <div className={styles.statValue}>{supportCounts.open + supportCounts.inProgress}</div>
+                <div className={styles.statSub}>{supportCounts.open} Open · {supportCounts.inProgress} In Progress</div>
+              </div>
+
+              <div className={styles.statCard}>
+                <span className={styles.statLabel}>Urgent Escalations</span>
+                <div className={styles.statValue} style={{ color: supportCounts.urgentOpen > 0 ? '#fca5a5' : '#D5F879' }}>
+                  {supportCounts.urgentOpen}
+                </div>
+                <div className={styles.statSub}>ACMA 2-Business-Day Priority</div>
+              </div>
+
+              <div className={styles.statCard}>
+                <span className={styles.statLabel}>Total Logged Cases</span>
+                <div className={styles.statValue}>{supportCounts.total}</div>
+                <div className={styles.statSub}>{supportCounts.resolved} Resolved</div>
+              </div>
+            </div>
+
+            <div className={styles.tableCard}>
+              <div className={styles.tableHeader}>
+                <div>
+                  <h2 className={styles.tableTitle}>Complaints, Support Tickets &amp; Bill Queries</h2>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {(['ALL', 'OPEN', 'IN_PROGRESS', 'RESOLVED'] as const).map((statusOption) => (
+                    <button
+                      key={statusOption}
+                      type="button"
+                      className={`${styles.filterChip} ${supportFilter === statusOption ? styles.filterChipActive : ''}`}
+                      onClick={() => setSupportFilter(statusOption)}
+                    >
+                      {statusOption === 'IN_PROGRESS' ? 'In Progress' : statusOption === 'ALL' ? 'All' : statusOption}
+                    </button>
+                  ))}
+                  <button type="button" onClick={fetchSupportCases} className={styles.refreshBtn}>
+                    {loadingSupportCases ? 'Refreshing...' : 'Refresh Cases'}
+                  </button>
+                </div>
+              </div>
+
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Ref #</th>
+                      <th>Type</th>
+                      <th>Customer</th>
+                      <th>Summary &amp; Details</th>
+                      <th>Status</th>
+                      <th>Logged</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {supportCases.filter((c) => supportFilter === 'ALL' || c.status === supportFilter).length === 0 ? (
+                      <tr>
+                        <td colSpan={7} style={{ textAlign: 'center', padding: '32px', color: '#7e968a' }}>
+                          {loadingSupportCases ? 'Loading support cases...' : 'No support cases match this filter.'}
+                        </td>
+                      </tr>
+                    ) : (
+                      supportCases
+                        .filter((c) => supportFilter === 'ALL' || c.status === supportFilter)
+                        .map((c) => (
+                          <tr key={`${c.collection}-${c.referenceNumber}`}>
+                            <td>
+                              <span className={styles.custNoBadge}>{c.referenceNumber}</span>
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
+                                <span className={styles.planBadge}>
+                                  {c.caseType.replace(/_/g, ' ').toUpperCase()}
+                                </span>
+                                {c.urgent && <span className={styles.urgentBadge}>URGENT</span>}
+                              </div>
+                            </td>
+                            <td>
+                              <div style={{ fontWeight: 600 }}>{c.contactName || (c.custNo ? `Cust #${c.custNo}` : 'Guest')}</div>
+                              <div style={{ fontSize: '12px', color: '#9cb5a8' }}>
+                                {c.contactEmail || '—'}{c.custNo ? ` · #${c.custNo}` : ''}
+                              </div>
+                            </td>
+                            <td style={{ maxWidth: '340px' }}>
+                              <div style={{ lineHeight: 1.45, color: '#ffffff' }}>{c.summary}</div>
+                              {c.invoiceId && (
+                                <div style={{ fontSize: '12px', color: '#9cb5a8', marginTop: '4px' }}>
+                                  Invoice: {c.invoiceId}{c.category ? ` · ${c.category}` : ''}
+                                </div>
+                              )}
+                              {c.desiredOutcome && (
+                                <div style={{ fontSize: '12px', color: '#9cb5a8', marginTop: '4px' }}>
+                                  Desired outcome: {c.desiredOutcome}
+                                </div>
+                              )}
+                            </td>
+                            <td>
+                              <span
+                                className={
+                                  c.status === 'RESOLVED'
+                                    ? styles.statusActiveBadge
+                                    : c.status === 'IN_PROGRESS'
+                                      ? styles.statusProgressBadge
+                                      : styles.statusOpenBadge
+                                }
+                              >
+                                {c.status === 'IN_PROGRESS' ? 'In Progress' : c.status}
+                              </span>
+                            </td>
+                            <td style={{ whiteSpace: 'nowrap' }}>
+                              {new Date(c.createdAt).toLocaleDateString('en-AU')}
+                            </td>
+                            <td>
+                              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                                {c.status === 'OPEN' && (
+                                  <button
+                                    type="button"
+                                    disabled={updatingCaseRef === c.referenceNumber}
+                                    onClick={() => handleUpdateSupportCaseStatus(c, 'IN_PROGRESS')}
+                                    className={styles.caseActionBtn}
+                                  >
+                                    In Progress
+                                  </button>
+                                )}
+                                {c.status !== 'RESOLVED' && (
+                                  <button
+                                    type="button"
+                                    disabled={updatingCaseRef === c.referenceNumber}
+                                    onClick={() => handleUpdateSupportCaseStatus(c, 'RESOLVED')}
+                                    className={styles.caseResolveBtn}
+                                  >
+                                    Resolve
+                                  </button>
+                                )}
+                                {c.status === 'RESOLVED' && (
+                                  <button
+                                    type="button"
+                                    disabled={updatingCaseRef === c.referenceNumber}
+                                    onClick={() => handleUpdateSupportCaseStatus(c, 'OPEN')}
+                                    className={styles.caseActionBtn}
+                                  >
+                                    Reopen
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </>
         )}
       </main>
