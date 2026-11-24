@@ -44,6 +44,11 @@ const QUICK_PROMPTS = [
   'What is the coverage like?',
 ];
 
+const createSessionId = (prefix = 'bele'): string =>
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
 export default function BeleSection() {
   const { token } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
@@ -66,10 +71,7 @@ export default function BeleSection() {
 
   useEffect(() => {
     if (!sessionIdRef.current) {
-      sessionIdRef.current =
-        typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-          ? crypto.randomUUID()
-          : `bele-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      sessionIdRef.current = createSessionId('bele');
     }
   }, []);
 
@@ -241,7 +243,7 @@ export default function BeleSection() {
               </div>
               <div className={styles.featureItem}>
                 <span className={styles.featureCheck}>✓</span>
-                <span>Understand phone financing before you buy</span>
+                <span>Set up Direct Debit payment &amp; activate eSIM in chat</span>
               </div>
               <div className={styles.featureItem}>
                 <span className={styles.featureCheck}>✓</span>
@@ -288,6 +290,15 @@ export default function BeleSection() {
                 className={styles.resetBtn}
                 title="Reset conversation"
                 onClick={() => {
+                  const prevSessionId = sessionIdRef.current;
+                  sessionIdRef.current = createSessionId('bele');
+                  if (prevSessionId) {
+                    fetch(`${getApiUrl()}/api/chat/reset`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ sessionId: prevSessionId }),
+                    }).catch(() => {});
+                  }
                   setActiveUiAction(null);
                   setChatCardSaved(false);
                   setChatActivationError(null);
@@ -414,6 +425,7 @@ export default function BeleSection() {
                     </div>
                   ) : (
                     <QuickstreamPaymentCard
+                      key={`${activeUiAction.custNo}-${activeUiAction.purpose}-${activeUiAction.orderDraft?.msn || 'card'}-${activeUiAction.planNo || ''}`}
                       custNo={activeUiAction.custNo}
                       authToken={activeUiAction.authToken}
                       planName={activeUiAction.planName}

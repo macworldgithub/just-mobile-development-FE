@@ -1,7 +1,7 @@
 'use strict';
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { getApiUrl } from '@/config/api';
 import { useAuth } from '@/context/AuthContext';
 
@@ -50,6 +50,9 @@ export default function QuickstreamPaymentCard({
 }: QuickstreamPaymentCardProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const trustedFrameRef = useRef<any>(null);
+  const onCancelRef = useRef(onCancel);
+  onCancelRef.current = onCancel;
+  const instanceId = useId();
   const { token: contextAuthToken } = useAuth();
   const effectiveToken = authToken || contextAuthToken;
 
@@ -66,6 +69,17 @@ export default function QuickstreamPaymentCard({
 
     const mountTrustedFrame = () => {
       if (cancelled || !window.QuickstreamAPI || !containerRef.current) return;
+
+      // Ensure only this active instance holds the QuickStream mount hook in the DOM
+      document
+        .querySelectorAll('[data-quickstream-api="creditCardContainer"]')
+        .forEach((el) => {
+          if (el !== containerRef.current) {
+            el.removeAttribute('data-quickstream-api');
+          }
+        });
+      containerRef.current.setAttribute('data-quickstream-api', 'creditCardContainer');
+      window.dispatchEvent(new CustomEvent('jm:quickstream-mount', { detail: { instanceId } }));
 
       containerRef.current.innerHTML = '';
 
@@ -130,9 +144,19 @@ export default function QuickstreamPaymentCard({
       }
       trustedFrameRef.current = null;
       if (containerEl) {
+        containerEl.removeAttribute('data-quickstream-api');
         containerEl.innerHTML = '';
       }
     };
+
+    const handleOtherMount = (ev: Event) => {
+      const detail = (ev as CustomEvent<{ instanceId?: string }>).detail;
+      if (detail?.instanceId && detail.instanceId !== instanceId) {
+        teardownFrame();
+        onCancelRef.current?.();
+      }
+    };
+    window.addEventListener('jm:quickstream-mount', handleOtherMount);
 
     if (window.QuickstreamAPI) {
       mountTrustedFrame();
@@ -147,6 +171,7 @@ export default function QuickstreamPaymentCard({
       existingScript.addEventListener('error', handleError);
       return () => {
         cancelled = true;
+        window.removeEventListener('jm:quickstream-mount', handleOtherMount);
         existingScript.removeEventListener('load', handleLoad);
         existingScript.removeEventListener('error', handleError);
         teardownFrame();
@@ -167,9 +192,10 @@ export default function QuickstreamPaymentCard({
 
     return () => {
       cancelled = true;
+      window.removeEventListener('jm:quickstream-mount', handleOtherMount);
       teardownFrame();
     };
-  }, []);
+  }, [instanceId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -333,7 +359,7 @@ export default function QuickstreamPaymentCard({
         <form onSubmit={handleSubmit}>
           <div
             ref={containerRef}
-            id="creditCardContainer"
+            id={`quickstream-card-${instanceId}`}
             data-quickstream-api="creditCardContainer"
             style={{
               minHeight: '390px',

@@ -18,7 +18,6 @@ import OrderFlowModal, { OrderConfiguration } from '@/components/OrderFlowModal'
 import AccountDrawer from '@/components/AccountDrawer';
 import LaunchSection from '@/components/LaunchSection';
 import Footer from '@/components/Footer';
-import BeleChatWidget from '@/components/BeleChatWidget';
 import { HANDSETS, Handset, MOBILE_PLANS, MobilePlan, calculateRepayments } from '@/data/catalogue';
 
 export default function Home() {
@@ -29,7 +28,6 @@ export default function Home() {
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [orderConfig, setOrderConfig] = useState<OrderConfiguration | null>(null);
   const [accountDrawerOpen, setAccountDrawerOpen] = useState(false);
-  const [chatWidgetOpen, setChatWidgetOpen] = useState(false);
 
   // Smooth scroll handler
   const handleScrollTo = (id: string) => {
@@ -188,12 +186,6 @@ export default function Home() {
         isOpen={accountDrawerOpen}
         onClose={() => setAccountDrawerOpen(false)}
         onOpenActivationQr={handleShowActivationQr}
-      />
-
-      {/* Floating Bele AI Chatbot Widget */}
-      <BeleChatWidget
-        isOpen={chatWidgetOpen}
-        onToggle={() => setChatWidgetOpen(!chatWidgetOpen)}
       />
     </div>
   );

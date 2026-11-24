@@ -42,6 +42,11 @@ interface BeleChatWidgetProps {
   onToggle?: () => void;
 }
 
+const createSessionId = (prefix = 'widget'): string =>
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
 export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: BeleChatWidgetProps) {
   const { token } = useAuth();
   const [internalOpen, setInternalOpen] = useState(false);
@@ -68,10 +73,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
 
   useEffect(() => {
     if (!sessionIdRef.current) {
-      sessionIdRef.current =
-        typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-          ? crypto.randomUUID()
-          : `widget-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      sessionIdRef.current = createSessionId('widget');
     }
   }, []);
 
@@ -275,10 +277,20 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
                 className={styles.headerBtn}
                 title="Refresh conversation"
                 onClick={() => {
+                  const prevSessionId = sessionIdRef.current;
+                  sessionIdRef.current = createSessionId('widget');
+                  if (prevSessionId) {
+                    fetch(`${getApiUrl()}/api/chat/reset`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ sessionId: prevSessionId }),
+                    }).catch(() => {});
+                  }
                   setActiveUiAction(null);
                   setChatCardSaved(false);
                   setChatActivationError(null);
                   setChatActivatedEsim(null);
+                  setCopiedChatLpa(false);
                   setMessages([
                     {
                       role: 'assistant',
@@ -408,6 +420,7 @@ export default function BeleChatWidget({ isOpen: controlledOpen, onToggle }: Bel
                   </div>
                 ) : (
                   <QuickstreamPaymentCard
+                    key={`${activeUiAction.custNo}-${activeUiAction.purpose}-${activeUiAction.orderDraft?.msn || 'card'}-${activeUiAction.planNo || ''}`}
                     custNo={activeUiAction.custNo}
                     authToken={activeUiAction.authToken}
                     planName={activeUiAction.planName}

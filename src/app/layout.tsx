@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import GlobalBeleWidget from "@/components/GlobalBeleWidget";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -29,7 +31,12 @@ export default function RootLayout({
   return (
     <html lang="en-AU" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          {children}
+          <Suspense fallback={null}>
+            <GlobalBeleWidget />
+          </Suspense>
+        </AuthProvider>
       </body>
     </html>
   );
